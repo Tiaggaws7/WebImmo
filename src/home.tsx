@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import useEmblaCarousel from 'embla-carousel-react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import Navbar from './components/Navbar.tsx'
-import Footer from './components/Footer.tsx'
 
 // Import house images
 import house1 from './assets/house1.jpg'
