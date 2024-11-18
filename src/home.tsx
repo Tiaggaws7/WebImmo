@@ -109,16 +109,16 @@ function Home() {
         <section className="bg-gray-100 py-12">
           <div className="container mx-auto px-4 text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">Trouvez votre maison de rêve</h1>
-            <p className="text-xl mb-8">Découvrez une large gamme de propriétés avec ExpertImmo</p>
+            <p className="text-xl mb-8">Découvrez une large gamme de propriétés avec investimmo</p>
             <Button size="lg">Voir toutes les propriétés</Button>
           </div>
         </section>
 
         <section className="py-16 bg-white">
           <div className="container mx-auto px-6 text-center">
-            <h2 className="text-4xl font-bold mb-6">Pourquoi choisir ExpertImmo ?</h2>
+            <h2 className="text-4xl font-bold mb-6">Pourquoi choisir investimmo ?</h2>
             <p className="text-lg md:text-xl mb-12 text-gray-700">
-              Chez ExpertImmo, nous ne faisons pas que trouver une propriété, nous trouvons <strong>votre</strong> propriété. Découvrez pourquoi nous sommes le choix préféré de nos clients exigeants.
+              Chez investimmo, nous ne faisons pas que trouver une propriété, nous trouvons <strong>votre</strong> propriété. Découvrez pourquoi nous sommes le choix préféré de nos clients exigeants.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
               <div className="bg-gray-50 p-6 rounded-lg shadow-lg">
@@ -136,7 +136,7 @@ function Home() {
               <div className="bg-gray-50 p-6 rounded-lg shadow-lg">
                 <h3 className="text-2xl font-semibold mb-4">Un Accompagnement sur Mesure</h3>
                 <p className="text-gray-600">
-                  Chez ExpertImmo, chaque client est unique. Nous adaptons nos services pour répondre précisément à vos attentes, avec un suivi personnalisé et une attention constante à vos besoins.
+                  Chez investimmo, chaque client est unique. Nous adaptons nos services pour répondre précisément à vos attentes, avec un suivi personnalisé et une attention constante à vos besoins.
                 </p>
               </div>
             </div>

@@ -15,7 +15,7 @@ const Navbar = () => {
         <div className="flex justify-between items-center">
           {/* Logo */}
           <div className="font-bold text-lg">
-            <Link to="/">ExpertImmo</Link>
+            <Link to="/">investimmo</Link>
           </div>
 
           {/* Mobile menu button */}
