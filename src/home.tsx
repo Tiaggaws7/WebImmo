@@ -71,8 +71,6 @@ function Home() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar />
-
       <main className="flex-grow">
         <section className="bg-white">
           <div className="relative">
@@ -118,29 +116,43 @@ function Home() {
           </div>
         </section>
 
-        <section className="py-12 bg-white">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl font-bold mb-4">Pourquoi choisir ExpertImmo ?</h2>
-            <p className="text-xl mb-8">Nous offrons une expertise inégalée et une large sélection de propriétés de qualité.</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div>
-                <h3 className="text-xl font-semibold mb-2">Agents experts</h3>
-                <p>Notre équipe d'agents expérimentés est dédiée à la recherche de la maison parfaite pour vous.</p>
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-6 text-center">
+            <h2 className="text-4xl font-bold mb-6">Pourquoi choisir ExpertImmo ?</h2>
+            <p className="text-lg md:text-xl mb-12 text-gray-700">
+              Chez ExpertImmo, nous ne faisons pas que trouver une propriété, nous trouvons <strong>votre</strong> propriété. Découvrez pourquoi nous sommes le choix préféré de nos clients exigeants.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+              <div className="bg-gray-50 p-6 rounded-lg shadow-lg">
+                <h3 className="text-2xl font-semibold mb-4">Des Agents Passionnés et Expérimentés</h3>
+                <p className="text-gray-600">
+                  Nos agents immobiliers sont plus que des experts, ce sont des passionnés dédiés à vous guider dans chaque étape de votre projet immobilier, avec des conseils personnalisés et une connaissance approfondie du marché.
+                </p>
               </div>
-              <div>
-                <h3 className="text-xl font-semibold mb-2">Annonces premium</h3>
-                <p>Accédez à des propriétés exclusives que vous ne trouverez nulle part ailleurs.</p>
+              <div className="bg-gray-50 p-6 rounded-lg shadow-lg">
+                <h3 className="text-2xl font-semibold mb-4">Accès à des Propriétés Exclusives</h3>
+                <p className="text-gray-600">
+                  Explorez notre sélection de biens d'exception, incluant des annonces exclusives introuvables sur d'autres plateformes. Accédez au meilleur du marché immobilier avec nous.
+                </p>
               </div>
-              <div>
-                <h3 className="text-xl font-semibold mb-2">Service personnalisé</h3>
-                <p>Nous adaptons notre approche pour répondre à vos besoins et préférences uniques.</p>
+              <div className="bg-gray-50 p-6 rounded-lg shadow-lg">
+                <h3 className="text-2xl font-semibold mb-4">Un Accompagnement sur Mesure</h3>
+                <p className="text-gray-600">
+                  Chez ExpertImmo, chaque client est unique. Nous adaptons nos services pour répondre précisément à vos attentes, avec un suivi personnalisé et une attention constante à vos besoins.
+                </p>
               </div>
+            </div>
+            <div className="mt-12">
+              <a 
+                href="/contact" 
+                className="inline-block bg-blue-600 text-white text-lg font-medium py-3 px-8 rounded-lg shadow hover:bg-blue-700 transition duration-300"
+              >
+                Contactez-nous dès aujourd'hui
+              </a>
             </div>
           </div>
         </section>
       </main>
-
-      <Footer />
     </div>
   )
 }
