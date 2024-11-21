@@ -3,8 +3,10 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Home from './home.tsx'
 import NotFound from './NotFound.tsx';
 import Selling_form from './components/Selling_form';
+import Search_house from './components/Search_house.tsx';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer.tsx';
+
 
 function App() {
 
@@ -15,6 +17,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/Vendre" element={<Selling_form />} />
+          <Route path="/Acheter" element={<Search_house />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Footer/>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Search, Home } from 'lucide-react'
+import { Search, Home, ChevronDown, ChevronUp } from 'lucide-react'
 
 export default function Search_house() {
   const [location, setLocation] = useState('')
@@ -9,8 +9,28 @@ export default function Search_house() {
   const [maxPriceInput, setMaxPriceInput] = useState('2000000')
   const [minSize, setMinSize] = useState(50)
   const [minSizeInput, setMinSizeInput] = useState('50')
-  const [type, setType] = useState('')
+  const [propertyTypes, setPropertyTypes] = useState<string[]>([])
   const [rooms, setRooms] = useState('1')
+  const [bedrooms, setBedrooms] = useState('1')
+  const [showMoreCriteria, setShowMoreCriteria] = useState(false)
+  const [bathrooms, setBathrooms] = useState('1')
+  const [amenities, setAmenities] = useState<string[]>([])
+
+  const propertyTypeOptions = [
+    { value: 'apartment', label: 'Apartment' },
+    { value: 'house', label: 'House' },
+    { value: 'condo', label: 'Condo' },
+    { value: 'townhouse', label: 'Townhouse' },
+    { value: 'land', label: 'Land' },
+  ]
+
+  const amenityOptions = [
+    { value: 'pool', label: 'Pool' },
+    { value: 'parking', label: 'Parking' },
+    { value: 'cave', label: 'Cave' },
+    { value: 'beautiful_view', label: 'Beautiful View' },
+    { value: 'elevator', label: 'Elevator' },
+  ]
 
   useEffect(() => {
     setMaxPriceInput(maxPrice.toString())
@@ -46,9 +66,29 @@ export default function Search_house() {
     }
   }
 
+  const handlePropertyTypeChange = (value: string) => {
+    setPropertyTypes(prev => 
+      prev.includes(value) ? prev.filter(type => type !== value) : [...prev, value]
+    )
+  }
+
+  const handleAmenityChange = (value: string) => {
+    setAmenities(prev => 
+      prev.includes(value) ? prev.filter(amenity => amenity !== value) : [...prev, value]
+    )
+  }
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Searching for houses with criteria:', { location, maxPrice, minSize, type, rooms })
+    console.log('Searching for houses with criteria:', { 
+      location, 
+      maxPrice, 
+      minSize, 
+      propertyTypes, 
+      rooms,
+      bathrooms,
+      amenities
+    })
   }
 
   return (
@@ -156,42 +196,113 @@ export default function Search_house() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-4">
-              <label htmlFor="type" className="block text-sm font-medium text-gray-700">
-                Property Type
-              </label>
-              <select
-                id="type"
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
-              >
-                <option value="">Select type</option>
-                <option value="apartment">Apartment</option>
-                <option value="house">House</option>
-                <option value="condo">Condo</option>
-                <option value="townhouse">Townhouse</option>
-                <option value="land">Land</option>
-              </select>
-            </div>
-
-            <div className="space-y-4">
-              <label htmlFor="rooms" className="block text-sm font-medium text-gray-700">
-                Bedrooms
-              </label>
-              <select
-                id="rooms"
-                value={rooms}
-                onChange={(e) => setRooms(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
-              >
-                {[1, 2, 3, 4, 5, '6+'].map((num) => (
-                  <option key={num} value={num.toString()}>{num} {num === 1 ? 'bedroom' : 'bedrooms'}</option>
-                ))}
-              </select>
+          <div className="space-y-4">
+            <label className="block text-sm font-medium text-gray-700">
+              Property Type
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {propertyTypeOptions.map((option) => (
+                <label key={option.value} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    value={option.value}
+                    checked={propertyTypes.includes(option.value)}
+                    onChange={() => handlePropertyTypeChange(option.value)}
+                    className="rounded border-gray-300 text-violet-600 focus:ring-violet-500"
+                  />
+                  <span>{option.label}</span>
+                </label>
+              ))}
             </div>
           </div>
+
+          <div className="space-y-4">
+            <label htmlFor="rooms" className="block text-sm font-medium text-gray-700">
+              Number of Rooms
+            </label>
+            <select
+              id="rooms"
+              value={rooms}
+              onChange={(e) => setRooms(e.target.value)}
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
+            >
+              {[1, 2, 3, 4, 5, '6+'].map((num) => (
+                <option key={num} value={num.toString()}>{num} {num === 1 ? 'room' : 'rooms'}</option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowMoreCriteria(!showMoreCriteria)}
+            className="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors duration-200 flex items-center justify-center"
+          >
+            {showMoreCriteria ? (
+              <>
+                Less Criteria <ChevronUp className="ml-2 w-4 h-4" />
+              </>
+            ) : (
+              <>
+                More Criteria <ChevronDown className="ml-2 w-4 h-4" />
+              </>
+            )}
+          </button>
+
+          {showMoreCriteria && (
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <label htmlFor="bedrooms" className="block text-sm font-medium text-gray-700">
+                  Bedrooms
+                </label>
+                <select
+                  id="bedrooms"
+                  value={bedrooms}
+                  onChange={(e) => setBedrooms(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
+                >
+                  {[1, 2, 3, 4, 5, '6+'].map((num) => (
+                    <option key={num} value={num.toString()}>{num} {num === 1 ? 'bedroom' : 'bedrooms'}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-4">
+                <label htmlFor="bathrooms" className="block text-sm font-medium text-gray-700">
+                  Bathrooms
+                </label>
+                <select
+                  id="bathrooms"
+                  value={bathrooms}
+                  onChange={(e) => setBathrooms(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
+                >
+                  {[1, 2, 3, 4, '5+'].map((num) => (
+                    <option key={num} value={num.toString()}>{num} {num === 1 ? 'bathroom' : 'bathrooms'}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Amenities
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {amenityOptions.map((option) => (
+                    <label key={option.value} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        value={option.value}
+                        checked={amenities.includes(option.value)}
+                        onChange={() => handleAmenityChange(option.value)}
+                        className="rounded border-gray-300 text-violet-600 focus:ring-violet-500"
+                      />
+                      <span>{option.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           <button
             type="submit"
