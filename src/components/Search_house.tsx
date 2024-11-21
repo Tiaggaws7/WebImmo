@@ -17,19 +17,19 @@ export default function Search_house() {
   const [amenities, setAmenities] = useState<string[]>([])
 
   const propertyTypeOptions = [
-    { value: 'apartment', label: 'Apartment' },
-    { value: 'house', label: 'House' },
-    { value: 'condo', label: 'Condo' },
-    { value: 'townhouse', label: 'Townhouse' },
-    { value: 'land', label: 'Land' },
+    { value: 'apartment', label: 'Appartement' },
+    { value: 'house', label: 'Maison' },
+    { value: 'condo', label: 'Condominium' },
+    { value: 'townhouse', label: 'Maison de ville' },
+    { value: 'land', label: 'Terrain' },
   ]
 
   const amenityOptions = [
-    { value: 'pool', label: 'Pool' },
+    { value: 'pool', label: 'Piscine' },
     { value: 'parking', label: 'Parking' },
     { value: 'cave', label: 'Cave' },
-    { value: 'beautiful_view', label: 'Beautiful View' },
-    { value: 'elevator', label: 'Elevator' },
+    { value: 'beautiful_view', label: 'Belle vue' },
+    { value: 'elevator', label: 'Ascenseur' },
   ]
 
   useEffect(() => {
@@ -80,7 +80,7 @@ export default function Search_house() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Searching for houses with criteria:', { 
+    console.log('Recherche de maisons avec les critères suivants :', { 
       location, 
       maxPrice, 
       minSize, 
@@ -95,25 +95,25 @@ export default function Search_house() {
     <div className="min-h-screen bg-gray-100 p-4 md:p-8">
       <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-8 bg-white rounded-2xl overflow-hidden shadow-xl">
         <div className="p-8 md:p-12 bg-gradient-to-br from-violet-600 to-violet-500 text-white flex flex-col justify-center">
-          <h2 className="text-4xl font-bold mb-6">Find Your Dream Home</h2>
+          <h2 className="text-4xl font-bold mb-6">Trouvez la maison de vos rêves</h2>
           <p className="text-lg mb-8 text-violet-100">
-            Use our advanced search to discover the perfect property that matches all your criteria
+            Utilisez notre recherche avancée pour découvrir la propriété parfaite répondant à tous vos critères
           </p>
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-violet-400/30 flex items-center justify-center">
                 <Search className="w-4 h-4" />
               </div>
-              <span>Advanced search filters</span>
+              <span>Filtres de recherche avancés</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-violet-400/30 flex items-center justify-center">
                 <Home className="w-4 h-4" />
               </div>
-              <span>Extensive property database</span>
+              <span>Base de données immobilières étendue</span>
             </div>
             <div className="flex items-center gap-3">
-              <span>All property types available</span>
+              <span>Tous les types de propriétés disponibles</span>
             </div>
           </div>
         </div>
@@ -121,13 +121,13 @@ export default function Search_house() {
         <form onSubmit={handleSearch} className="p-8 md:p-12 bg-white space-y-6">
           <div className="space-y-4">
             <label htmlFor="location" className="block text-sm font-medium text-gray-700">
-              Location
+              Localisation
             </label>
             <div className="relative">
               <input
                 id="location"
                 type="text"
-                placeholder="Enter city or postal code"
+                placeholder="Entrez une ville ou un code postal"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
@@ -138,7 +138,7 @@ export default function Search_house() {
 
           <div className="space-y-4">
             <label className="block text-sm font-medium text-gray-700">
-              Maximum Price: {formatPrice(maxPrice)}
+              Prix Maximum : {formatPrice(maxPrice)}
             </label>
             <div className="flex items-center gap-4">
               <input
@@ -168,7 +168,7 @@ export default function Search_house() {
 
           <div className="space-y-4">
             <label className="block text-sm font-medium text-gray-700">
-              Minimum Size: {minSize} m²
+              Taille Minimum : {minSize} m²
             </label>
             <div className="flex items-center gap-4">
               <input
@@ -198,7 +198,7 @@ export default function Search_house() {
 
           <div className="space-y-4">
             <label className="block text-sm font-medium text-gray-700">
-              Property Type
+              Type de Propriété
             </label>
             <div className="grid grid-cols-2 gap-2">
               {propertyTypeOptions.map((option) => (
@@ -218,7 +218,7 @@ export default function Search_house() {
 
           <div className="space-y-4">
             <label htmlFor="rooms" className="block text-sm font-medium text-gray-700">
-              Number of Rooms
+              Nombre de Pièces minimum
             </label>
             <select
               id="rooms"
@@ -227,7 +227,7 @@ export default function Search_house() {
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
             >
               {[1, 2, 3, 4, 5, '6+'].map((num) => (
-                <option key={num} value={num.toString()}>{num} {num === 1 ? 'room' : 'rooms'}</option>
+                <option key={num} value={num.toString()}>{num} {num === 1 ? 'pièce' : 'pièces'}</option>
               ))}
             </select>
           </div>
@@ -239,11 +239,11 @@ export default function Search_house() {
           >
             {showMoreCriteria ? (
               <>
-                Less Criteria <ChevronUp className="ml-2 w-4 h-4" />
+                Moins de Critères <ChevronUp className="ml-2 w-4 h-4" />
               </>
             ) : (
               <>
-                More Criteria <ChevronDown className="ml-2 w-4 h-4" />
+                Plus de Critères <ChevronDown className="ml-2 w-4 h-4" />
               </>
             )}
           </button>
@@ -252,7 +252,7 @@ export default function Search_house() {
             <div className="space-y-6">
               <div className="space-y-4">
                 <label htmlFor="bedrooms" className="block text-sm font-medium text-gray-700">
-                  Bedrooms
+                  nombre de chambres minimum
                 </label>
                 <select
                   id="bedrooms"
@@ -261,14 +261,14 @@ export default function Search_house() {
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
                 >
                   {[1, 2, 3, 4, 5, '6+'].map((num) => (
-                    <option key={num} value={num.toString()}>{num} {num === 1 ? 'bedroom' : 'bedrooms'}</option>
+                    <option key={num} value={num.toString()}>{num} {num === 1 ? 'chambre' : 'chambres'}</option>
                   ))}
                 </select>
               </div>
 
               <div className="space-y-4">
                 <label htmlFor="bathrooms" className="block text-sm font-medium text-gray-700">
-                  Bathrooms
+                  nombre de salles de bain minimum
                 </label>
                 <select
                   id="bathrooms"
@@ -277,14 +277,14 @@ export default function Search_house() {
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
                 >
                   {[1, 2, 3, 4, '5+'].map((num) => (
-                    <option key={num} value={num.toString()}>{num} {num === 1 ? 'bathroom' : 'bathrooms'}</option>
+                    <option key={num} value={num.toString()}>{num} {num === 1 ? 'salle de bain' : 'salles de bain'}</option>
                   ))}
                 </select>
               </div>
 
               <div className="space-y-4">
                 <label className="block text-sm font-medium text-gray-700">
-                  Amenities
+                  Commodités
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {amenityOptions.map((option) => (
@@ -308,11 +308,12 @@ export default function Search_house() {
             type="submit"
             className="w-full bg-violet-600 text-white py-4 px-6 rounded-lg text-lg font-semibold hover:bg-violet-700 transition-colors duration-200"
           >
-            Search Properties
+            Rechercher des Propriétés
           </button>
         </form>
       </div>
     </div>
   )
 }
+
 
