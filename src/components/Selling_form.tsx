@@ -1,207 +1,151 @@
-'use client'
+import React, { useState, useEffect } from 'react'
 
-import { useState, useEffect } from 'react'
-import { Search, Home } from 'lucide-react'
+export default function Selling_form() {
+  const [formData, setFormData] = useState({
+    name: '',
+    surname: '',
+    phone: '',
+    email: '',
+    project: '',
+    availability: ''
+  })
 
-export default function Search_house() {
-  const [location, setLocation] = useState('')
-  const [maxPrice, setMaxPrice] = useState(2000000)
-  const [maxPriceInput, setMaxPriceInput] = useState('2000000')
-  const [minSize, setMinSize] = useState(50)
-  const [minSizeInput, setMinSizeInput] = useState('50')
-  const [type, setType] = useState('')
-  const [rooms, setRooms] = useState('1')
-
-  useEffect(() => {
-    setMaxPriceInput(maxPrice.toString())
-  }, [maxPrice])
+  const [windowHeight, setWindowHeight] = useState(0)
 
   useEffect(() => {
-    setMinSizeInput(minSize.toString())
-  }, [minSize])
+    const handleResize = () => setWindowHeight(window.innerHeight)
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR',
-      maximumFractionDigits: 0
-    }).format(price)
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: value
+    }))
   }
 
-  const handleMaxPriceInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setMaxPriceInput(value)
-    const numValue = parseInt(value)
-    if (!isNaN(numValue) && numValue >= 0 && numValue <= 2000000) {
-      setMaxPrice(numValue)
-    }
-  }
-
-  const handleMinSizeInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setMinSizeInput(value)
-    const numValue = parseInt(value)
-    if (!isNaN(numValue) && numValue >= 0 && numValue <= 500) {
-      setMinSize(numValue)
-    }
-  }
-
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    console.log('Searching for houses with criteria:', { location, maxPrice, minSize, type, rooms })
+    console.log('Form submitted:', formData)
+    // Here you would typically send the data to your backend
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 md:p-8">
-      <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-8 bg-white rounded-2xl overflow-hidden shadow-xl">
-        <div className="p-8 md:p-12 bg-gradient-to-br from-violet-600 to-violet-500 text-white flex flex-col justify-center">
-          <h2 className="text-4xl font-bold mb-6">Find Your Dream Home</h2>
-          <p className="text-lg mb-8 text-violet-100">
-            Use our advanced search to discover the perfect property that matches all your criteria
-          </p>
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-violet-400/30 flex items-center justify-center">
-                <Search className="w-4 h-4" />
-              </div>
-              <span>Advanced search filters</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-violet-400/30 flex items-center justify-center">
-                <Home className="w-4 h-4" />
-              </div>
-              <span>Extensive property database</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span>All property types available</span>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gradient-to-b from-blue-100 to-white p-4 flex items-center justify-center">
+      <div 
+        className="w-full max-w-5xl bg-white rounded-xl shadow-xl overflow-hidden flex flex-col lg:flex-row"
+        style={{ maxHeight: `${windowHeight - 32}px` }}
+      >
+        <div className="lg:w-2/5 p-6 bg-indigo-600 text-white flex flex-col justify-center">
+          <h1 className="text-3xl font-bold mb-4">Vendez Votre Maison</h1>
+          <p className="text-lg mb-6">Obtenez une estimation gratuite dès aujourd'hui et laissez nos experts vous aider à maximiser la valeur de votre bien.</p>
+          <ul className="space-y-3 text-base">
+            <li className="flex items-center">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+              Analyse de marché experte
+            </li>
+            <li className="flex items-center">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+              Stratégie de vente personnalisée
+            </li>
+            <li className="flex items-center">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+              Support dédié tout au long du processus
+            </li>
+          </ul>
         </div>
-
-        <form onSubmit={handleSearch} className="p-8 md:p-12 bg-white space-y-6">
-          <div className="space-y-4">
-            <label htmlFor="location" className="block text-sm font-medium text-gray-700">
-              Location
-            </label>
-            <div className="relative">
+        <form onSubmit={handleSubmit} className="lg:w-3/5 p-6 space-y-4 overflow-y-auto">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+              <label htmlFor="name" className="block text-base font-medium text-gray-700 mb-1">Prénom</label>
               <input
-                id="location"
                 type="text"
-                placeholder="Enter city or postal code"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
+                id="name"
+                name="name"
+                required
+                value={formData.name}
+                onChange={handleChange}
+                className="w-full px-3 py-2 text-base border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
+                placeholder="Jean"
               />
-              <Home className="absolute right-3 top-3.5 w-5 h-5 text-gray-400" />
+            </div>
+            <div>
+              <label htmlFor="surname" className="block text-base font-medium text-gray-700 mb-1">Nom de famille</label>
+              <input
+                type="text"
+                id="surname"
+                name="surname"
+                required
+                value={formData.surname}
+                onChange={handleChange}
+                className="w-full px-3 py-2 text-base border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
+                placeholder="Dupont"
+              />
             </div>
           </div>
-
-          <div className="space-y-4">
-            <label className="block text-sm font-medium text-gray-700">
-              Maximum Price: {formatPrice(maxPrice)}
-            </label>
-            <div className="flex items-center gap-4">
-              <input
-                type="range"
-                min="0"
-                max="2000000"
-                step="10000"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(Number(e.target.value))}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-              />
-              <input
-                type="number"
-                min="0"
-                max="2000000"
-                value={maxPriceInput}
-                onChange={handleMaxPriceInputChange}
-                className="w-24 px-2 py-1 text-right rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
-              />
-            </div>
-            <div className="flex justify-between text-xs text-gray-500">
-              <span>{formatPrice(0)}</span>
-              <span>{formatPrice(1000000)}</span>
-              <span>{formatPrice(2000000)}</span>
-            </div>
+          <div>
+            <label htmlFor="phone" className="block text-base font-medium text-gray-700 mb-1">Numéro de téléphone</label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              required
+              value={formData.phone}
+              onChange={handleChange}
+              className="w-full px-3 py-2 text-base border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
+              placeholder="06 12 34 56 78"
+            />
           </div>
-
-          <div className="space-y-4">
-            <label className="block text-sm font-medium text-gray-700">
-              Minimum Size: {minSize} m²
-            </label>
-            <div className="flex items-center gap-4">
-              <input
-                type="range"
-                min="0"
-                max="500"
-                step="10"
-                value={minSize}
-                onChange={(e) => setMinSize(Number(e.target.value))}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-              />
-              <input
-                type="number"
-                min="0"
-                max="500"
-                value={minSizeInput}
-                onChange={handleMinSizeInputChange}
-                className="w-16 px-2 py-1 text-right rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
-              />
-            </div>
-            <div className="flex justify-between text-xs text-gray-500">
-              <span>0 m²</span>
-              <span>250 m²</span>
-              <span>500 m²</span>
-            </div>
+          <div>
+            <label htmlFor="email" className="block text-base font-medium text-gray-700 mb-1">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              required
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full px-3 py-2 text-base border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
+              placeholder="jean.dupont@exemple.com"
+            />
           </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-4">
-              <label htmlFor="type" className="block text-sm font-medium text-gray-700">
-                Property Type
-              </label>
-              <select
-                id="type"
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
-              >
-                <option value="">Select type</option>
-                <option value="apartment">Apartment</option>
-                <option value="house">House</option>
-                <option value="condo">Condo</option>
-                <option value="townhouse">Townhouse</option>
-                <option value="land">Land</option>
-              </select>
-            </div>
-
-            <div className="space-y-4">
-              <label htmlFor="rooms" className="block text-sm font-medium text-gray-700">
-                Bedrooms
-              </label>
-              <select
-                id="rooms"
-                value={rooms}
-                onChange={(e) => setRooms(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
-              >
-                {[1, 2, 3, 4, 5, '6+'].map((num) => (
-                  <option key={num} value={num.toString()}>{num} {num === 1 ? 'bedroom' : 'bedrooms'}</option>
-                ))}
-              </select>
-            </div>
+          <div>
+            <label htmlFor="project" className="block text-base font-medium text-gray-700 mb-1">Votre Projet Immobilier</label>
+            <textarea
+              id="project"
+              name="project"
+              rows={3}
+              value={formData.project}
+              onChange={handleChange}
+              className="w-full px-3 py-2 text-base border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
+              placeholder="Décrivez votre projet immobilier (par exemple, vendre une maison de 3 chambres, rechercher un bien d'investissement)"
+            ></textarea>
           </div>
-
-          <button
-            type="submit"
-            className="w-full bg-violet-600 text-white py-4 px-6 rounded-lg text-lg font-semibold hover:bg-violet-700 transition-colors duration-200"
-          >
-            Search Properties
-          </button>
+          <div>
+            <label htmlFor="availability" className="block text-base font-medium text-gray-700 mb-1">Vos Disponibilités</label>
+            <textarea
+              id="availability"
+              name="availability"
+              rows={3}
+              value={formData.availability}
+              onChange={handleChange}
+              className="w-full px-3 py-2 text-base border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
+              placeholder="Par exemple, en semaine après 17h, week-ends de 9h à 17h"
+            ></textarea>
+          </div>
+          <div>
+            <button
+              type="submit"
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out"
+            >
+              Obtenez Votre Estimation Gratuite
+            </button>
+          </div>
         </form>
       </div>
     </div>
   )
 }
-
