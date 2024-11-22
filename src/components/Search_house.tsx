@@ -1,93 +1,59 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Search, Home, ChevronDown, ChevronUp } from 'lucide-react'
+import { useState } from 'react'
+import { Search, Home } from 'lucide-react'
+import HouseExplorer from './HouseExplorer'
 
 export default function Search_house() {
-  const [location, setLocation] = useState('')
-  const [maxPrice, setMaxPrice] = useState(2000000)
-  const [maxPriceInput, setMaxPriceInput] = useState('2000000')
-  const [minSize, setMinSize] = useState(50)
-  const [minSizeInput, setMinSizeInput] = useState('50')
-  const [propertyTypes, setPropertyTypes] = useState<string[]>([])
-  const [rooms, setRooms] = useState('1')
-  const [bedrooms, setBedrooms] = useState('1')
-  const [showMoreCriteria, setShowMoreCriteria] = useState(false)
-  const [bathrooms, setBathrooms] = useState('1')
-  const [amenities, setAmenities] = useState<string[]>([])
-
-  const propertyTypeOptions = [
-    { value: 'apartment', label: 'Appartement' },
-    { value: 'house', label: 'Maison' },
-    { value: 'townhouse', label: 'Maison de ville' },
-    { value: 'land', label: 'Terrain' },
-  ]
-
-  const amenityOptions = [
-    { value: 'pool', label: 'Piscine' },
-    { value: 'parking', label: 'Parking' },
-    { value: 'cave', label: 'Cave' },
-    { value: 'beautiful_view', label: 'Belle vue' },
-    { value: 'elevator', label: 'Ascenseur' },
-  ]
-
-  useEffect(() => {
-    setMaxPriceInput(maxPrice.toString())
-  }, [maxPrice])
-
-  useEffect(() => {
-    setMinSizeInput(minSize.toString())
-  }, [minSize])
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR',
-      maximumFractionDigits: 0
-    }).format(price)
-  }
-
-  const handleMaxPriceInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setMaxPriceInput(value)
-    const numValue = parseInt(value)
-    if (!isNaN(numValue) && numValue >= 0 && numValue <= 2000000) {
-      setMaxPrice(numValue)
-    }
-  }
-
-  const handleMinSizeInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setMinSizeInput(value)
-    const numValue = parseInt(value)
-    if (!isNaN(numValue) && numValue >= 0 && numValue <= 500) {
-      setMinSize(numValue)
-    }
-  }
-
-  const handlePropertyTypeChange = (value: string) => {
-    setPropertyTypes(prev => 
-      prev.includes(value) ? prev.filter(type => type !== value) : [...prev, value]
-    )
-  }
-
-  const handleAmenityChange = (value: string) => {
-    setAmenities(prev => 
-      prev.includes(value) ? prev.filter(amenity => amenity !== value) : [...prev, value]
-    )
-  }
+  const [showSearchForm, setShowSearchForm] = useState(true)
+  const [searchCriteria, setSearchCriteria] = useState({
+    location: '',
+    maxPrice: 2000000,
+    minSize: 50,
+    propertyTypes: [] as string[],
+    rooms: '1',
+    bedrooms: '1',
+    bathrooms: '1',
+    amenities: [] as string[]
+  })
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Recherche de maisons avec les critères suivants :', { 
-      location, 
-      maxPrice, 
-      minSize, 
-      propertyTypes, 
-      rooms,
-      bathrooms,
-      amenities
-    })
+    setShowSearchForm(false)
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setSearchCriteria(prev => ({ ...prev, [name]: value }))
+  }
+
+  type SearchCriteria = {
+    location: string;
+    maxPrice: number;
+    minSize: number;
+    propertyTypes: string[];
+    rooms: string;
+    bedrooms: string;
+    bathrooms: string;
+    amenities: string[];
+  };
+
+  const handleMultiSelectChange = <K extends keyof SearchCriteria>(
+    name: K,
+    value: string
+  ) => {
+    setSearchCriteria(prev => ({
+      ...prev,
+      [name]: Array.isArray(prev[name])
+        ? prev[name].includes(value)
+          ? (prev[name] as string[]).filter((item) => item !== value)
+          : [...(prev[name] as string[]), value]
+        : prev[name],
+    }));
+  };
+
+  if (!showSearchForm) {
+    return <HouseExplorer initialCriteria={searchCriteria} />
   }
 
   return (
@@ -111,9 +77,6 @@ export default function Search_house() {
               </div>
               <span>Base de données immobilières étendue</span>
             </div>
-            <div className="flex items-center gap-3">
-              <span>Tous les types de propriétés disponibles</span>
-            </div>
           </div>
         </div>
 
@@ -122,77 +85,43 @@ export default function Search_house() {
             <label htmlFor="location" className="block text-sm font-medium text-gray-700">
               Localisation
             </label>
-            <div className="relative">
-              <input
-                id="location"
-                type="text"
-                placeholder="Entrez une ville ou un code postal"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
-              />
-              <Home className="absolute right-3 top-3.5 w-5 h-5 text-gray-400" />
-            </div>
+            <input
+              id="location"
+              name="location"
+              type="text"
+              placeholder="Entrez une ville ou un code postal"
+              value={searchCriteria.location}
+              onChange={handleInputChange}
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
+            />
           </div>
 
           <div className="space-y-4">
-            <label className="block text-sm font-medium text-gray-700">
-              Prix Maximum : {formatPrice(maxPrice)}
+            <label htmlFor="maxPrice" className="block text-sm font-medium text-gray-700">
+              Prix Maximum
             </label>
-            <div className="flex items-center gap-4">
-              <input
-                type="range"
-                min="0"
-                max="2000000"
-                step="10000"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(Number(e.target.value))}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-              />
-              <input
-                type="number"
-                min="0"
-                max="2000000"
-                value={maxPriceInput}
-                onChange={handleMaxPriceInputChange}
-                className="w-24 px-2 py-1 text-right rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
-              />
-            </div>
-            <div className="flex justify-between text-xs text-gray-500">
-              <span>{formatPrice(0)}</span>
-              <span>{formatPrice(1000000)}</span>
-              <span>{formatPrice(2000000)}</span>
-            </div>
+            <input
+              id="maxPrice"
+              name="maxPrice"
+              type="number"
+              value={searchCriteria.maxPrice}
+              onChange={handleInputChange}
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
+            />
           </div>
 
           <div className="space-y-4">
-            <label className="block text-sm font-medium text-gray-700">
-              Taille Minimum : {minSize} m²
+            <label htmlFor="minSize" className="block text-sm font-medium text-gray-700">
+              Taille Minimum (m²)
             </label>
-            <div className="flex items-center gap-4">
-              <input
-                type="range"
-                min="0"
-                max="500"
-                step="10"
-                value={minSize}
-                onChange={(e) => setMinSize(Number(e.target.value))}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-              />
-              <input
-                type="number"
-                min="0"
-                max="500"
-                value={minSizeInput}
-                onChange={handleMinSizeInputChange}
-                className="w-16 px-2 py-1 text-right rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
-              />
-            </div>
-            <div className="flex justify-between text-xs text-gray-500">
-              <span>0 m²</span>
-              <span>250 m²</span>
-              <span>500 m²</span>
-            </div>
+            <input
+              id="minSize"
+              name="minSize"
+              type="number"
+              value={searchCriteria.minSize}
+              onChange={handleInputChange}
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
+            />
           </div>
 
           <div className="space-y-4">
@@ -200,19 +129,18 @@ export default function Search_house() {
               Type de Propriété
             </label>
             <div className="grid grid-cols-2 gap-2">
-              {propertyTypeOptions.map((option) => (
+              {['apartment', 'house', 'condo', 'townhouse', 'land'].map((type) => (
                 <button
-                  key={option.value}
+                  key={type}
                   type="button"
-                  onClick={() => handlePropertyTypeChange(option.value)}
+                  onClick={() => handleMultiSelectChange('propertyTypes', type)}
                   className={`py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                    propertyTypes.includes(option.value)
+                    searchCriteria.propertyTypes.includes(type)
                       ? 'bg-violet-600 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
-                  aria-pressed={propertyTypes.includes(option.value)}
                 >
-                  {option.label}
+                  {type}
                 </button>
               ))}
             </div>
@@ -224,8 +152,9 @@ export default function Search_house() {
             </label>
             <select
               id="rooms"
-              value={rooms}
-              onChange={(e) => setRooms(e.target.value)}
+              name="rooms"
+              value={searchCriteria.rooms}
+              onChange={handleInputChange}
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
             >
               {[1, 2, 3, 4, 5, '6+'].map((num) => (
@@ -233,81 +162,6 @@ export default function Search_house() {
               ))}
             </select>
           </div>
-
-          <button
-            type="button"
-            onClick={() => setShowMoreCriteria(!showMoreCriteria)}
-            className="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors duration-200 flex items-center justify-center"
-          >
-            {showMoreCriteria ? (
-              <>
-                Moins de Critères <ChevronUp className="ml-2 w-4 h-4" />
-              </>
-            ) : (
-              <>
-                Plus de Critères <ChevronDown className="ml-2 w-4 h-4" />
-              </>
-            )}
-          </button>
-
-          {showMoreCriteria && (
-            <div className="space-y-6">
-              <div className="space-y-4">
-                <label htmlFor="bedrooms" className="block text-sm font-medium text-gray-700">
-                  Nombre de chambres minimum
-                </label>
-                <select
-                  id="bedrooms"
-                  value={bedrooms}
-                  onChange={(e) => setBedrooms(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
-                >
-                  {[1, 2, 3, 4, 5, '6+'].map((num) => (
-                    <option key={num} value={num.toString()}>{num} {num === 1 ? 'chambre' : 'chambres'}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-4">
-                <label htmlFor="bathrooms" className="block text-sm font-medium text-gray-700">
-                  Nombre de salles de bain minimum
-                </label>
-                <select
-                  id="bathrooms"
-                  value={bathrooms}
-                  onChange={(e) => setBathrooms(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
-                >
-                  {[1, 2, 3, 4, '5+'].map((num) => (
-                    <option key={num} value={num.toString()}>{num} {num === 1 ? 'salle de bain' : 'salles de bain'}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-4">
-                <label className="block text-sm font-medium text-gray-700">
-                  Commodités
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {amenityOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => handleAmenityChange(option.value)}
-                      className={`py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                        amenities.includes(option.value)
-                          ? 'bg-violet-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                      aria-pressed={amenities.includes(option.value)}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
 
           <button
             type="submit"
