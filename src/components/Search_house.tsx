@@ -19,7 +19,6 @@ export default function Search_house() {
   const propertyTypeOptions = [
     { value: 'apartment', label: 'Appartement' },
     { value: 'house', label: 'Maison' },
-    { value: 'condo', label: 'Condominium' },
     { value: 'townhouse', label: 'Maison de ville' },
     { value: 'land', label: 'Terrain' },
   ]
@@ -202,16 +201,19 @@ export default function Search_house() {
             </label>
             <div className="grid grid-cols-2 gap-2">
               {propertyTypeOptions.map((option) => (
-                <label key={option.value} className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    value={option.value}
-                    checked={propertyTypes.includes(option.value)}
-                    onChange={() => handlePropertyTypeChange(option.value)}
-                    className="rounded border-gray-300 text-violet-600 focus:ring-violet-500"
-                  />
-                  <span>{option.label}</span>
-                </label>
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => handlePropertyTypeChange(option.value)}
+                  className={`py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                    propertyTypes.includes(option.value)
+                      ? 'bg-violet-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                  aria-pressed={propertyTypes.includes(option.value)}
+                >
+                  {option.label}
+                </button>
               ))}
             </div>
           </div>
@@ -252,7 +254,7 @@ export default function Search_house() {
             <div className="space-y-6">
               <div className="space-y-4">
                 <label htmlFor="bedrooms" className="block text-sm font-medium text-gray-700">
-                  nombre de chambres minimum
+                  Nombre de chambres minimum
                 </label>
                 <select
                   id="bedrooms"
@@ -268,7 +270,7 @@ export default function Search_house() {
 
               <div className="space-y-4">
                 <label htmlFor="bathrooms" className="block text-sm font-medium text-gray-700">
-                  nombre de salles de bain minimum
+                  Nombre de salles de bain minimum
                 </label>
                 <select
                   id="bathrooms"
@@ -288,16 +290,19 @@ export default function Search_house() {
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {amenityOptions.map((option) => (
-                    <label key={option.value} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        value={option.value}
-                        checked={amenities.includes(option.value)}
-                        onChange={() => handleAmenityChange(option.value)}
-                        className="rounded border-gray-300 text-violet-600 focus:ring-violet-500"
-                      />
-                      <span>{option.label}</span>
-                    </label>
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => handleAmenityChange(option.value)}
+                      className={`py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                        amenities.includes(option.value)
+                          ? 'bg-violet-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                      aria-pressed={amenities.includes(option.value)}
+                    >
+                      {option.label}
+                    </button>
                   ))}
                 </div>
               </div>
@@ -315,5 +320,4 @@ export default function Search_house() {
     </div>
   )
 }
-
 
