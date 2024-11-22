@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Search, X } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 // Import house images
 import house1 from "../assets/house1.jpg"
@@ -333,12 +334,12 @@ export default function HouseExplorer({ initialCriteria }: HouseExplorerProps) {
           </div>
         )}
 
-        {filteredHouses.length === 0 ? (
+{filteredHouses.length === 0 ? (
           <p>Aucune propriété ne correspond à vos critères.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredHouses.map(house => (
-              <div key={house.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+              <Link to={`/house/${house.id}`} key={house.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
                 <img src={house.image} alt={house.title} className="w-full h-48 object-cover" />
                 <div className="p-4">
                   <h3 className="text-lg font-semibold mb-2">{house.title}</h3>
@@ -358,12 +359,12 @@ export default function HouseExplorer({ initialCriteria }: HouseExplorerProps) {
                     ))}
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
