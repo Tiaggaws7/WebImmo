@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, Home } from 'lucide-react'
+import { Search, Home, ChevronDown, ChevronUp } from 'lucide-react'
 import HouseExplorer from './HouseExplorer'
 
 export default function Search_house() {
+  const [showMoreCriteria, setShowMoreCriteria] = useState(false)
   const [showSearchForm, setShowSearchForm] = useState(true)
   const [searchCriteria, setSearchCriteria] = useState({
     location: '',
@@ -164,6 +165,79 @@ export default function Search_house() {
           </div>
 
           <button
+            type="button"
+            onClick={() => setShowMoreCriteria(!showMoreCriteria)}
+            className="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors duration-200 flex items-center justify-center"
+          >
+            {showMoreCriteria ? (
+              <>
+                Moins de Critères <ChevronUp className="ml-2 w-4 h-4" />
+              </>
+            ) : (
+              <>
+                Plus de Critères <ChevronDown className="ml-2 w-4 h-4" />
+              </>
+            )}
+          </button>
+          {showMoreCriteria && (
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <label htmlFor="bedrooms" className="block text-sm font-medium text-gray-700">
+                  Nombre de chambres minimum
+                </label>
+                <select
+                  id="bedrooms"
+                  name="bedrooms"
+                  value={searchCriteria.bedrooms}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
+                >
+                  {[1, 2, 3, 4, 5, '6+'].map((num) => (
+                    <option key={num} value={num.toString()}>{num} {num === 1 ? 'chambre' : 'chambres'}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-4">
+                <label htmlFor="bathrooms" className="block text-sm font-medium text-gray-700">
+                  Nombre de salles de bain minimum
+                </label>
+                <select
+                  id="bathrooms"
+                  name="bathrooms"
+                  value={searchCriteria.bathrooms}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
+                >
+                  {[1, 2, 3, 4, '5+'].map((num) => (
+                    <option key={num} value={num.toString()}>{num} {num === 1 ? 'salle de bain' : 'salles de bain'}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Commodités
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {['Piscine', 'Parking', 'Cave', 'Belle vue', 'Ascenseur'].map((type) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => handleMultiSelectChange('amenities', type)}
+                      className={`py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                        searchCriteria.amenities.includes(type)
+                          ? 'bg-violet-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <button
             type="submit"
             className="w-full bg-violet-600 text-white py-4 px-6 rounded-lg text-lg font-semibold hover:bg-violet-700 transition-colors duration-200"
           >
@@ -174,4 +248,3 @@ export default function Search_house() {
     </div>
   )
 }
-
