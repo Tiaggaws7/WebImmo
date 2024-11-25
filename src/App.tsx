@@ -7,6 +7,7 @@ import Search_house from './components/Search_house.tsx';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer.tsx';
 import HouseDetails from './components/HouseDetails.tsx';
+import WhoAmI from './components/WhoAmI.tsx';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/Vendre" element={<Selling_form />} />
           <Route path="/Acheter" element={<Search_house />} />
           <Route path="/house/:id" element={<HouseDetails />} />
+          <Route path="/NomPrenom" element={<WhoAmI />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Footer/>
