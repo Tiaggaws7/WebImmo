@@ -53,9 +53,6 @@ export default function Search_house() {
     }));
   };
 
-  if (!showSearchForm) {
-    return <HouseExplorer initialCriteria={searchCriteria} />
-  }
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 md:p-8">

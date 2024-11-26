@@ -24,17 +24,6 @@ interface House {
   image: string
 }
 
-interface SearchCriteria {
-  location: string,
-    maxPrice: number,
-    minSize: number,
-    propertyTypes: string[],
-    rooms: string,
-    bedrooms: string,
-    bathrooms: string,
-    amenities: string[],
-}
-
 export default function HouseExplorer() {
   const [houses, setHouses] = useState<House[]>([])
   const [filteredHouses, setFilteredHouses] = useState<House[]>([])
