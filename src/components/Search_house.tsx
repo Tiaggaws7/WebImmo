@@ -2,11 +2,9 @@
 
 import { useState } from 'react'
 import { Search, Home, ChevronDown, ChevronUp } from 'lucide-react'
-import HouseExplorer from './HouseExplorer'
 
 export default function Search_house() {
   const [showMoreCriteria, setShowMoreCriteria] = useState(false)
-  const [showSearchForm, setShowSearchForm] = useState(true)
   const [searchCriteria, setSearchCriteria] = useState({
     location: '',
     maxPrice: 2000000,
@@ -20,7 +18,6 @@ export default function Search_house() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    setShowSearchForm(false)
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
