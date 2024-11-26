@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, } from 'react'
 
 export default function Selling_form() {
   const [formData, setFormData] = useState({
@@ -10,14 +10,6 @@ export default function Selling_form() {
     availability: ''
   })
 
-  const [windowHeight, setWindowHeight] = useState(0)
-
-  useEffect(() => {
-    const handleResize = () => setWindowHeight(window.innerHeight)
-    handleResize()
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -37,7 +29,7 @@ export default function Selling_form() {
     <div className="min-h-screen bg-gradient-to-b from-blue-100 to-white p-4 flex items-center justify-center">
       <div 
         className="w-full max-w-5xl bg-white rounded-xl shadow-xl overflow-hidden flex flex-col lg:flex-row"
-        style={{ maxHeight: `${windowHeight - 32}px` }}
+        style={{ maxHeight: '95vh' }}
       >
         <div className="lg:w-2/5 p-6 bg-indigo-600 text-white flex flex-col justify-center">
           <h1 className="text-3xl font-bold mb-4">Vendez Votre Maison</h1>

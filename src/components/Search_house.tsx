@@ -130,7 +130,7 @@ export default function Search_house() {
               Type de Propriété
             </label>
             <div className="grid grid-cols-2 gap-2">
-              {['apartment', 'house', 'condo', 'townhouse', 'land'].map((type) => (
+              {['Appartement', 'Maison', 'Condo', 'Maison de ville', 'Terrain'].map((type) => (
                 <button
                   key={type}
                   type="button"

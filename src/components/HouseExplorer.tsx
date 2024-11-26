@@ -25,24 +25,29 @@ interface House {
 }
 
 interface SearchCriteria {
-  location: string
-  maxPrice: number
-  minSize: number
-  propertyTypes: string[]
-  rooms: string
-  bedrooms: string
-  bathrooms: string
-  amenities: string[]
+  location: string,
+    maxPrice: number,
+    minSize: number,
+    propertyTypes: string[],
+    rooms: string,
+    bedrooms: string,
+    bathrooms: string,
+    amenities: string[],
 }
 
-interface HouseExplorerProps {
-  initialCriteria: SearchCriteria
-}
-
-export default function HouseExplorer({ initialCriteria }: HouseExplorerProps) {
+export default function HouseExplorer() {
   const [houses, setHouses] = useState<House[]>([])
   const [filteredHouses, setFilteredHouses] = useState<House[]>([])
-  const [criteria, setCriteria] = useState(initialCriteria)
+  const [criteria, setCriteria] = useState<SearchCriteria>({
+    location: "",
+    maxPrice: 100000000,
+    minSize: 0,
+    propertyTypes: [],
+    rooms: '0',
+    bedrooms: '0',
+    bathrooms: '0',
+    amenities: [],
+  })
   const [showFilters, setShowFilters] = useState(false)
 
   useEffect(() => {
@@ -55,11 +60,11 @@ export default function HouseExplorer({ initialCriteria }: HouseExplorerProps) {
           title: "Appartement moderne au centre-ville",
           price: 350000,
           size: 75,
-          type: "apartment",
+          type: "appartement",
           rooms: 3,
           bedrooms: 2,
           bathrooms: 1,
-          amenities: ["parking", "elevator"],
+          amenities: ["parking", "ascenseur"],
           location: "Paris",
           image: house1
         },
@@ -68,11 +73,11 @@ export default function HouseExplorer({ initialCriteria }: HouseExplorerProps) {
           title: "Maison familiale avec jardin",
           price: 550000,
           size: 150,
-          type: "house",
+          type: "maison",
           rooms: 5,
           bedrooms: 3,
           bathrooms: 2,
-          amenities: ["pool", "parking"],
+          amenities: ["piscine", "parking"],
           location: "Lyon",
           image: house2
         },
@@ -81,7 +86,7 @@ export default function HouseExplorer({ initialCriteria }: HouseExplorerProps) {
           title: "Loft industriel rénové",
           price: 420000,
           size: 100,
-          type: "apartment",
+          type: "appartement",
           rooms: 2,
           bedrooms: 1,
           bathrooms: 1,
@@ -94,11 +99,11 @@ export default function HouseExplorer({ initialCriteria }: HouseExplorerProps) {
           title: "Appartement cosy proche des transports",
           price: 280000,
           size: 60,
-          type: "apartment",
+          type: "appartement",
           rooms: 2,
           bedrooms: 1,
           bathrooms: 1,
-          amenities: ["elevator"],
+          amenities: ["ascenseur"],
           location: "Bordeaux",
           image: house4
         },
@@ -107,11 +112,11 @@ export default function HouseExplorer({ initialCriteria }: HouseExplorerProps) {
           title: "Villa de luxe avec vue sur mer",
           price: 1500000,
           size: 300,
-          type: "house",
+          type: "maison",
           rooms: 8,
           bedrooms: 5,
           bathrooms: 4,
-          amenities: ["pool", "beautiful_view", "parking"],
+          amenities: ["piscine", "belle vue", "parking"],
           location: "Nice",
           image: houseGwada
         },
@@ -141,9 +146,14 @@ export default function HouseExplorer({ initialCriteria }: HouseExplorerProps) {
   }, [houses, criteria])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setCriteria(prev => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setCriteria(prev => ({
+      ...prev,
+      [name]: name === 'maxPrice' || name === 'minSize'
+        ? parseFloat(value)
+        : value,
+    }));
+  };  
 
   type SearchCriteria = {
     location: string;
@@ -171,26 +181,25 @@ export default function HouseExplorer({ initialCriteria }: HouseExplorerProps) {
   };
 
   const propertyTypeOptions = [
-    { value: 'apartment', label: 'Appartement' },
-    { value: 'house', label: 'Maison' },
-    { value: 'condo', label: 'Condominium' },
-    { value: 'townhouse', label: 'Maison de ville' },
-    { value: 'land', label: 'Terrain' },
+    { value: 'appartement', label: 'Appartement' },
+    { value: 'maison', label: 'Maison' },
+    { value: 'villa', label: 'Villa' },
+    { value: 'terrain', label: 'Terrain' },
   ]
 
   const amenityOptions = [
-    { value: 'pool', label: 'Piscine' },
+    { value: 'piscine', label: 'Piscine' },
     { value: 'parking', label: 'Parking' },
     { value: 'cave', label: 'Cave' },
-    { value: 'beautiful_view', label: 'Belle vue' },
-    { value: 'elevator', label: 'Ascenseur' },
+    { value: 'belle vue', label: 'Belle vue' },
+    { value: 'ascenseur', label: 'Ascenseur' },
   ]
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Résultats de la recherche</h2>
+          <h2 className="text-2xl font-bold">Disponible à la vente</h2>
           <button
             onClick={() => setShowFilters(!showFilters)}
             className="bg-violet-600 text-white py-2 px-4 rounded-lg text-sm font-semibold hover:bg-violet-700 transition-colors duration-200 flex items-center"

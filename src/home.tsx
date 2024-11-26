@@ -60,6 +60,17 @@ function Home() {
     emblaApi.on('select', onSelect)
   }, [emblaApi, onSelect])
 
+  // Auto-advance functionality
+  useEffect(() => {
+    if (!emblaApi) return
+
+    const autoScroll = setInterval(() => {
+      emblaApi.scrollNext()
+    }, 8000) // Change slide every 8 seconds
+
+    return () => clearInterval(autoScroll) // Cleanup interval on unmount
+  }, [emblaApi])
+
   const houses = [
     { id: 1, imageUrl: house1 },
     { id: 2, imageUrl: house2 },
