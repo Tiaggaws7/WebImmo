@@ -9,6 +9,8 @@ import Footer from './components/Footer.tsx';
 import HouseDetails from './components/HouseDetails.tsx';
 import WhoAmI from './components/WhoAmI.tsx';
 import HouseExplorer from './components/HouseExplorer.tsx';
+import { articles } from './data/articles.ts';
+import Blog from './components/Blog.tsx';
 
 function App() {
   return (
@@ -21,6 +23,7 @@ function App() {
           <Route path="/Acheter" element={<HouseExplorer />} />
           <Route path="/house/:id" element={<HouseDetails />} />
           <Route path="/NomPrenom" element={<WhoAmI />} />
+          <Route path="/Blog" element={<Blog articles={articles} />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Footer/>

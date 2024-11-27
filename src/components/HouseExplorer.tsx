@@ -139,7 +139,7 @@ export default function HouseExplorer() {
     setCriteria(prev => ({
       ...prev,
       [name]: name === 'maxPrice' || name === 'minSize'
-        ? parseFloat(value)
+        ? parseInt(value)
         : value,
     }));
   };  
