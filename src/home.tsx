@@ -66,7 +66,7 @@ function Home() {
 
     const autoScroll = setInterval(() => {
       emblaApi.scrollNext()
-    }, 8000) // Change slide every 8 seconds
+    }, 5000) // Change slide every 8 seconds
 
     return () => clearInterval(autoScroll) // Cleanup interval on unmount
   }, [emblaApi])

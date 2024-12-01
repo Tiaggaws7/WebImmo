@@ -15,10 +15,10 @@ interface BlogPageProps {
 }
 
 export default function ProfessionalClassicBlogPage({ articles }: BlogPageProps) {
-  const [selectedCategory, setSelectedCategory] = useState<string>('general')
+  const [selectedCategory, setSelectedCategory] = useState<string>('General')
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null)
 
-  const filteredArticles = selectedCategory === 'general'
+  const filteredArticles = selectedCategory === 'General'
     ? articles
     : articles.filter(article => article.category === selectedCategory)
 

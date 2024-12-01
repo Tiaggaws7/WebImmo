@@ -1,0 +1,27 @@
+catégorie acheter, fusionner maison et villa et rajouter local commercial 
+
+OK
+
+rajouter état de maison: rien, vendu et sous compromis
+
+OK
+
+design 3 pour banière
+design 1 pour à propos + image 
+design 3 mon expertise
+design 2 témoignage client
+design 3 contactez moi + numéro de téléphone dans form
+
+OK
+
+5 sec pour carousel 
+
+OK
+
+faire un vrai footer + pas d'adresse + pas de mail.
+
+OK
+
+faire bdd externe pour maison et blog
+
+

@@ -7,10 +7,10 @@ import Selling_form from './components/Selling_form';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer.tsx';
 import HouseDetails from './components/HouseDetails.tsx';
-import WhoAmI from './components/WhoAmI.tsx';
 import HouseExplorer from './components/HouseExplorer.tsx';
 import { articles } from './data/articles.ts';
 import Blog from './components/Blog.tsx';
+import RealWhoAmI from './components/RealWhoamI.tsx';
 
 function App() {
   return (
@@ -22,7 +22,7 @@ function App() {
           <Route path="/Vendre" element={<Selling_form />} />
           <Route path="/Acheter" element={<HouseExplorer />} />
           <Route path="/house/:id" element={<HouseDetails />} />
-          <Route path="/NomPrenom" element={<WhoAmI />} />
+          <Route path="/NomPrenom" element={<RealWhoAmI />} />
           <Route path="/Blog" element={<Blog articles={articles} />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

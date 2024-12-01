@@ -22,6 +22,7 @@ interface House {
   amenities: string[]
   location: string
   image: string
+  condition: 'vendu' | 'disponible' | 'sous compromis';
 }
 
 export default function HouseExplorer() {
@@ -55,7 +56,8 @@ export default function HouseExplorer() {
           bathrooms: 1,
           amenities: ["parking", "ascenseur"],
           location: "Paris",
-          image: house1
+          image: house1,
+          condition: 'vendu'
         },
         {
           id: 2,
@@ -68,20 +70,22 @@ export default function HouseExplorer() {
           bathrooms: 2,
           amenities: ["piscine", "parking"],
           location: "Lyon",
-          image: house2
+          image: house2,
+          condition: 'sous compromis'
         },
         {
           id: 3,
           title: "Loft industriel rénové",
           price: 420000,
           size: 100,
-          type: "appartement",
+          type: "local commercial",
           rooms: 2,
           bedrooms: 1,
           bathrooms: 1,
           amenities: ["parking"],
           location: "Marseille",
-          image: house3
+          image: house3,
+          condition: 'disponible'
         },
         {
           id: 4,
@@ -94,7 +98,8 @@ export default function HouseExplorer() {
           bathrooms: 1,
           amenities: ["ascenseur"],
           location: "Bordeaux",
-          image: house4
+          image: house4,
+          condition:"disponible"
         },
         {
           id: 5,
@@ -107,7 +112,8 @@ export default function HouseExplorer() {
           bathrooms: 4,
           amenities: ["piscine", "belle vue", "parking"],
           location: "Nice",
-          image: houseGwada
+          image: houseGwada,
+          condition:'disponible'
         },
       ]
 
@@ -169,10 +175,32 @@ export default function HouseExplorer() {
     }));
   };
 
+  const getConditionStyle = (condition: House['condition']) => {
+    switch (condition) {
+      case 'vendu':
+        return 'bg-red-500 text-white';
+      case 'sous compromis':
+        return 'bg-yellow-500 text-black';
+      default:
+        return 'bg-green-500 text-white';
+    }
+  };
+
+  const getConditionText = (condition: House['condition']) => {
+    switch (condition) {
+      case 'vendu':
+        return 'VENDU';
+      case 'sous compromis':
+        return 'SOUS COMPROMIS';
+      default:
+        return 'DISPONIBLE';
+    }
+  };
+
   const propertyTypeOptions = [
     { value: 'appartement', label: 'Appartement' },
     { value: 'maison', label: 'Maison' },
-    { value: 'villa', label: 'Villa' },
+    { value: 'local commercial', label: 'Local commercial' },
     { value: 'terrain', label: 'Terrain' },
   ]
 
@@ -337,27 +365,34 @@ export default function HouseExplorer() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredHouses.map(house => (
-              <Link to={`/house/${house.id}`} key={house.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+              <Link to={`/house/${house.id}`} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+              <div className="relative">
                 <img src={house.image} alt={house.title} className="w-full h-48 object-cover" />
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold mb-2">{house.title}</h3>
-                  <p className="text-gray-600 mb-2">{house.location}</p>
-                  <p className="text-violet-600 font-bold mb-2">{house.price.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</p>
-                  <div className="flex justify-between text-sm text-gray-500">
-                    <span>{house.size} m²</span>
-                    <span>{house.rooms} pièces</span>
-                    <span>{house.bedrooms} ch.</span>
-                    <span>{house.bathrooms} sdb.</span>
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {house.amenities.map(amenity => (
-                      <span key={amenity} className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
-                        {amenity}
-                      </span>
-                    ))}
-                  </div>
+              </div>
+              <div className="p-4">
+                <h3 className="text-lg font-semibold mb-2">{house.title}</h3>
+                <div className='flex justify-between'>
+                <p className="text-gray-600">{house.location}</p>
+                <div className={` m-1 px-2 py-1 rounded-full text-xs font-bold ${getConditionStyle(house.condition)}`}>
+                  {getConditionText(house.condition)}
                 </div>
-              </Link>
+                </div>
+                <p className="text-violet-600 font-bold mb-2">{house.price.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</p>
+                <div className="flex justify-between text-sm text-gray-500">
+                  <span>{house.size} m²</span>
+                  <span>{house.rooms} pièces</span>
+                  <span>{house.bedrooms} ch.</span>
+                  <span>{house.bathrooms} sdb.</span>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {house.amenities.map(amenity => (
+                    <span key={amenity} className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
+                      {amenity}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </Link>
             ))}
           </div>
         )}
