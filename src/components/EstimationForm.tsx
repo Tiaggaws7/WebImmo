@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { MapPin, Home, Building, Map, Store, CheckSquare, User, ChevronLeft, ChevronRight } from 'lucide-react'
+import { MapPin, Home, Building, Map, Store, CheckSquare, User, ChevronLeft, Lock, ArrowRight } from 'lucide-react'
 
 type FormData = {
   address: string
@@ -48,6 +48,8 @@ export default function ModernRealEstateForm() {
       phone: ''
     }
   })
+  const [showFinalMessage, setShowFinalMessage] = useState(false)
+  const [isStepValid, setIsStepValid] = useState(false)
 
   const updateFormData = (field: string, value: any) => {
     setFormData(prev => ({
@@ -76,11 +78,15 @@ export default function ModernRealEstateForm() {
   }
 
   const handleNext = () => {
-    setCurrentStep(prev => Math.min(prev + 1, 5))
+    if (isStepValid) {
+      setCurrentStep(prev => Math.min(prev + 1, 5))
+      setIsStepValid(false)
+    }
   }
 
   const handleBack = () => {
     setCurrentStep(prev => Math.max(prev - 1, 1))
+    setIsStepValid(false)
   }
 
   useEffect(() => {
@@ -88,7 +94,40 @@ export default function ModernRealEstateForm() {
     if (progressBar) {
       progressBar.style.width = `${(currentStep - 1) * 25}%`
     }
-  }, [currentStep])
+
+    // Validate current step
+    switch (currentStep) {
+      case 1:
+        setIsStepValid(formData.address.length > 0)
+        break
+      case 2:
+        setIsStepValid(formData.propertyType !== '')
+        break
+      case 3:
+        setIsStepValid(
+          formData.livingArea !== '' &&
+          formData.landArea !== '' &&
+          formData.floors !== '' &&
+          formData.rooms !== '' &&
+          formData.bedrooms !== ''
+        )
+        break
+      case 4:
+        setIsStepValid(formData.features.length > 0)
+        break
+      case 5:
+        setIsStepValid(
+          formData.contact.gender !== '' &&
+          formData.contact.firstName !== '' &&
+          formData.contact.lastName !== '' &&
+          formData.contact.email !== '' &&
+          formData.contact.phone !== ''
+        )
+        break
+      default:
+        setIsStepValid(false)
+    }
+  }, [currentStep, formData])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-6">
@@ -124,12 +163,13 @@ export default function ModernRealEstateForm() {
                   Où se situe votre bien ?
                 </h2>
                 <div className="space-y-4 fade-in">
-                  <label className="block text-lg font-medium text-gray-700">
+                  <label htmlFor="address" className="block text-lg font-medium text-gray-700">
                     Adresse du bien à estimer
                   </label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-3 h-6 w-6 text-gray-400" />
                     <input
+                      id="address"
                       type="text"
                       value={formData.address}
                       onChange={(e) => updateFormData('address', e.target.value)}
@@ -157,14 +197,14 @@ export default function ModernRealEstateForm() {
                     <button
                       key={type.id}
                       onClick={() => updateFormData('propertyType', type.id)}
-                      className={`flex flex-col items-center rounded-xl border-2 p-6 transition-all duration-300 hover:border-blue-500 ${
+                      className={`flex flex-col items-center justify-center p-6 rounded-xl border-2 transition-all duration-300 ${
                         formData.propertyType === type.id
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200'
+                          ? 'border-blue-500 bg-blue-50 text-blue-700'
+                          : 'border-gray-200 text-gray-600 hover:border-blue-300 hover:bg-blue-50'
                       }`}
                     >
-                      <type.icon className="mb-4 h-16 w-16 text-blue-500" />
-                      <span className="text-lg font-medium text-gray-700">{type.label}</span>
+                      <type.icon className="mb-4 h-16 w-16" />
+                      <span className="text-lg font-medium">{type.label}</span>
                     </button>
                   ))}
                 </div>
@@ -186,13 +226,15 @@ export default function ModernRealEstateForm() {
                     { id: 'bedrooms', label: 'Nombre de chambres' }
                   ].map((field) => (
                     <div key={field.id} className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700">
+                      <label htmlFor={field.id} className="block text-sm font-medium text-gray-700">
                         {field.label}
                       </label>
                       <div className="flex items-center">
                         <input
+                          id={field.id}
                           type="number"
-                          value={formData.contact[field.id as keyof typeof formData.contact] as string}                          onChange={(e) => updateFormData(field.id, e.target.value)}
+                          value={formData[field.id as keyof typeof formData] as string}
+                          onChange={(e) => updateFormData(field.id, e.target.value)}
                           className="w-full rounded-lg border-2 border-gray-200 bg-gray-50 px-4 py-2 text-gray-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all duration-300"
                         />
                         {field.unit && (
@@ -216,10 +258,10 @@ export default function ModernRealEstateForm() {
                     <button
                       key={feature}
                       onClick={() => toggleFeature(feature)}
-                      className={`flex items-center justify-center rounded-lg border-2 p-4 text-center transition-all duration-300 hover:bg-blue-50 ${
+                      className={`py-4 rounded-lg border-2 transition-all duration-300 ${
                         formData.features.includes(feature)
                           ? 'border-blue-500 bg-blue-100 text-blue-700'
-                          : 'border-gray-200 text-gray-600'
+                          : 'border-gray-200 text-gray-600 hover:border-blue-300 hover:bg-blue-50'
                       }`}
                     >
                       {feature}
@@ -246,7 +288,7 @@ export default function ModernRealEstateForm() {
                       <button
                         key={gender}
                         onClick={() => updateContactData('gender', gender)}
-                        className={`rounded-full px-6 py-2 text-lg transition-all duration-300 ${
+                        className={`px-6 py-2 rounded-full text-lg transition-all duration-300 ${
                           formData.contact.gender === gender
                             ? 'bg-blue-500 text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -273,10 +315,11 @@ export default function ModernRealEstateForm() {
                     }
                   ].map((field) => (
                     <div key={field.id} className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700">
+                      <label htmlFor={field.id} className="block text-sm font-medium text-gray-700">
                         {field.label}
                       </label>
                       <input
+                        id={field.id}
                         type={field.type || 'text'}
                         value={formData.contact[field.id as keyof typeof formData.contact]}
                         onChange={(e) => updateContactData(field.id, e.target.value)}
@@ -290,28 +333,44 @@ export default function ModernRealEstateForm() {
             )}
           </div>
 
-          {/* Navigation Buttons */}
-          <div className="mt-8 flex justify-between fade-in">
-            {currentStep > 1 && (
+          {showFinalMessage && (
+            <div className="mt-8 p-6 bg-green-50 border-2 border-green-500 rounded-xl text-center fade-in">
+              <h2 className="text-2xl font-bold text-green-700 mb-4">Merci pour votre demande d'estimation !</h2>
+              <p className="text-green-600">
+                Nous avons bien reçu vos informations. Notre expert immobilier va étudier votre dossier et vous contactera dans les 48 heures avec une estimation détaillée de votre bien.
+              </p>
+            </div>
+          )}
+
+          {!showFinalMessage && (
+            <div className="mt-8 flex justify-between fade-in">
+              {currentStep > 1 && (
+                <button
+                  onClick={handleBack}
+                  className="flex items-center px-6 py-2 rounded-lg bg-gray-100 text-gray-600 transition-all duration-300 hover:bg-gray-200"
+                >
+                  <ChevronLeft className="mr-2 h-5 w-5" />
+                  Retour
+                </button>
+              )}
               <button
-                onClick={handleBack}
-                className="flex items-center rounded-lg bg-gray-100 px-6 py-2 text-gray-600 transition-all duration-300 hover:bg-gray-200"
+                onClick={currentStep === 5 ? () => setShowFinalMessage(true) : handleNext}
+                disabled={!isStepValid}
+                className={`ml-auto flex items-center px-6 py-2 rounded-lg transition-all duration-300 ${
+                  isStepValid ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
               >
-                <ChevronLeft className="mr-2 h-5 w-5" />
-                Retour
+                {currentStep === 5 ? "Recevoir mon estimation" : 'Étape suivante'}
+                {isStepValid ? (
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                ) : (
+                  <Lock className="ml-2 h-5 w-5" />
+                )}
               </button>
-            )}
-            <button
-              onClick={currentStep === 5 ? () => console.log(formData) : handleNext}
-              className="ml-auto flex items-center rounded-lg bg-blue-500 px-6 py-2 text-white transition-all duration-300 hover:bg-blue-600"
-            >
-              {currentStep === 5 ? "Découvrir l'estimation" : 'Étape suivante'}
-              <ChevronRight className="ml-2 h-5 w-5" />
-            </button>
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
   )
 }
-

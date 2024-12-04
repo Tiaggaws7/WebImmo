@@ -9,7 +9,8 @@ export default function Selling_form() {
     project: '',
     availability: ''
   })
-
+  
+  const [isSubmitted, setIsSubmitted] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -22,8 +23,20 @@ export default function Selling_form() {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     console.log('Form submitted:', formData)
+    setIsSubmitted(true)
     // Here you would typically send the data to your backend
   }
+
+  const handleReset = () => {
+    setIsSubmitted(false)
+    setFormData({
+      name: '',
+      surname: '',
+      phone: '',
+      email: '',
+      project: '',
+      availability: ''
+    })}
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-100 to-white p-4 flex items-center justify-center">
@@ -49,7 +62,21 @@ export default function Selling_form() {
             </li>
           </ul>
         </div>
-        <form onSubmit={handleSubmit} className="lg:w-3/5 p-6 space-y-4 overflow-y-auto">
+
+        {isSubmitted ? (
+          <div className='w-2/4 mx-auto'>
+            <div className="flex flex-col items-center justify-center h-full">
+              <p className="text-xl text-center mb-6">Merci de votre confiance, nos experts reviennent vers vous d'ici 48 heures maximum</p>
+              <button
+                onClick={handleReset}
+                className="w-full max-w-md flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out"
+              >
+                Je veux obtenir une autre estimation
+              </button>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="lg:w-3/5 p-6 space-y-4 overflow-y-auto">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <label htmlFor="name" className="block text-base font-medium text-gray-700 mb-1">Prénom</label>
@@ -137,6 +164,9 @@ export default function Selling_form() {
             </button>
           </div>
         </form>
+        )}
+
+        
       </div>
     </div>
   )
