@@ -1,153 +1,169 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createClient } from 'contentful';
 
-// Article interface (typically this would be in a separate file, but including here for completeness)
-export interface Article {
-  id: number;
+interface Article {
+  id: string;
   title: string;
-  category: 'buyer' | 'seller' | 'investor' | 'general';
+  category: 'Acheteur' | 'Vendeur' | 'Investisseur' | 'General';
   excerpt: string;
   content: string;
+  author: string;
+  date: string;
 }
 
-// ArticleCard component
-interface ArticleCardProps {
-  article: Article;
-  onSelect: () => void;
-}
+const contentfulClient = createClient({
+  //space: process.env.CONTENTFUL_SPACE_ID || '',
+  //accessToken: process.env.CONTENTFUL_ACCESS_TOKEN || '',
+  space: 'f8o96tcr15ua',
+  accessToken: 'sfKm-P76FTvWmeJPJyrYo-5Bi0d1ksYt_9RF9BtcE7Y',
+});
 
-const ArticleCard: React.FC<ArticleCardProps> = ({ article, onSelect }) => {
-  return (
-    <div className="bg-white shadow-md rounded-lg overflow-hidden">
-      <div className="p-6">
-        <h2 className="text-xl font-semibold mb-2">{article.title}</h2>
-        <p className="text-gray-600 mb-4">{article.excerpt}</p>
-        <button
-          onClick={onSelect}
-          className="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-        >
-          Read More
-        </button>
-      </div>
-    </div>
-  );
-};
+export default function ProfessionalClassicBlogPage() {
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('General');
+  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
-// ArticleList component
-interface ArticleListProps {
-  articles: Article[];
-  onArticleSelect: (article: Article) => void;
-}
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        const response = await contentfulClient.getEntries({
+          content_type: 'blogPost', // Replace with your content model ID
+          select: ['fields.title', 'fields.category', 'fields.excerpt', 'fields.content', 'fields.author', 'fields.date'],
+        });
 
-const ArticleList: React.FC<ArticleListProps> = ({ articles, onArticleSelect }) => {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {articles.map((article) => (
-        <ArticleCard
-          key={article.id}
-          article={article}
-          onSelect={() => onArticleSelect(article)}
-        />
-      ))}
-    </div>
-  );
-};
+        const fetchedArticles = response.items.map((item: any) => ({
+          id: item.sys.id,
+          title: item.fields.title,
+          category: item.fields.category,
+          excerpt: item.fields.excerpt,
+          content: item.fields.content,
+          author: item.fields.author,
+          date: item.fields.date,
+        }));
 
-// FullArticle component
-interface FullArticleProps {
-  article: Article;
-  onBack: () => void;
-}
+        setArticles(fetchedArticles);
+      } catch (error) {
+        console.error('Error fetching articles:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-const FullArticle: React.FC<FullArticleProps> = ({ article, onBack }) => {
-  return (
-    <div className="max-w-3xl mx-auto">
-      <h1 className="text-3xl font-bold mb-4">{article.title}</h1>
-      <p className="text-gray-600 mb-8">{article.excerpt}</p>
-      <div className="prose max-w-none mb-8">
-        {article.content}
-      </div>
-      <button
-        onClick={onBack}
-        className="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-      >
-        Back to All Articles
-      </button>
-    </div>
-  );
-};
+    fetchArticles();
+  }, []);
 
-// CategorySelector component
-interface CategorySelectorProps {
-  selectedCategory: string;
-  onCategoryChange: (category: string) => void;
-}
+  const filteredArticles = selectedCategory === 'General'
+    ? articles
+    : articles.filter((article) => article.category === selectedCategory);
 
-const CategorySelector: React.FC<CategorySelectorProps> = ({ selectedCategory, onCategoryChange }) => {
-  const categories = ['general', 'buyer', 'seller', 'investor'];
+  const categories = ['General', 'Acheteur', 'Vendeur', 'Investisseur'];
 
-  return (
-    <div className="flex space-x-4">
+  const CategorySelector = () => (
+    <div className="flex flex-col space-y-2">
       {categories.map((category) => (
         <button
           key={category}
-          className={`px-4 py-2 rounded ${
+          className={`text-left py-2 px-4 rounded transition-colors ${
             selectedCategory === category
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+              ? 'bg-blue-100 text-blue-800 font-semibold'
+              : 'text-gray-600 hover:bg-gray-100'
           }`}
-          onClick={() => onCategoryChange(category)}
+          onClick={() => {
+            setSelectedCategory(category);
+            setSelectedArticle(null);
+          }}
         >
           {category.charAt(0).toUpperCase() + category.slice(1)}
         </button>
       ))}
     </div>
   );
-};
 
-// Main BlogPage component
-interface BlogPageProps {
-  articles: Article[];
-}
-
-const Blog: React.FC<BlogPageProps> = ({ articles }) => {
-  const [selectedCategory, setSelectedCategory] = useState<string>('general');
-  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
-
-  const filteredArticles = selectedCategory === 'general'
-    ? articles
-    : articles.filter(article => article.category === selectedCategory);
-
-  const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category);
-    setSelectedArticle(null);
-  };
-
-  const handleArticleSelect = (article: Article) => {
-    setSelectedArticle(article);
-  };
-
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Real Estate Blog</h1>
-      <div className="mb-6">
-        <CategorySelector
-          selectedCategory={selectedCategory}
-          onCategoryChange={handleCategoryChange}
-        />
+  const ArticleCard = ({ article }: { article: Article }) => (
+    <article className="bg-white border border-gray-200 rounded-lg p-6 transition-shadow duration-300 hover:shadow-md">
+      <h2 className="text-2xl font-serif font-semibold mb-2">
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            setSelectedArticle(article);
+          }}
+          className="text-gray-800 hover:text-blue-600 transition-colors"
+        >
+          {article.title}
+        </a>
+      </h2>
+      <p className="text-gray-600 mb-4">{article.excerpt}</p>
+      <div className="flex justify-between items-center text-sm">
+        <span className="text-gray-500">
+          Par {article.author} | {article.date}
+        </span>
+        <button
+          onClick={() => setSelectedArticle(article)}
+          className="text-blue-600 hover:text-blue-800 transition-colors font-semibold"
+        >
+          Lire la suite →
+        </button>
       </div>
-      {selectedArticle ? (
-        <FullArticle
-          article={selectedArticle}
-          onBack={() => setSelectedArticle(null)}
-        />
-      ) : (
-        <ArticleList
-          articles={filteredArticles}
-          onArticleSelect={handleArticleSelect}
-        />
-      )}
+    </article>
+  );
+
+  const ArticleList = () => (
+    <div className="space-y-6">
+      {filteredArticles.map((article) => (
+        <ArticleCard key={article.id} article={article} />
+      ))}
     </div>
   );
-};
 
-export default Blog;
+  const FullArticle = ({ article }: { article: Article }) => (
+    <article className="bg-white border border-gray-200 rounded-lg p-8">
+      <h1 className="text-4xl font-serif font-bold mb-4 text-gray-800">{article.title}</h1>
+      <div className="text-sm text-gray-500 mb-6">
+        <span>Par {article.author}</span>
+        <span className="mx-2">|</span>
+        <span>{article.date}</span>
+      </div>
+      <p className="text-xl text-gray-600 mb-8">{article.excerpt}</p>
+      <div className="prose max-w-none mb-8">{article.content}</div>
+      <button
+        onClick={() => setSelectedArticle(null)}
+        className="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+      >
+        ← Retour à tous les articles
+      </button>
+    </article>
+  );
+
+  return (
+    <div className="bg-gray-100">
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <h1 className="text-5xl font-serif font-bold mb-12 text-center text-gray-800">
+          Le Blog d'Investimmo
+        </h1>
+        {loading ? (
+          <p className="text-center text-gray-600">Chargement des articles...</p>
+        ) : (
+          <div className="flex flex-col lg:flex-row gap-8">
+            <aside className="lg:w-1/4">
+              <div className="sticky top-8">
+                <h2 className="text-2xl font-serif font-semibold mb-4 text-gray-800">
+                  Catégories
+                </h2>
+                <CategorySelector />
+              </div>
+            </aside>
+            <main className="lg:w-3/4">
+              {selectedArticle ? (
+                <FullArticle article={selectedArticle} />
+              ) : (
+                <ArticleList />
+              )}
+            </main>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
