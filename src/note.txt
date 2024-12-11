@@ -24,7 +24,3 @@ OK
 
 faire bdd externe pour maison et blog
 
-token sfKm-P76FTvWmeJPJyrYo-5Bi0d1ksYt_9RF9BtcE7Y
-space f8o96tcr15ua
-getentry 1FtD1waOKoobGDfxtnfJLy
-
