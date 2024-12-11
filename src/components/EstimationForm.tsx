@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { MapPin, Home, Building, Map, Store, CheckSquare, User, ChevronLeft, Lock, ArrowRight } from 'lucide-react'
+import emailjs from 'emailjs-com';
 
 type FormData = {
   address: string
@@ -88,6 +89,45 @@ export default function ModernRealEstateForm() {
     setCurrentStep(prev => Math.max(prev - 1, 1))
     setIsStepValid(false)
   }
+
+  const handleSubmit = async () => {
+    if (!isStepValid) return;
+
+    // Prepare email data
+    const templateParams = {
+      address: formData.address,
+      propertyType: formData.propertyType,
+      livingArea: formData.livingArea,
+      landArea: formData.landArea,
+      floors: formData.floors,
+      rooms: formData.rooms,
+      bedrooms: formData.bedrooms,
+      features: formData.features.join(', '),
+      contactGender: formData.contact.gender,
+      contactFirstName: formData.contact.firstName,
+      contactLastName: formData.contact.lastName,
+      contactEmail: formData.contact.email,
+      contactPhone: formData.contact.phone,
+    };
+    
+
+    const serviceID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+    const templateID = import.meta.env.VITE_EMAILJS_ESTIMATION_TEMPLATE_ID;
+    const userID = import.meta.env.VITE_EMAILJS_USER_ID;
+
+    try {
+      emailjs.init(userID);
+      await emailjs.send(
+        serviceID,
+        templateID,
+        templateParams
+      );
+      setShowFinalMessage(true);
+    } catch (error) {
+      console.error('Error sending email:', error);
+      // Handle error appropriately, e.g., display an error message to the user.
+    }
+  };
 
   useEffect(() => {
     const progressBar = document.querySelector('.progress-bar') as HTMLElement
@@ -254,7 +294,7 @@ export default function ModernRealEstateForm() {
                   Caractéristiques spécifiques
                 </h2>
                 <div className="grid grid-cols-2 gap-4 fade-in">
-                  {['Terrasse', 'Parking', 'Garage', 'Piscine'].map((feature) => (
+                  {['Terrasse', 'Parking', 'Garage', 'Piscine', 'Aucun'].map((feature) => (
                     <button
                       key={feature}
                       onClick={() => toggleFeature(feature)}
@@ -354,7 +394,7 @@ export default function ModernRealEstateForm() {
                 </button>
               )}
               <button
-                onClick={currentStep === 5 ? () => setShowFinalMessage(true) : handleNext}
+                onClick={currentStep === 5 ? handleSubmit : handleNext}
                 disabled={!isStepValid}
                 className={`ml-auto flex items-center px-6 py-2 rounded-lg transition-all duration-300 ${
                   isStepValid ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-300 text-gray-500 cursor-not-allowed'

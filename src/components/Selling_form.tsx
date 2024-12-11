@@ -1,4 +1,5 @@
 import React, { useState, } from 'react'
+import emailjs from 'emailjs-com';
 
 export default function Selling_form() {
   const [formData, setFormData] = useState({
@@ -22,9 +23,22 @@ export default function Selling_form() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    console.log('Form submitted:', formData)
-    setIsSubmitted(true)
-    // Here you would typically send the data to your backend
+
+    const serviceID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+    const templateID = import.meta.env.VITE_EMAILJS_VENDRE_TEMPLATE_ID;
+    const userID = import.meta.env.VITE_EMAILJS_USER_ID;
+  
+    emailjs
+      .send(serviceID, templateID, formData, userID)
+      .then(
+        (result) => {
+          console.log('Email sent successfully:', result.text);
+          setIsSubmitted(true);
+        },
+        (error) => {
+          console.error('Failed to send email:', error.text);
+        }
+      );
   }
 
   const handleReset = () => {
