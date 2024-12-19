@@ -59,6 +59,9 @@ const NavLinks = () => (
       <span className="hidden md:inline">+33 7 89 98 56 32</span>
       <Phone className="inline-block ml-2 h-4 w-4 md:hidden" />
     </a>
+    <Link to="/Gestion" className="block text-black hover:text-gray-700">
+      mon compte
+    </Link>
     <Link
       to="/Estimation"
       className="block bg-black text-white px-4 py-2 rounded-lg font-bold hover:bg-gray-800 transition-colors text-center"

@@ -2,12 +2,7 @@ import { useState, useEffect } from 'react'
 import { Search, X } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-// Import house images
-import house1 from "../assets/house1.jpg"
-import house2 from "../assets/house2.jpg"
-import house3 from "../assets/house3.jpg"
-import house4 from "../assets/house4.jpg"
-import houseGwada from "../assets/houseGwada.jpg"
+import { houses as houseData } from '../data/house'
 
 
 interface House {
@@ -41,87 +36,11 @@ export default function HouseExplorer() {
   const [showFilters, setShowFilters] = useState(false)
 
   useEffect(() => {
-    // Simulating an API call to fetch houses
-    const fetchHouses = async () => {
-      // In a real application, you would fetch this data from an API
-      const mockHouses: House[] = [
-        {
-          id: 1,
-          title: "Appartement moderne au centre-ville",
-          price: 350000,
-          size: 75,
-          type: "appartement",
-          rooms: 3,
-          bedrooms: 2,
-          bathrooms: 1,
-          amenities: ["parking", "ascenseur"],
-          location: "Paris",
-          image: house1,
-          condition: 'vendu'
-        },
-        {
-          id: 2,
-          title: "Maison familiale avec jardin",
-          price: 550000,
-          size: 150,
-          type: "maison",
-          rooms: 5,
-          bedrooms: 3,
-          bathrooms: 2,
-          amenities: ["piscine", "parking"],
-          location: "Lyon",
-          image: house2,
-          condition: 'sous compromis'
-        },
-        {
-          id: 3,
-          title: "Loft industriel rénové",
-          price: 420000,
-          size: 100,
-          type: "local commercial",
-          rooms: 2,
-          bedrooms: 1,
-          bathrooms: 1,
-          amenities: ["parking"],
-          location: "Marseille",
-          image: house3,
-          condition: 'disponible'
-        },
-        {
-          id: 4,
-          title: "Appartement cosy proche des transports",
-          price: 280000,
-          size: 60,
-          type: "appartement",
-          rooms: 2,
-          bedrooms: 1,
-          bathrooms: 1,
-          amenities: ["ascenseur"],
-          location: "Bordeaux",
-          image: house4,
-          condition:"disponible"
-        },
-        {
-          id: 5,
-          title: "Villa de luxe avec vue sur mer",
-          price: 1500000,
-          size: 300,
-          type: "maison",
-          rooms: 8,
-          bedrooms: 5,
-          bathrooms: 4,
-          amenities: ["piscine", "belle vue", "parking"],
-          location: "Nice",
-          image: houseGwada,
-          condition:'disponible'
-        },
-      ]
+
+      const mockHouses: House[] = houseData
 
       setHouses(mockHouses)
-    }
-
-    fetchHouses()
-  }, [])
+    })
 
   useEffect(() => {
     const filtered = houses.filter(house => {

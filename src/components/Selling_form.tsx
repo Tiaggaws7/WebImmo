@@ -53,7 +53,7 @@ export default function Selling_form() {
     })}
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-100 to-white p-4 flex items-center justify-center">
+    <div className="min-h-screen bg-gray-100 p-4 flex items-center justify-center">
       <div 
         className="w-full max-w-5xl bg-white rounded-xl shadow-xl overflow-hidden flex flex-col lg:flex-row"
         style={{ maxHeight: '95vh' }}

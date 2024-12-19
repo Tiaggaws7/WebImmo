@@ -24,3 +24,4 @@ OK
 
 faire bdd externe pour maison et blog
 
+Filtre problème.

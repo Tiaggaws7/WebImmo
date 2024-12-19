@@ -11,6 +11,7 @@ import HouseExplorer from './components/HouseExplorer.tsx';
 import Blog from './components/Blog.tsx';
 import RealWhoAmI from './components/RealWhoamI.tsx';
 import EstimationForm from './components/EstimationForm.tsx';
+import AdminPanel from './components/adminPanel.tsx';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path="/NomPrenom" element={<RealWhoAmI />} />
           <Route path="/Blog" element={<Blog/>} />
           <Route path="/Estimation" element={<EstimationForm />} />
+          <Route path="/Gestion" element={<AdminPanel />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Footer/>
