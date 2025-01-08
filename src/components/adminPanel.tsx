@@ -1,59 +1,184 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PlusIcon, PencilIcon, TrashIcon, LogOutIcon } from 'lucide-react';
-
-import {houses as houseData} from '../data/house'
+import {
+  collection,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+} from 'firebase/firestore';
+import { db } from '../firebase-config';
 
 interface House {
-    id: number
-    title: string
-    price: number
-    size: number
-    type: string
-    rooms: number
-    bedrooms: number
-    bathrooms: number
-    amenities: string[]
-    location: string
-    image: string
-    condition: 'vendu' | 'disponible' | 'sous compromis';
-  }
-
-
-const initialHouses: House[] = houseData
+  id: string;
+  title: string;
+  price: string;
+  size: string;
+  type: string;
+  rooms: string;
+  bedrooms: string;
+  bathrooms: string;
+  amenities: string[];
+  location: string;
+  image: string;
+  description: string;
+  condition: 'vendu' | 'disponible' | 'sous compromis';
+}
 
 const AdminPanel: React.FC = () => {
-  const [houses, setHouses] = useState<House[]>(initialHouses);
+  const [houses, setHouses] = useState<House[]>([]);
   const [editingHouse, setEditingHouse] = useState<House | null>(null);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-
   const [newHouse, setNewHouse] = useState<Omit<House, 'id'>>({
     title: '',
-    price: 0,
-    size: 0,
+    price: '0',
+    size: '0',
     type: '',
-    rooms: 0,
-    bedrooms: 0,
-    bathrooms: 0,
+    rooms: '0',
+    bedrooms: '0',
+    bathrooms: '0',
     amenities: [],
     location: '',
     image: '',
-    condition: 'disponible'
+    description:'',
+    condition: 'disponible',
   });
+  const [tempAmenitiesInput, setTempAmenitiesInput] = React.useState<string>(''); // Temporary input state
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  // Fetch houses from Firestore
+  useEffect(() => {
+    const fetchHouses = async () => {
+      try {
+        const houseCollection = collection(db, 'houses');
+        const houseSnapshot = await getDocs(houseCollection);
+        const houseList: House[] = houseSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...(doc.data() as Omit<House, 'id'>),
+        }));
+        setHouses(houseList);
+      } catch (error) {
+        console.error('Error fetching houses:', error);
+      }
+    };
+
+    fetchHouses();
+  }, []);
+
+  useEffect(() => {
+    if (editingHouse) {
+      setTempAmenitiesInput(editingHouse.amenities.join(', '));
+    } else {
+      setTempAmenitiesInput(newHouse.amenities.join(', '));
+    }
+  }, [editingHouse, newHouse]);
+
+  // Add a house to Firestore
+  const addHouseToFirestore = async (house: Omit<House, 'id'>) => {
+    try {
+      const houseCollection = collection(db, 'houses');
+      const docRef = await addDoc(houseCollection, house);
+      setHouses([...houses, { ...house, id: docRef.id }]);
+    } catch (error) {
+      console.error('Error adding house:', error);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      const file = e.target.files[0];
+      console.log("File selected for upload:", file);
+  
+      if (!file.type.startsWith("image/")) {
+        alert("Please upload a valid image file.");
+        return;
+      }
+  
+      try {
+        // Convert file to Base64 string
+        const base64String = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+  
+          // Log events for debugging
+          reader.onloadstart = () => console.log("FileReader started reading the file.");
+          reader.onloadend = () => console.log("FileReader finished reading the file.");
+          reader.onload = () => {
+            console.log("FileReader result (Base64):", reader.result);
+            if (reader.result) {
+              resolve(reader.result as string); // Base64 string
+            } else {
+              reject("Reader result is null");
+            }
+          };
+          reader.onerror = (err) => {
+            console.error("Error during FileReader operation:", err);
+            reject(err);
+          };
+          reader.onabort = () => {
+            console.error("FileReader operation was aborted.");
+            reject("FileReader operation aborted");
+          };
+  
+          try {
+            console.log("Starting to read file as data URL...");
+            reader.readAsDataURL(file); // Start Base64 conversion
+          } catch (error) {
+            console.error("Failed to start FileReader:", error);
+            reject(error);
+          }
+        });
+  
+        console.log("Generated Base64 string:", base64String);
+  
+        // Update the state with only the Base64 string
+        const updateState = (prev: any) => ({
+          ...prev,
+          image: base64String, // Only Base64 string
+        });
+  
+        console.log("Updating state with Base64 string...");
+        editingHouse
+          ? setEditingHouse((prev) => (prev ? updateState(prev) : null))
+          : setNewHouse(updateState);
+  
+        // Reset the file input
+        console.log("Resetting file input field...");
+        e.target.value = "";
+      } catch (error) {
+        console.error("Error uploading image:", error);
+      }
+    } else {
+      console.warn("No file was selected.");
+    }
+  };  
+  
+  
+  // Handle input changes
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     if (editingHouse) {
-      setEditingHouse({ ...editingHouse, [name]: value });
+      setEditingHouse({ ...editingHouse, [name]: value } as House);
     } else {
       setNewHouse({ ...newHouse, [name]: value });
     }
   };
 
+  // Handle amenities change
   const handleAmenitiesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const amenities = e.target.value.split(',').map(item => item.trim());
+    setTempAmenitiesInput(e.target.value); // Update raw input value
+  };
+  
+  const handleAmenitiesBlur = () => {
+    const amenities = tempAmenitiesInput
+      .split(',')
+      .map((item) => item.trim())
+      .filter((item) => item); // Remove empty strings
+  
     if (editingHouse) {
       setEditingHouse({ ...editingHouse, amenities });
     } else {
@@ -61,53 +186,87 @@ const AdminPanel: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingHouse) {
-      setHouses(houses.map(house => house.id === editingHouse.id ? editingHouse : house));
-      setEditingHouse(null);
-    } else {
-      const id = Math.max(...houses.map(house => house.id), 0) + 1;
-      setHouses([...houses, { ...newHouse, id }]);
+  
+    console.log('Submitting form with:', newHouse, editingHouse);
+  
+    try {
+      // Ensure the image URL is available before proceeding
+      if (!newHouse.image && !editingHouse?.image) {
+        alert('Please upload an image before submitting the form.');
+        return;
+      }
+  
+      if (editingHouse) {
+        // Update an existing house
+        const houseDoc = doc(db, 'houses', editingHouse.id);
+        await updateDoc(houseDoc, {
+          ...editingHouse,
+        });
+        setHouses(
+          houses.map((house) =>
+            house.id === editingHouse.id ? editingHouse : house
+          )
+        );
+        setEditingHouse(null);
+      } else {
+        // Add a new house
+        await addHouseToFirestore(newHouse);
+      }
+  
+      // Reset form visibility and state
+      setIsFormVisible(false);
       setNewHouse({
         title: '',
-        price: 0,
-        size: 0,
+        price: '0',
+        size: '0',
         type: '',
-        rooms: 0,
-        bedrooms: 0,
-        bathrooms: 0,
+        rooms: '0',
+        bedrooms: '0',
+        bathrooms: '0',
         amenities: [],
         location: '',
         image: '',
-        condition: 'disponible'
+        description:'',
+        condition: 'disponible',
       });
+    } catch (error) {
+      console.error('Error submitting house:', error);
     }
-    setIsFormVisible(false);
   };
 
+  // Edit house
   const handleEdit = (house: House) => {
     setEditingHouse(house);
     setIsFormVisible(true);
   };
 
-  const handleDelete = (id: number) => {
-    setHouses(houses.filter(house => house.id !== id));
+  // Delete house
+  const handleDelete = async (id: string) => {
+    try {
+      const houseDoc = doc(db, 'houses', id);
+      await deleteDoc(houseDoc);
+      setHouses(houses.filter((house) => house.id !== id));
+    } catch (error) {
+      console.error('Error deleting house:', error);
+    }
   };
 
   const handleCancel = () => {
     setEditingHouse(null);
     setNewHouse({
       title: '',
-      price: 0,
-      size: 0,
+      price: '0',
+      size: '0',
       type: '',
-      rooms: 0,
-      bedrooms: 0,
-      bathrooms: 0,
+      rooms: '0',
+      bedrooms: '0',
+      bathrooms: '0',
       amenities: [],
       location: '',
       image: '',
+      description:'',
       condition: 'disponible'
     });
     setIsFormVisible(false);
@@ -135,34 +294,34 @@ const AdminPanel: React.FC = () => {
         <div className="max-w-md w-full space-y-8">
           <div>
             <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-              Sign in to Admin Panel
+              Interface d'administration
             </h2>
           </div>
           <form className="mt-8 space-y-6" onSubmit={handleLogin}>
             <input type="hidden" name="remember" value="true" />
             <div className="rounded-md shadow-sm -space-y-px">
               <div>
-                <label htmlFor="username" className="sr-only">Username</label>
+                <label htmlFor="username" className="sr-only">Identifiant</label>
                 <input
                   id="username"
                   name="username"
                   type="text"
                   required
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="Username"
+                  placeholder="Identifiant"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                 />
               </div>
               <div>
-                <label htmlFor="password" className="sr-only">Password</label>
+                <label htmlFor="password" className="sr-only">Mot de passe</label>
                 <input
                   id="password"
                   name="password"
                   type="password"
                   required
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="Password"
+                  placeholder="Mot de passe"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -174,7 +333,7 @@ const AdminPanel: React.FC = () => {
                 type="submit"
                 className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                Sign in
+                Valider
               </button>
             </div>
           </form>
@@ -187,13 +346,13 @@ const AdminPanel: React.FC = () => {
     <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Panel - House Management</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Interface d'administration - Management des biens</h1>
           <button
             onClick={handleLogout}
             className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 flex items-center"
           >
             <LogOutIcon className="w-5 h-5 mr-2" />
-            Logout
+            Se déconnecter
           </button>
         </div>
         
@@ -203,7 +362,7 @@ const AdminPanel: React.FC = () => {
             className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center"
           >
             <PlusIcon className="w-5 h-5 mr-2" />
-            Add New House
+            Ajouter un nouveau bien
           </button>
         </div>
 
@@ -212,7 +371,7 @@ const AdminPanel: React.FC = () => {
             <h2 className="text-2xl font-semibold mb-6">{editingHouse ? 'Edit House' : 'Add New House'}</h2>
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">Titre</label>
                 <input
                   type="text"
                   id="title"
@@ -224,7 +383,7 @@ const AdminPanel: React.FC = () => {
                 />
               </div>
               <div>
-                <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">Prix</label>
                 <input
                   type="number"
                   id="price"
@@ -236,7 +395,7 @@ const AdminPanel: React.FC = () => {
                 />
               </div>
               <div>
-                <label htmlFor="size" className="block text-sm font-medium text-gray-700 mb-1">Size</label>
+                <label htmlFor="size" className="block text-sm font-medium text-gray-700 mb-1">Taille</label>
                 <input
                   type="number"
                   id="size"
@@ -260,7 +419,7 @@ const AdminPanel: React.FC = () => {
                 />
               </div>
               <div>
-                <label htmlFor="rooms" className="block text-sm font-medium text-gray-700 mb-1">Rooms</label>
+                <label htmlFor="rooms" className="block text-sm font-medium text-gray-700 mb-1">Pièces</label>
                 <input
                   type="number"
                   id="rooms"
@@ -272,7 +431,7 @@ const AdminPanel: React.FC = () => {
                 />
               </div>
               <div>
-                <label htmlFor="bedrooms" className="block text-sm font-medium text-gray-700 mb-1">Bedrooms</label>
+                <label htmlFor="bedrooms" className="block text-sm font-medium text-gray-700 mb-1">Chambres</label>
                 <input
                   type="number"
                   id="bedrooms"
@@ -284,7 +443,7 @@ const AdminPanel: React.FC = () => {
                 />
               </div>
               <div>
-                <label htmlFor="bathrooms" className="block text-sm font-medium text-gray-700 mb-1">Bathrooms</label>
+                <label htmlFor="bathrooms" className="block text-sm font-medium text-gray-700 mb-1">Salle de bains</label>
                 <input
                   type="number"
                   id="bathrooms"
@@ -296,18 +455,22 @@ const AdminPanel: React.FC = () => {
                 />
               </div>
               <div>
-                <label htmlFor="amenities" className="block text-sm font-medium text-gray-700 mb-1">Amenities (comma-separated)</label>
+                <label htmlFor="amenities" className="block text-sm font-medium text-gray-700 mb-1">
+                  Commodités (séparées par une virgule)
+                </label>
                 <input
                   type="text"
                   id="amenities"
                   name="amenities"
-                  value={editingHouse ? editingHouse.amenities.join(', ') : newHouse.amenities.join(', ')}
-                  onChange={handleAmenitiesChange}
+                  value={tempAmenitiesInput} // Use the temporary input state
+                  onChange={handleAmenitiesChange} // Update temp state
+                  onBlur={handleAmenitiesBlur} // Process into amenities array on blur
+                  placeholder="Entrez les commodités séparées par des virgules"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <div>
-                <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">Localisation</label>
                 <input
                   type="text"
                   id="location"
@@ -319,19 +482,27 @@ const AdminPanel: React.FC = () => {
                 />
               </div>
               <div>
-                <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-                <input
-                  type="text"
-                  id="image"
-                  name="image"
-                  value={editingHouse ? editingHouse.image : newHouse.image}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-1">
+                Image
+              </label>
+              <input
+                type="file"
+                id="image"
+                name="image"
+                onChange={handleImageUpload}
+                accept="image/*"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+              {newHouse.image && (
+                <img
+                  src={newHouse.image}
+                  alt="Uploaded preview"
+                  className="mt-4 h-32 w-32 object-cover rounded-md"
                 />
-              </div>
+              )}
+            </div>
               <div>
-                <label htmlFor="condition" className="block text-sm font-medium text-gray-700 mb-1">Condition</label>
+                <label htmlFor="condition" className="block text-sm font-medium text-gray-700 mb-1">État</label>
                 <select
                   id="condition"
                   name="condition"
@@ -340,12 +511,23 @@ const AdminPanel: React.FC = () => {
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="">Select condition</option>
+                  <option value="">Selectionnez une condition</option>
                   <option value="vendu">Vendu</option>
                   <option value="disponible">Disponible</option>
                   <option value="sous compromis">sous compromis</option>
 
                 </select>
+              </div>
+              <div className="md:col-span-2">
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={editingHouse ? editingHouse.description : newHouse.description}
+                  onChange={handleInputChange}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                ></textarea>
               </div>
               <div className="md:col-span-2 flex justify-end space-x-4">
                 <button
@@ -371,10 +553,10 @@ const AdminPanel: React.FC = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Condition</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Titre</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prix</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Localisation</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">État</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
@@ -383,7 +565,18 @@ const AdminPanel: React.FC = () => {
                 <tr key={house.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{house.id}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{house.title}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{house.price.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{(() => {
+                      const cleanPrice = house.price.replace(/[^0-9.-]+/g, ''); // Remove non-numeric characters
+                      const numericPrice = Number(cleanPrice); // Convert to a number
+                      return !isNaN(numericPrice)
+                        ? numericPrice.toLocaleString('fr-FR', {
+                            style: 'currency',
+                            currency: 'EUR',
+                            minimumFractionDigits: 0, // No centimes
+                            maximumFractionDigits: 0, // No centimes
+                          })
+                        : 'Invalid price';
+                    })()}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{house.location}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -402,14 +595,14 @@ const AdminPanel: React.FC = () => {
                       className="text-blue-600 hover:text-blue-900 mr-3"
                     >
                       <PencilIcon className="h-5 w-5" />
-                      <span className="sr-only">Edit</span>
+                      <span className="sr-only">Modifier</span>
                     </button>
                     <button
                       onClick={() => handleDelete(house.id)}
                       className="text-red-600 hover:text-red-900"
                     >
                       <TrashIcon className="h-5 w-5" />
-                      <span className="sr-only">Delete</span>
+                      <span className="sr-only">Supprimer</span>
                     </button>
                   </td>
                 </tr>
@@ -423,4 +616,3 @@ const AdminPanel: React.FC = () => {
 };
 
 export default AdminPanel;
-

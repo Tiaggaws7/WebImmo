@@ -2,24 +2,24 @@ import { useState, useEffect } from 'react'
 import { Search, X } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-import { houses as houseData } from '../data/house'
-
+import {collection, getDocs } from 'firebase/firestore';
+import { db } from '../firebase-config';
 
 interface House {
-  id: number
-  title: string
-  price: number
-  size: number
-  type: string
-  rooms: number
-  bedrooms: number
-  bathrooms: number
-  amenities: string[]
-  location: string
-  image: string
+  id: string;
+  title: string;
+  price: string;
+  size: string;
+  type: string;
+  rooms: string;
+  bedrooms: string;
+  bathrooms: string;
+  amenities: string[];
+  location: string;
+  image: string;
+  description: string;
   condition: 'vendu' | 'disponible' | 'sous compromis';
 }
-
 export default function HouseExplorer() {
   const [houses, setHouses] = useState<House[]>([])
   const [filteredHouses, setFilteredHouses] = useState<House[]>([])
@@ -36,38 +36,50 @@ export default function HouseExplorer() {
   const [showFilters, setShowFilters] = useState(false)
 
   useEffect(() => {
+    // Fetch data from Firestore
+    const fetchHouses = async () => {
+      const houseCollection = collection(db, 'houses');
+      const houseSnapshot = await getDocs(houseCollection);
+      const houseList = houseSnapshot.docs.map((doc) => {
+        const data = doc.data() as House; // Ensure `data` matches the `House` type
+        return {
+          ...data, // Spread `data` first
+          id: doc.id, // Overwrite `id` to ensure it comes from Firestore document ID
+        };
+      });
 
-      const mockHouses: House[] = houseData
+      setHouses(houseList);
+    };
 
-      setHouses(mockHouses)
-    })
+    fetchHouses();
+  }, []);
 
   useEffect(() => {
-    const filtered = houses.filter(house => {
+    const filtered = houses.filter((house) => {
       return (
-        house.price <= criteria.maxPrice &&
-        house.size >= criteria.minSize &&
+        parseInt(house.price) <= criteria.maxPrice &&
+        parseInt(house.size) >= criteria.minSize &&
         (criteria.propertyTypes.length === 0 || criteria.propertyTypes.includes(house.type)) &&
-        house.rooms >= parseInt(criteria.rooms) &&
-        house.bedrooms >= parseInt(criteria.bedrooms) &&
-        house.bathrooms >= parseInt(criteria.bathrooms) &&
-        (criteria.amenities.length === 0 || criteria.amenities.every(amenity => house.amenities.includes(amenity))) &&
+        parseInt(house.rooms) >= parseInt(criteria.rooms) &&
+        parseInt(house.bedrooms) >= parseInt(criteria.bedrooms) &&
+        parseInt(house.bathrooms) >= parseInt(criteria.bathrooms) &&
+        (criteria.amenities.length === 0 || criteria.amenities.every((amenity) => house.amenities.includes(amenity))) &&
         (criteria.location === '' || house.location.toLowerCase().includes(criteria.location.toLowerCase()))
-      )
-    })
+      );
+    });
 
-    setFilteredHouses(filtered)
-  }, [houses, criteria])
+    setFilteredHouses(filtered);
+  }, [houses, criteria]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setCriteria(prev => ({
+    setCriteria((prev) => ({
       ...prev,
       [name]: name === 'maxPrice' || name === 'minSize'
         ? parseInt(value)
         : value,
     }));
-  };  
+  };
 
   type SearchCriteria = {
     location: string;
@@ -84,7 +96,7 @@ export default function HouseExplorer() {
     name: K,
     value: string
   ) => {
-    setCriteria(prev => ({
+    setCriteria((prev) => ({
       ...prev,
       [name]: Array.isArray(prev[name])
         ? prev[name].includes(value)
@@ -283,40 +295,59 @@ export default function HouseExplorer() {
           <p>Aucune propriété ne correspond à vos critères.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredHouses.map(house => (
-              <Link to={`/house/${house.id}`} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-              <div className="relative">
-                <img src={house.image} alt={house.title} className="w-full h-48 object-cover" />
-              </div>
-              <div className="p-4">
-                <h3 className="text-lg font-semibold mb-2">{house.title}</h3>
-                <div className='flex justify-between'>
-                <p className="text-gray-600">{house.location}</p>
-                <div className={` m-1 px-2 py-1 rounded-full text-xs font-bold ${getConditionStyle(house.condition)}`}>
-                  {getConditionText(house.condition)}
+            {filteredHouses.map((house) => (
+              <Link
+                to={`/house/${house.id}`}
+                key={house.id}
+                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+              >
+                <div className="relative">
+                  <img src={house.image} alt={house.title} className="w-full h-48 object-cover" />
                 </div>
+                <div className="p-4">
+                  <h3 className="text-lg font-semibold mb-2">{house.title}</h3>
+                  <div className="flex justify-between">
+                    <p className="text-gray-600">{house.location}</p>
+                    <div
+                      className={`m-1 px-2 py-1 rounded-full text-xs font-bold ${getConditionStyle(house.condition)}`}
+                    >
+                      {getConditionText(house.condition)}
+                    </div>
+                  </div>
+                  <p className="text-violet-600 font-bold mb-2">
+                    {(() => {
+                      const cleanPrice = house.price.replace(/[^0-9.-]+/g, ''); // Remove non-numeric characters
+                      const numericPrice = Number(cleanPrice); // Convert to a number
+                      return !isNaN(numericPrice)
+                        ? numericPrice.toLocaleString('fr-FR', {
+                            style: 'currency',
+                            currency: 'EUR',
+                            minimumFractionDigits: 0, // No centimes
+                            maximumFractionDigits: 0, // No centimes
+                          })
+                        : 'Invalid price';
+                    })()}
+                  </p>
+                  <div className="flex justify-between text-sm text-gray-500">
+                    <span>{house.size} m²</span>
+                    <span>{house.rooms} pièces</span>
+                    <span>{house.bedrooms} ch.</span>
+                    <span>{house.bathrooms} sdb.</span>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {house.amenities.map((amenity) => (
+                      <span key={amenity} className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
+                        {amenity}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <p className="text-violet-600 font-bold mb-2">{house.price.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</p>
-                <div className="flex justify-between text-sm text-gray-500">
-                  <span>{house.size} m²</span>
-                  <span>{house.rooms} pièces</span>
-                  <span>{house.bedrooms} ch.</span>
-                  <span>{house.bathrooms} sdb.</span>
-                </div>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {house.amenities.map(amenity => (
-                    <span key={amenity} className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
-                      {amenity}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </Link>
+              </Link>
             ))}
           </div>
         )}
       </div>
     </div>
   );
-};
+}
 
