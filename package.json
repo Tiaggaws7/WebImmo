@@ -2,6 +2,7 @@
   "name": "investimmo",
   "private": true,
   "version": "0.0.0",
+  "homepage": "https://elisebuilimmobilierguadeloupe.com",
   "type": "module",
   "scripts": {
     "dev": "vite",

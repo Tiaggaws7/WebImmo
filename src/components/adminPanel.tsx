@@ -8,7 +8,8 @@ import {
   deleteDoc,
   doc,
 } from 'firebase/firestore';
-import { db } from '../firebase-config';
+import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
+import { db, auth } from '../firebase-config';
 
 interface House {
   id: string;
@@ -30,9 +31,10 @@ const AdminPanel: React.FC = () => {
   const [houses, setHouses] = useState<House[]>([]);
   const [editingHouse, setEditingHouse] = useState<House | null>(null);
   const [isFormVisible, setIsFormVisible] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [user, setUser] = useState<any>(null); // Stocke l'utilisateur Firebase
+  const [error, setError] = useState('');
   const [newHouse, setNewHouse] = useState<Omit<House, 'id'>>({
     title: '',
     price: '0',
@@ -272,23 +274,41 @@ const AdminPanel: React.FC = () => {
     setIsFormVisible(false);
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real application, you would validate credentials against a backend
-    if (username === 'admin' && password === 'password') {
-      setIsAuthenticated(true);
-    } else {
-      alert('Invalid credentials');
+
+    try {
+      await signInWithEmailAndPassword(auth, username, password);
+      alert("Bienvenue !");
+       // Navigate to the admin dashboard
+    } catch (err: any) {
+      setError("Problème d'email ou de mot de passe. Veuillez réessayer.");
     }
   };
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setUsername('');
-    setPassword('');
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      console.log("Déconnexion réussie");
+    } catch (err: any) {
+      console.error("Erreur lors de la déconnexion :", err.message);
+    }
   };
 
-  if (!isAuthenticated) {
+  // Vérifie l'état de connexion lors du chargement de l'application
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser(user); // Stocke l'utilisateur connecté
+      } else {
+        setUser(null); // Réinitialise si déconnecté
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  if (!user) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
@@ -337,6 +357,7 @@ const AdminPanel: React.FC = () => {
               </button>
             </div>
           </form>
+          {error && <p style={{ color: "red" }}>{error}</p>}
         </div>
       </div>
     );
