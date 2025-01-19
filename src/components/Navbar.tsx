@@ -15,7 +15,7 @@ const Navbar = () => {
         <div className="flex justify-between items-center">
           {/* Logo */}
           <div className="font-bold text-lg">
-            <Link to="/">investimmo</Link>
+            <Link to="/">Votre solution clé en main !</Link>
           </div>
 
           {/* Mobile menu button */}
@@ -49,14 +49,14 @@ const NavLinks = () => (
       Acheter
     </Link>
     <Link to="/Blog" className="block text-black hover:text-gray-700">
-      Nos guides
+      Actualités
     </Link>
     <Link to="/NomPrenom" className="block text-black hover:text-gray-700">
-      Nom Prenom
+      Elise BUIL
     </Link>
-    <a href="tel:+33789985632" className="block text-black hover:text-gray-700">
+    <a href="tel:+590690590565" className="block text-black hover:text-gray-700">
       <span className="md:hidden">Appeler</span>
-      <span className="hidden md:inline">+33 7 89 98 56 32</span>
+      <span className="hidden md:inline">+590 690 590 565</span>
       <Phone className="inline-block ml-2 h-4 w-4 md:hidden" />
     </a>
     <Link to="/Gestion" className="block text-black hover:text-gray-700">

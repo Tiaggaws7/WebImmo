@@ -59,8 +59,8 @@ export default function Selling_form() {
         style={{ maxHeight: '95vh' }}
       >
         <div className="lg:w-2/5 p-6 bg-indigo-600 text-white flex flex-col justify-center">
-          <h1 className="text-3xl font-bold mb-4">Vendez Votre Maison</h1>
-          <p className="text-lg mb-6">Obtenez une estimation gratuite dès aujourd'hui et laissez nos experts vous aider à maximiser la valeur de votre bien.</p>
+          <h1 className="text-3xl font-bold mb-4">Vendez Votre Bien</h1>
+          <p className="text-lg mb-6">Obtenez une estimation gratuite dès aujourd'hui</p>
           <ul className="space-y-3 text-base">
             <li className="flex items-center">
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
@@ -72,7 +72,7 @@ export default function Selling_form() {
             </li>
             <li className="flex items-center">
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-              Support dédié tout au long du processus
+              Accompagnement commercial, administratif et juridique
             </li>
           </ul>
         </div>
@@ -150,6 +150,7 @@ export default function Selling_form() {
             <textarea
               id="project"
               name="project"
+              required
               rows={3}
               value={formData.project}
               onChange={handleChange}
@@ -162,6 +163,7 @@ export default function Selling_form() {
             <textarea
               id="availability"
               name="availability"
+              required
               rows={3}
               value={formData.availability}
               onChange={handleChange}

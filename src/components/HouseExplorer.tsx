@@ -20,6 +20,7 @@ interface House {
   description: string;
   condition: 'vendu' | 'disponible' | 'sous compromis';
 }
+
 export default function HouseExplorer() {
   const [houses, setHouses] = useState<House[]>([])
   const [filteredHouses, setFilteredHouses] = useState<House[]>([])
@@ -32,6 +33,7 @@ export default function HouseExplorer() {
     bedrooms: '0',
     bathrooms: '0',
     amenities: [],
+    condition: 'all',
   })
   const [showFilters, setShowFilters] = useState(false)
 
@@ -57,6 +59,7 @@ export default function HouseExplorer() {
   useEffect(() => {
     const filtered = houses.filter((house) => {
       return (
+        (criteria.condition === 'all' || house.condition === criteria.condition) &&
         parseInt(house.price) <= criteria.maxPrice &&
         parseInt(house.size) >= criteria.minSize &&
         (criteria.propertyTypes.length === 0 || criteria.propertyTypes.includes(house.type)) &&
@@ -90,6 +93,7 @@ export default function HouseExplorer() {
     bedrooms: string;
     bathrooms: string;
     amenities: string[];
+    condition: House['condition'] | 'all';
   };
 
   const handleMultiSelectChange = <K extends keyof SearchCriteria>(
@@ -143,6 +147,8 @@ export default function HouseExplorer() {
     { value: 'ascenseur', label: 'Ascenseur' },
   ]
 
+  const conditions = ['all', 'disponible', 'sous compromis', 'vendu'] as const;
+
   return (
     <div className="min-h-screen bg-gray-100 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
@@ -156,6 +162,23 @@ export default function HouseExplorer() {
             {showFilters ? 'Fermer les filtres' : 'Afficher les filtres'}
           </button>
         </div>
+
+        <div className="flex justify-center space-x-4 mb-6">
+            {conditions.map((condition) => (
+            <button
+              key={condition}
+              onClick={() => setCriteria(prev => ({ ...prev, condition }))}
+              className={`py-2 px-4 rounded-lg text-sm font-semibold transition-colors duration-200 ${
+                criteria.condition === condition
+                  ? 'bg-violet-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              {condition === 'all' ? 'Tous' : condition.charAt(0).toUpperCase() + condition.slice(1)}
+            </button>
+          ))}
+        </div>
+
 
         {showFilters && (
           <div className="bg-white p-6 rounded-lg shadow-md mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

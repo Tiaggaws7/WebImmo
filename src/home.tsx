@@ -2,11 +2,33 @@ import { useState, useEffect, useCallback } from 'react'
 import useEmblaCarousel from 'embla-carousel-react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
-// Import house images
-import house1 from './assets/house1.jpg'
-import house2 from './assets/house2.jpg'
-import house3 from './assets/house3.jpg'
-import house4 from './assets/house4.jpg'
+import {collection, getDocs } from 'firebase/firestore';
+import { db } from './firebase-config';
+
+import profilePicture from './assets/profile_picture.jpg'
+
+// Interface pour les données Firebase
+interface House {
+  id: string;
+  title: string;
+  price: string;
+  size: string;
+  type: string;
+  rooms: string;
+  bedrooms: string;
+  bathrooms: string;
+  amenities: string[];
+  location: string;
+  image: string;
+  description: string;
+  condition: 'vendu' | 'disponible' | 'sous compromis';
+}
+
+// Interface pour le tableau transformé
+interface SimpleHouse {
+  id: string;
+  imageUrl: string;
+} 
 
 function Button({ 
   children, 
@@ -44,6 +66,7 @@ function Home() {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true })
   const [prevBtnEnabled, setPrevBtnEnabled] = useState(false)
   const [nextBtnEnabled, setNextBtnEnabled] = useState(false)
+  const [houses, setHouses] = useState<SimpleHouse[]>([]);
 
   const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi])
   const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi])
@@ -53,6 +76,26 @@ function Home() {
     setPrevBtnEnabled(emblaApi.canScrollPrev())
     setNextBtnEnabled(emblaApi.canScrollNext())
   }, [emblaApi])
+
+  useEffect(() => {
+    const fetchHouses = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'houses')); // 'houses' est le nom de votre collection
+        const data: SimpleHouse[] = querySnapshot.docs.map((doc) => {
+          const house = doc.data() as House; // Cast en type House
+          return {
+            id: house.id, // Crée un ID numérique basé sur l'index (optionnel si déjà unique)
+            imageUrl: house.image, // Utilise le champ `image` pour `imageUrl`
+          };
+        });
+        setHouses(data);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des données :', error);
+      }
+    };
+
+    fetchHouses();
+  }, []);
 
   useEffect(() => {
     if (!emblaApi) return
@@ -71,16 +114,49 @@ function Home() {
     return () => clearInterval(autoScroll) // Cleanup interval on unmount
   }, [emblaApi])
 
-  const houses = [
-    { id: 1, imageUrl: house1 },
-    { id: 2, imageUrl: house2 },
-    { id: 3, imageUrl: house3 },
-    { id: 4, imageUrl: house4 },
-  ]
-
+  
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-grow">
+        <section className="py-16 px-4 md:px-8 max-w-5xl mx-auto">
+          <h2 className="text-3xl font-bold mb-8 text-center">À propos de moi</h2>
+          <div className="flex flex-col md:flex-row items-center gap-8">
+            <img
+              src={profilePicture}
+              alt="Elise BUIL"
+              className="w-64 h-64 rounded-full object-cover"
+            />
+            <div>
+              <p className="text-lg mb-4">
+              Bien plus qu'un métier, une véritable passion!
+              </p>
+              <p className="text-lg mb-4">
+              Riche d’une forte expérience dans le secteur de l’immobilier, je mets mon expertise à votre service pour vous accompagner dans toutes vos démarches liées à la vente de votre bien. Je mets un point d’honneur à développer une véritable relation basée sur l’écoute et le respect de vos besoins.  
+              </p>
+              <p className="text-lg mb-4">
+              Issue d'une formation juridique en droit immobilier, je vous propose un accompagnement spécialisé dans la concrétisation de vos projets immobiliers, notamment en proposant la rédaction du compromis de vente en collaboration avec votre notaire , vous faisant ainsi bénéficier d'un temps précieux.
+              </p>
+              <p className="text-lg mb-4">
+              Mon service de vente immobilière se distingue par une approche unique alliant expertise juridique et authentique relation d’échanges.
+              </p>
+              <p className="text-lg mb-4">
+              N'hésitez pas à prendre contact avec moi pour échanger sur vos projets, je me ferai un plaisir de pouvoir répondre à vos questions.
+              <br/> Ensemble, construisons une relation solide et fiable pour mener à bien votre vente immobilière en toute sécurité!              </p>
+              <p className="text-lg">
+              Au plaisir de vous rencontrer, 
+              </p>
+              <div className="mt-12">
+                <a 
+                  href="/NomPrenom" 
+                  className="mx-auto inline-block bg-blue-600 text-white text-lg font-medium py-3 px-8 rounded-lg shadow hover:bg-blue-700 transition duration-300"
+                >
+                  Contactez-moi dès aujourd'hui
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+        
         <section className="bg-white">
           <div className="relative">
             <div className="embla overflow-hidden" ref={emblaRef}>
@@ -117,49 +193,15 @@ function Home() {
           </div>
         </section>
 
-        <section className="bg-gray-100 py-12">
-          <div className="container mx-auto px-4 text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Trouvez votre maison de rêve</h1>
-            <p className="text-xl mb-8">Découvrez une large gamme de propriétés avec investimmo</p>
-            <Button size="lg">Voir toutes les propriétés</Button>
-          </div>
-        </section>
-
-        <section className="py-16 bg-white">
-          <div className="container mx-auto px-6 text-center">
-            <h2 className="text-4xl font-bold mb-6">Pourquoi choisir investimmo ?</h2>
-            <p className="text-lg md:text-xl mb-12 text-gray-700">
-              Chez investimmo, nous ne faisons pas que trouver une propriété, nous trouvons <strong>votre</strong> propriété. Découvrez pourquoi nous sommes le choix préféré de nos clients exigeants.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-              <div className="bg-gray-50 p-6 rounded-lg shadow-lg">
-                <h3 className="text-2xl font-semibold mb-4">Des Agents Passionnés et Expérimentés</h3>
-                <p className="text-gray-600">
-                  Nos agents immobiliers sont plus que des experts, ce sont des passionnés dédiés à vous guider dans chaque étape de votre projet immobilier, avec des conseils personnalisés et une connaissance approfondie du marché.
-                </p>
-              </div>
-              <div className="bg-gray-50 p-6 rounded-lg shadow-lg">
-                <h3 className="text-2xl font-semibold mb-4">Accès à des Propriétés Exclusives</h3>
-                <p className="text-gray-600">
-                  Explorez notre sélection de biens d'exception, incluant des annonces exclusives introuvables sur d'autres plateformes. Accédez au meilleur du marché immobilier avec nous.
-                </p>
-              </div>
-              <div className="bg-gray-50 p-6 rounded-lg shadow-lg">
-                <h3 className="text-2xl font-semibold mb-4">Un Accompagnement sur Mesure</h3>
-                <p className="text-gray-600">
-                  Chez investimmo, chaque client est unique. Nous adaptons nos services pour répondre précisément à vos attentes, avec un suivi personnalisé et une attention constante à vos besoins.
-                </p>
-              </div>
-            </div>
-            <div className="mt-12">
-              <a 
-                href="/contact" 
-                className="inline-block bg-blue-600 text-white text-lg font-medium py-3 px-8 rounded-lg shadow hover:bg-blue-700 transition duration-300"
-              >
-                Contactez-nous dès aujourd'hui
-              </a>
-            </div>
-          </div>
+        <section className='my-12 flex justify-center'>
+        <div className="">
+          <a 
+            href="/Acheter" 
+            className="mx-auto inline-block bg-blue-600 text-white text-lg font-medium py-3 px-8 rounded-lg shadow hover:bg-blue-700 transition duration-300"
+          >
+          Voir tous nos biens disponibles
+          </a>
+        </div>
         </section>
       </main>
     </div>
