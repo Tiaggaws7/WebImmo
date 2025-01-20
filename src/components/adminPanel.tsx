@@ -35,7 +35,8 @@ const AdminPanel: React.FC = () => {
   const [password, setPassword] = useState('');
   const [user, setUser] = useState<any>(null); // Stocke l'utilisateur Firebase
   const [error, setError] = useState('');
-  const [newHouse, setNewHouse] = useState<Omit<House, 'id'>>({
+  const [newHouse, setNewHouse] = useState<House>({
+    id:'',
     title: '',
     price: '0',
     size: '0',
@@ -58,8 +59,8 @@ const AdminPanel: React.FC = () => {
         const houseCollection = collection(db, 'houses');
         const houseSnapshot = await getDocs(houseCollection);
         const houseList: House[] = houseSnapshot.docs.map((doc) => ({
+          ...(doc.data() as House),
           id: doc.id,
-          ...(doc.data() as Omit<House, 'id'>),
         }));
         setHouses(houseList);
       } catch (error) {
@@ -79,10 +80,11 @@ const AdminPanel: React.FC = () => {
   }, [editingHouse, newHouse]);
 
   // Add a house to Firestore
-  const addHouseToFirestore = async (house: Omit<House, 'id'>) => {
+  const addHouseToFirestore = async (house: House) => {
     try {
       const houseCollection = collection(db, 'houses');
       const docRef = await addDoc(houseCollection, house);
+
       setHouses([...houses, { ...house, id: docRef.id }]);
     } catch (error) {
       console.error('Error adding house:', error);
@@ -214,12 +216,16 @@ const AdminPanel: React.FC = () => {
         setEditingHouse(null);
       } else {
         // Add a new house
-        await addHouseToFirestore(newHouse);
+        const customId = crypto.randomUUID(); // Generate a unique ID for the new house
+        const houseWithId = { ...newHouse, id: customId };
+
+        await addHouseToFirestore(houseWithId);
       }
   
       // Reset form visibility and state
       setIsFormVisible(false);
       setNewHouse({
+        id:'',
         title: '',
         price: '0',
         size: '0',
@@ -258,6 +264,7 @@ const AdminPanel: React.FC = () => {
   const handleCancel = () => {
     setEditingHouse(null);
     setNewHouse({
+      id:'',
       title: '',
       price: '0',
       size: '0',

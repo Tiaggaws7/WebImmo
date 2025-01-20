@@ -5,6 +5,11 @@ import { Link } from 'react-router-dom'
 import {collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase-config';
 
+
+import { getAuth } from "firebase/auth";
+const auth = getAuth();
+console.log("Current user:", auth.currentUser);
+
 interface House {
   id: string;
   title: string;
@@ -33,7 +38,7 @@ export default function HouseExplorer() {
     bedrooms: '0',
     bathrooms: '0',
     amenities: [],
-    condition: 'all',
+    condition: 'disponible',
   })
   const [showFilters, setShowFilters] = useState(false)
 
