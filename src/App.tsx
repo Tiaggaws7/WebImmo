@@ -1,10 +1,10 @@
 import './App.css';
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, /*useLocation*/ } from 'react-router-dom';
 import Home from './home.tsx';
 import NotFound from './NotFound.tsx';
 import Selling_form from './components/Selling_form';
 import Navbar from './components/Navbar';
-import Footer from './components/Footer.tsx';
+//import Footer from './components/Footer.tsx';
 import HouseDetails from './components/HouseDetails.tsx';
 import HouseExplorer from './components/HouseExplorer.tsx';
 import Blog from './components/Blog.tsx';
