@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react'
 import useEmblaCarousel from 'embla-carousel-react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
+import { Link } from 'react-router-dom'
+
 import {collection, getDocs } from 'firebase/firestore';
 import { db } from './firebase-config';
 
@@ -146,12 +148,9 @@ function Home() {
               Au plaisir de vous rencontrer, 
               </p>
               <div className="mt-12">
-                <a 
-                  href="/NomPrenom" 
-                  className="mx-auto inline-block bg-blue-600 text-white text-lg font-medium py-3 px-8 rounded-lg shadow hover:bg-blue-700 transition duration-300"
-                >
-                  Contactez-moi dès aujourd'hui
-                </a>
+                <Link to="/EliseBUIL" className="mx-auto inline-block bg-blue-600 text-white text-lg font-medium py-3 px-8 rounded-lg shadow hover:bg-blue-700 transition duration-300">
+                  Contactez-moi dès aujourd'hui 
+                </Link>
               </div>
             </div>
           </div>
@@ -195,12 +194,9 @@ function Home() {
 
         <section className='my-12 flex justify-center'>
         <div className="">
-          <a 
-            href="/Acheter" 
-            className="mx-auto inline-block bg-blue-600 text-white text-lg font-medium py-3 px-8 rounded-lg shadow hover:bg-blue-700 transition duration-300"
-          >
-          Voir tous nos biens disponibles
-          </a>
+          <Link to="/Acheter" className="mx-auto inline-block bg-blue-600 text-white text-lg font-medium py-3 px-8 rounded-lg shadow hover:bg-blue-700 transition duration-300">
+            Contactez-moi dès aujourd'hui 
+          </Link>
         </div>
         </section>
       </main>

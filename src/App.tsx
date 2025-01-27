@@ -27,7 +27,7 @@ const AppContent = () => {
         <Route path="/Vendre" element={<Selling_form />} />
         <Route path="/Acheter" element={<HouseExplorer />} />
         <Route path="/house/:id" element={<HouseDetails />} />
-        <Route path="/NomPrenom" element={<RealWhoAmI />} />
+        <Route path="/EliseBUIL" element={<RealWhoAmI />} />
         <Route path="/Blog" element={<Blog />} />
         <Route path="/Estimation" element={<EstimationForm />} />
         <Route path="/Gestion" element={<AdminPanel />} />

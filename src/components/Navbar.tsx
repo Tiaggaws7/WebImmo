@@ -51,7 +51,7 @@ const NavLinks = () => (
     <Link to="/Blog" className="block text-black hover:text-gray-700">
       Actualités
     </Link>
-    <Link to="/NomPrenom" className="block text-black hover:text-gray-700">
+    <Link to="/EliseBUIL" className="block text-black hover:text-gray-700">
       Elise BUIL
     </Link>
     <a href="tel:+590690590565" className="block text-black hover:text-gray-700">
