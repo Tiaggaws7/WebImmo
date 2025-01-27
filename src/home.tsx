@@ -3,28 +3,13 @@ import useEmblaCarousel from 'embla-carousel-react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 import { Link } from 'react-router-dom'
+import { House } from './types';
 
 import {collection, getDocs } from 'firebase/firestore';
 import { db } from './firebase-config';
 
 import profilePicture from './assets/profile_picture.jpg'
 
-// Interface pour les données Firebase
-interface House {
-  id: string;
-  title: string;
-  price: string;
-  size: string;
-  type: string;
-  rooms: string;
-  bedrooms: string;
-  bathrooms: string;
-  amenities: string[];
-  location: string;
-  image: string;
-  description: string;
-  condition: 'vendu' | 'disponible' | 'sous compromis';
-}
 
 // Interface pour le tableau transformé
 interface SimpleHouse {

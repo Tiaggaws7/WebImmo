@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { Search, X } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
+import { House } from '../types';
+
 import {collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase-config';
 
@@ -9,22 +11,6 @@ import { db } from '../firebase-config';
 import { getAuth } from "firebase/auth";
 const auth = getAuth();
 console.log("Current user:", auth.currentUser);
-
-interface House {
-  id: string;
-  title: string;
-  price: string;
-  size: string;
-  type: string;
-  rooms: string;
-  bedrooms: string;
-  bathrooms: string;
-  amenities: string[];
-  location: string;
-  image: string;
-  description: string;
-  condition: 'vendu' | 'disponible' | 'sous compromis';
-}
 
 export default function HouseExplorer() {
   const [houses, setHouses] = useState<House[]>([])

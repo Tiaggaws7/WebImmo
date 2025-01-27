@@ -12,7 +12,7 @@ bdd rules
 
 un bien peut avoir potentiellement plusieurs types, selection sous forme de button comme les filtres
 
-rajouter la consomation ennergétique "A", "B", "C", "D", "E", "F", ou "G" 
+rajouter la consomation energétique "A", "B", "C", "D", "E", "F", ou "G" 
 
 rajouter WC 
 

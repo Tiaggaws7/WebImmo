@@ -3,22 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase-config'; // Import Firebase instance
+import { House } from '../types';
 
-interface House {
-  id: string;
-  title: string;
-  price: string;
-  size: string;
-  type: string;
-  rooms: string;
-  bedrooms: string;
-  bathrooms: string;
-  amenities: string[];
-  location: string;
-  image: string;
-  description: string;
-  condition: 'vendu' | 'disponible' | 'sous compromis';
-}
 
 const HouseDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();

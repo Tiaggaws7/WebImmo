@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PlusIcon, PencilIcon, TrashIcon, LogOutIcon } from 'lucide-react';
+import { House } from '../types';
 import {
   collection,
   getDocs,
@@ -11,21 +12,6 @@ import {
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
 import { db, auth } from '../firebase-config';
 
-interface House {
-  id: string;
-  title: string;
-  price: string;
-  size: string;
-  type: string;
-  rooms: string;
-  bedrooms: string;
-  bathrooms: string;
-  amenities: string[];
-  location: string;
-  image: string;
-  description: string;
-  condition: 'vendu' | 'disponible' | 'sous compromis';
-}
 
 const AdminPanel: React.FC = () => {
   const [houses, setHouses] = useState<House[]>([]);
@@ -44,11 +30,13 @@ const AdminPanel: React.FC = () => {
     rooms: '0',
     bedrooms: '0',
     bathrooms: '0',
+    wc:'0',
     amenities: [],
     location: '',
     image: '',
     description:'',
     condition: 'disponible',
+    consomation:'A'
   });
   const [tempAmenitiesInput, setTempAmenitiesInput] = React.useState<string>(''); // Temporary input state
 
@@ -233,11 +221,13 @@ const AdminPanel: React.FC = () => {
         rooms: '0',
         bedrooms: '0',
         bathrooms: '0',
+        wc:'0',
         amenities: [],
         location: '',
         image: '',
         description:'',
         condition: 'disponible',
+        consomation:'A'
       });
     } catch (error) {
       console.error('Error submitting house:', error);
@@ -272,11 +262,13 @@ const AdminPanel: React.FC = () => {
       rooms: '0',
       bedrooms: '0',
       bathrooms: '0',
+      wc:'0',
       amenities: [],
       location: '',
       image: '',
       description:'',
-      condition: 'disponible'
+      condition: 'disponible',
+      consomation:'A'
     });
     setIsFormVisible(false);
   };
