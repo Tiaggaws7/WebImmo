@@ -71,7 +71,7 @@ return (
                           })
                         : 'Invalid price';
                     })()}</li>
-                <li><strong>Taille:</strong> {house.size} m²</li>
+                <li><strong>Surface:</strong> {house.size} m²</li>
                 <li><strong>Type:</strong> {house.type}</li>
                 <li><strong>Pièces:</strong> {house.rooms}</li>
                 <li><strong>Chambres:</strong> {house.bedrooms}</li>
@@ -80,7 +80,7 @@ return (
               </ul>
             </div>
             <div>
-              <h2 className="text-xl font-semibold mb-2">Commodités</h2>
+              <h2 className="text-xl font-semibold mb-2">Annexes</h2>
               <ul className="space-y-2">
                 {house.amenities.map((amenity, index) => (
                   <li key={index} className="inline-block bg-gray-100 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">

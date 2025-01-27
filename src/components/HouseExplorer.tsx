@@ -215,7 +215,7 @@ export default function HouseExplorer() {
             </div>
             <div>
               <label htmlFor="minSize" className="block text-sm font-medium text-gray-700 mb-1">
-                Taille Minimum (m²)
+              Surface Minimum (m²)
               </label>
               <input
                 id="minSize"
@@ -297,7 +297,7 @@ export default function HouseExplorer() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Commodités
+              Annexes
               </label>
               <div className="flex flex-wrap gap-2">
                 {amenityOptions.map((option) => (

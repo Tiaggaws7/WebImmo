@@ -107,7 +107,7 @@ export default function Search_house() {
 
           <div className="space-y-4">
             <label htmlFor="minSize" className="block text-sm font-medium text-gray-700">
-              Taille Minimum (m²)
+            Surface Minimum (m²)
             </label>
             <input
               id="minSize"
@@ -209,7 +209,7 @@ export default function Search_house() {
               </div>
               <div className="space-y-4">
                 <label className="block text-sm font-medium text-gray-700">
-                  Commodités
+                Annexes
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {['Piscine', 'Parking', 'Cave', 'Belle vue', 'Ascenseur'].map((type) => (

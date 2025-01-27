@@ -161,7 +161,7 @@ export default function ProfessionalClassicBlogPage() {
     <div className="bg-gray-100">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <h1 className="text-5xl font-serif font-bold mb-12 text-center text-gray-800">
-          Le Blog d'Investimmo
+          Actualités
         </h1>
         {loading ? (
           <p className="text-center text-gray-600">Chargement des articles...</p>

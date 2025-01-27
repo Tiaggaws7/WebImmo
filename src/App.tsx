@@ -14,10 +14,10 @@ import AdminPanel from './components/adminPanel.tsx';
 
 const AppContent = () => {
   // Hook pour obtenir la route actuelle
-  const location = useLocation();
+  //const location = useLocation();
 
   // Liste des routes où le footer ne doit pas être affiché
-  const noFooterRoutes = ['/Gestion', '/']; // Ajouter ici toutes les routes sans footer
+  //const noFooterRoutes = ['/Gestion', '/']; // Ajouter ici toutes les routes sans footer
 
   return (
     <>
@@ -34,7 +34,7 @@ const AppContent = () => {
         <Route path="*" element={<NotFound />} />
       </Routes>
       {/* Affichage conditionnel du footer */}
-      {!noFooterRoutes.includes(location.pathname) && <Footer />}
+      {/*!noFooterRoutes.includes(location.pathname) && <Footer />*/}
     </>
   );
 };

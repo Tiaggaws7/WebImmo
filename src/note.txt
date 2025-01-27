@@ -1,27 +1,19 @@
-catégorie acheter, fusionner maison et villa et rajouter local commercial 
+OK Enlever le footer partout 
 
-OK
+OK commodité changer en Annexe mettre dans admin
 
-rajouter état de maison: rien, vendu et sous compromis
+OK changer taille en surface partout acheter et admin
 
-OK
+OK Le blog d'investimmo à changer en Actualités
 
-design 3 pour banière
-design 1 pour à propos + image 
-design 3 mon expertise
-design 2 témoignage client
-design 3 contactez moi + numéro de téléphone dans form
+Rajouter plusieurs images
 
-OK
+bdd rules
 
-5 sec pour carousel 
+un bien peut avoir potentiellement plusieurs types, selection sous forme de button comme les filtres
 
-OK
+rajouter la consomation ennergétique "A", "B", "C", "D", "E", "F", ou "G" 
 
-faire un vrai footer + pas d'adresse + pas de mail.
+rajouter WC 
 
-OK
 
-faire bdd externe pour maison et blog
-
-Filtre problème.
