@@ -53,7 +53,9 @@ export default function HouseExplorer() {
         (criteria.condition === 'all' || house.condition === criteria.condition) &&
         parseInt(house.price) <= criteria.maxPrice &&
         parseInt(house.size) >= criteria.minSize &&
-        (criteria.propertyTypes.length === 0 || criteria.propertyTypes.includes(house.type)) &&
+        (criteria.propertyTypes.length === 0 || // If no property types are selected, allow all types
+          (Array.isArray(house.types) && // Check if house.types is an array
+            house.types.some((type) => criteria.propertyTypes.includes(type)))) && // Check if any house type matches any selected property type
         parseInt(house.rooms) >= parseInt(criteria.rooms) &&
         parseInt(house.bedrooms) >= parseInt(criteria.bedrooms) &&
         parseInt(house.bathrooms) >= parseInt(criteria.bathrooms) &&
@@ -61,17 +63,19 @@ export default function HouseExplorer() {
         (criteria.location === '' || house.location.toLowerCase().includes(criteria.location.toLowerCase()))
       );
     });
-
+  
     setFilteredHouses(filtered);
   }, [houses, criteria]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
+  
     setCriteria((prev) => ({
       ...prev,
-      [name]: name === 'maxPrice' || name === 'minSize'
-        ? parseInt(value)
-        : value,
+      [name]: name === "maxPrice" || name === "minSize" ? parseInt(value) : value,
     }));
   };
 

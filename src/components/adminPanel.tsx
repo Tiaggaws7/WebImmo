@@ -294,7 +294,7 @@ const AdminPanel: React.FC = () => {
   }
   
   function PropertyTypeSelector({ selectedTypes, onChange }: PropertyTypeSelectorProps) {
-    const propertyTypes = ["Appartement", "Maison", "Local commercial", "Terrain"]
+    const propertyTypes = ["appartement", "maison", "local commercial", "terrain"]
   
     const toggleType = (type: string) => {
       const newTypes = selectedTypes.includes(type) ? selectedTypes.filter((t) => t !== type) : [...selectedTypes, type]
