@@ -6,14 +6,16 @@ OK changer taille en surface partout acheter et admin
 
 OK Le blog d'investimmo à changer en Actualités
 
-Rajouter plusieurs images
-
-bdd rules
-
 un bien peut avoir potentiellement plusieurs types, selection sous forme de button comme les filtres
 
 rajouter la consomation energétique "A", "B", "C", "D", "E", "F", ou "G" 
 
 rajouter WC 
+
+Image de l'accueil cliquable directement vers detail
+
+Rajouter plusieurs images
+
+bdd rules   
 
 

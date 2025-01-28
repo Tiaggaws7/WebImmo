@@ -4,7 +4,7 @@ export interface House {
     title: string;
     price: string;
     size: string;
-    type: string;
+    types: string[];
     rooms: string;
     bedrooms: string;
     bathrooms: string;
@@ -14,5 +14,5 @@ export interface House {
     image: string;
     description: string;
     condition: 'vendu' | 'disponible' | 'sous compromis';
-    consomation: string;
+    consomation: "A" | "B" | "C" | "D" | "E" | "F" | "G";
   }

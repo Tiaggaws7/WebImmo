@@ -10,6 +10,7 @@ import {
   doc,
 } from 'firebase/firestore';
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, auth } from '../firebase-config';
 
 
@@ -26,7 +27,7 @@ const AdminPanel: React.FC = () => {
     title: '',
     price: '0',
     size: '0',
-    type: '',
+    types: [],
     rooms: '0',
     bedrooms: '0',
     bathrooms: '0',
@@ -70,12 +71,13 @@ const AdminPanel: React.FC = () => {
   // Add a house to Firestore
   const addHouseToFirestore = async (house: House) => {
     try {
-      const houseCollection = collection(db, 'houses');
+      const houseCollection = collection(db, "houses");
       const docRef = await addDoc(houseCollection, house);
-
+  
       setHouses([...houses, { ...house, id: docRef.id }]);
+      console.log("House added to Firestore with ID:", docRef.id);
     } catch (error) {
-      console.error('Error adding house:', error);
+      console.error("Error adding house:", error);
     }
   };
 
@@ -90,48 +92,27 @@ const AdminPanel: React.FC = () => {
       }
   
       try {
-        // Convert file to Base64 string
-        const base64String = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
+        // Initialize Firebase Storage
+        const storage = getStorage();
+        const storageRef = ref(storage, `houses/${file.name}-${Date.now()}`); // Unique file name with timestamp
   
-          // Log events for debugging
-          reader.onloadstart = () => console.log("FileReader started reading the file.");
-          reader.onloadend = () => console.log("FileReader finished reading the file.");
-          reader.onload = () => {
-            console.log("FileReader result (Base64):", reader.result);
-            if (reader.result) {
-              resolve(reader.result as string); // Base64 string
-            } else {
-              reject("Reader result is null");
-            }
-          };
-          reader.onerror = (err) => {
-            console.error("Error during FileReader operation:", err);
-            reject(err);
-          };
-          reader.onabort = () => {
-            console.error("FileReader operation was aborted.");
-            reject("FileReader operation aborted");
-          };
+        // Upload the file to Firebase Storage
+        console.log("Uploading file to Firebase Storage...");
+        const snapshot = await uploadBytes(storageRef, file);
   
-          try {
-            console.log("Starting to read file as data URL...");
-            reader.readAsDataURL(file); // Start Base64 conversion
-          } catch (error) {
-            console.error("Failed to start FileReader:", error);
-            reject(error);
-          }
-        });
+        // Get the URL of the uploaded file
+        console.log("Fetching download URL...");
+        const downloadURL = await getDownloadURL(snapshot.ref);
   
-        console.log("Generated Base64 string:", base64String);
+        console.log("File uploaded successfully. Download URL:", downloadURL);
   
-        // Update the state with only the Base64 string
+        // Update the state with the image URL
         const updateState = (prev: any) => ({
           ...prev,
-          image: base64String, // Only Base64 string
+          image: downloadURL, // Save the URL, not Base64
         });
   
-        console.log("Updating state with Base64 string...");
+        console.log("Updating state with image URL...");
         editingHouse
           ? setEditingHouse((prev) => (prev ? updateState(prev) : null))
           : setNewHouse(updateState);
@@ -145,7 +126,7 @@ const AdminPanel: React.FC = () => {
     } else {
       console.warn("No file was selected.");
     }
-  };  
+  };
   
   
   // Handle input changes
@@ -217,7 +198,7 @@ const AdminPanel: React.FC = () => {
         title: '',
         price: '0',
         size: '0',
-        type: '',
+        types: [],
         rooms: '0',
         bedrooms: '0',
         bathrooms: '0',
@@ -258,7 +239,7 @@ const AdminPanel: React.FC = () => {
       title: '',
       price: '0',
       size: '0',
-      type: '',
+      types: [],
       rooms: '0',
       bedrooms: '0',
       bathrooms: '0',
@@ -306,6 +287,38 @@ const AdminPanel: React.FC = () => {
 
     return () => unsubscribe();
   }, []);
+
+  interface PropertyTypeSelectorProps {
+    selectedTypes: string[]
+    onChange: (types: string[]) => void
+  }
+  
+  function PropertyTypeSelector({ selectedTypes, onChange }: PropertyTypeSelectorProps) {
+    const propertyTypes = ["Appartement", "Maison", "Local commercial", "Terrain"]
+  
+    const toggleType = (type: string) => {
+      const newTypes = selectedTypes.includes(type) ? selectedTypes.filter((t) => t !== type) : [...selectedTypes, type]
+      onChange(newTypes)
+    }
+  
+    return (
+      <div className="flex flex-wrap gap-2">
+        {propertyTypes.map((type) => (
+          <button
+            key={type}
+            onClick={() => toggleType(type)}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors
+              ${
+                selectedTypes.includes(type) ? "bg-purple-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            type="button"
+          >
+            {type}
+          </button>
+        ))}
+      </div>
+    )
+  }
 
   if (!user) {
     return (
@@ -426,16 +439,17 @@ const AdminPanel: React.FC = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
-              <div>
-                <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                <input
-                  type="text"
-                  id="type"
-                  name="type"
-                  value={editingHouse ? editingHouse.type : newHouse.type}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Type de Propriété</label>
+                <PropertyTypeSelector
+                  selectedTypes={editingHouse ? editingHouse.types : newHouse.types}
+                  onChange={(types) => {
+                    if (editingHouse) {
+                      setEditingHouse({ ...editingHouse, types })
+                    } else {
+                      setNewHouse({ ...newHouse, types })
+                    }
+                  }}
                 />
               </div>
               <div>
@@ -473,6 +487,41 @@ const AdminPanel: React.FC = () => {
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 />
+              </div>
+              <div>
+                <label htmlFor="wc" className="block text-sm font-medium text-gray-700 mb-1">
+                  WC
+                </label>
+                <input
+                  type="number"
+                  id="wc"
+                  name="wc"
+                  value={editingHouse ? editingHouse.wc : newHouse.wc}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label htmlFor="consomation" className="block text-sm font-medium text-gray-700 mb-1">
+                  Consommation énergétique
+                </label>
+                <select
+                  id="consomation"
+                  name="consomation"
+                  value={editingHouse ? editingHouse.consomation : newHouse.consomation}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="A">A</option>
+                  <option value="B">B</option>
+                  <option value="C">C</option>
+                  <option value="D">D</option>
+                  <option value="E">E</option>
+                  <option value="F">F</option>
+                  <option value="G">G</option>
+                </select>
               </div>
               <div>
                 <label htmlFor="amenities" className="block text-sm font-medium text-gray-700 mb-1">
