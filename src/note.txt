@@ -8,13 +8,15 @@ OK Le blog d'investimmo à changer en Actualités
 
 OK bdd rules   
 
-affichage un bien peut avoir potentiellement plusieurs types, selection sous forme de button comme les filtres
+OK un bien peut avoir potentiellement plusieurs types, 
 
-affichage rajouter la consomation energétique "A", "B", "C", "D", "E", "F", ou "G" 
+OK selection sous forme de button comme les filtres pour les types
 
-affichage rajouter WC 
+OK rajouter la consomation energétique "A", "B", "C", "D", "E", "F", ou "G" 
 
-Image de l'accueil cliquable directement vers detail
+OK rajouter WC 
+
+Image de l'accueil cliquable directement vers détail
 
 Rajouter plusieurs images
 

@@ -155,7 +155,7 @@ export default function Selling_form() {
               value={formData.project}
               onChange={handleChange}
               className="w-full px-3 py-2 text-base border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
-              placeholder="Décrivez votre projet immobilier (par exemple, vendre une maison de 3 chambres, rechercher un bien d'investissement)"
+              placeholder="Décrivez votre projet immobilier (par exemple, vendre une maison de 3 chambres sur Baie-Mahault...)"
             ></textarea>
           </div>
           <div>
