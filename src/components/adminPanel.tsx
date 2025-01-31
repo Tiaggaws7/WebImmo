@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { PlusIcon, PencilIcon, TrashIcon, LogOutIcon } from 'lucide-react';
+import { PlusIcon, PencilIcon, TrashIcon, LogOutIcon, ArrowRight } from 'lucide-react';
+import { Link } from "react-router-dom"
 import { House } from '../types';
 import {
   collection,
@@ -370,7 +371,17 @@ const AdminPanel: React.FC = () => {
             </div>
           </form>
           {error && <p style={{ color: "red" }}>{error}</p>}
-        </div>
+          <Link
+              to='/'
+              className="flex items-center justify-between p-6 bg-white shadow-md rounded-lg hover:shadow-lg transition-shadow"
+            >
+              <div className="flex items-center">
+                <span className="text-2xl mr-4">🏡</span>
+                <span className="text-lg font-medium">Retour à l'accueil</span>
+              </div>
+              <ArrowRight className="h-5 w-5 text-gray-400" />
+            </Link>
+        </div>        
       </div>
     );
   }
