@@ -2,12 +2,178 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Page non trouvée</title>
-    <meta http-equiv="refresh" content="3;url=/" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            background-color: #f9fafb;
+        }
+        main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+            max-width: 64rem;
+            margin: 0 auto;
+        }
+        @media (min-width: 768px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (min-width: 1024px) {
+            .grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        .link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem;
+            background-color: white;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            border-radius: 0.5rem;
+            text-decoration: none;
+            color: inherit;
+            transition: box-shadow 0.3s ease;
+        }
+        .link:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .link-content {
+            display: flex;
+            align-items: center;
+        }
+        .link-icon {
+            font-size: 2rem;
+            margin-right: 1rem;
+        }
+        .link-text {
+            font-size: 1.125rem;
+            font-weight: 500;
+        }
+        .arrow-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            color: #9ca3af;
+        }
+        footer {
+            background-color: white;
+            border-top: 1px solid #e5e7eb;
+            padding: 2rem 0;
+        }
+        .container {
+            max-width: 80rem;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        .footer-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        .footer-link:hover {
+            color: #374151;
+        }
+        .user-icon {
+            width: 1rem;
+            height: 1rem;
+            margin-right: 0.5rem;
+        }
+    </style>
 </head>
 <body>
-    <h1>Erreur 404 - Page non trouvée</h1>
-    <p>Vous allez être redirigé vers l'accueil dans 3 secondes.</p>
-    <p><a href="/">Cliquez ici si la redirection ne fonctionne pas.</a></p>
+    <main>
+        <h1>Où souhaitez-vous aller ?</h1>
+        <div class="grid">
+            <a href="/" class="link">
+                <div class="link-content">
+                    <span class="link-icon">🏡</span>
+                    <span class="link-text">Retour à l'accueil</span>
+                </div>
+                <svg class="arrow-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
+            <a href="/Vendre" class="link">
+                <div class="link-content">
+                    <span class="link-icon">🏠</span>
+                    <span class="link-text">Vendre votre bien</span>
+                </div>
+                <svg class="arrow-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
+            <a href="/Acheter" class="link">
+                <div class="link-content">
+                    <span class="link-icon">🔑</span>
+                    <span class="link-text">Acheter un bien</span>
+                </div>
+                <svg class="arrow-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
+            <a href="/Blog" class="link">
+                <div class="link-content">
+                    <span class="link-icon">📰</span>
+                    <span class="link-text">Découvrir nos actualités</span>
+                </div>
+                <svg class="arrow-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
+            <a href="/EliseBUIL" class="link">
+                <div class="link-content">
+                    <span class="link-icon">👋</span>
+                    <span class="link-text">Rencontrer Elise BUIL</span>
+                </div>
+                <svg class="arrow-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
+            <a href="/Estimation" class="link">
+                <div class="link-content">
+                    <span class="link-icon">📊</span>
+                    <span class="link-text">Estimer votre bien</span>
+                </div>
+                <svg class="arrow-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
+        </div>
+    </main>
+    <footer>
+        <div class="container">
+            <a href="/Gestion" class="footer-link">
+                <svg class="user-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                Mon compte
+            </a>
+        </div>
+    </footer>
 </body>
 </html>
+
