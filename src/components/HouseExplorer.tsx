@@ -320,7 +320,11 @@ export default function HouseExplorer() {
                 className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
               >
                 <div className="relative">
-                  <img src={house.image} alt={house.title} className="w-full h-48 object-cover" />
+                <img 
+                  src={house.principalImage} 
+                  alt={house.title} 
+                  className="w-full h-48 object-cover"
+                />
                 </div>
                 <div className="p-4">
                   <h3 className="text-lg font-semibold mb-2">{house.title}</h3>

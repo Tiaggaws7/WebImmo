@@ -35,7 +35,8 @@ const AdminPanel: React.FC = () => {
     wc:'0',
     amenities: [],
     location: '',
-    image: '',
+    images: [],
+    principalImage: '',
     description:'',
     condition: 'disponible',
     consomation:'A'
@@ -84,48 +85,30 @@ const AdminPanel: React.FC = () => {
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) {
-      const file = e.target.files[0];
-      console.log("File selected for upload:", file);
-  
-      if (!file.type.startsWith("image/")) {
-        alert("Please upload a valid image file.");
-        return;
-      }
+      const files = Array.from(e.target.files);
+      const storage = getStorage();
   
       try {
-        // Initialize Firebase Storage
-        const storage = getStorage();
-        const storageRef = ref(storage, `houses/${file.name}-${Date.now()}`); // Unique file name with timestamp
+        const uploadedUrls = await Promise.all(
+          files.map(async (file) => {
+            const storageRef = ref(storage, `houses/${file.name}-${Date.now()}`);
+            const snapshot = await uploadBytes(storageRef, file);
+            return await getDownloadURL(snapshot.ref);
+          })
+        );
   
-        // Upload the file to Firebase Storage
-        console.log("Uploading file to Firebase Storage...");
-        const snapshot = await uploadBytes(storageRef, file);
-  
-        // Get the URL of the uploaded file
-        console.log("Fetching download URL...");
-        const downloadURL = await getDownloadURL(snapshot.ref);
-  
-        console.log("File uploaded successfully. Download URL:", downloadURL);
-  
-        // Update the state with the image URL
-        const updateState = (prev: any) => ({
+        const updateState = (prev: House) => ({
           ...prev,
-          image: downloadURL, // Save the URL, not Base64
+          images: [...prev.images, ...uploadedUrls],
+          principalImage: prev.principalImage || uploadedUrls[0],
         });
   
-        console.log("Updating state with image URL...");
-        editingHouse
-          ? setEditingHouse((prev) => (prev ? updateState(prev) : null))
+        editingHouse 
+          ? setEditingHouse(prev => prev ? updateState(prev) : null)
           : setNewHouse(updateState);
-  
-        // Reset the file input
-        console.log("Resetting file input field...");
-        e.target.value = "";
       } catch (error) {
-        console.error("Error uploading image:", error);
+        console.error("Error uploading images:", error);
       }
-    } else {
-      console.warn("No file was selected.");
     }
   };
   
@@ -163,39 +146,42 @@ const AdminPanel: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
   
-    console.log('Submitting form with:', newHouse, editingHouse);
-  
     try {
-      // Ensure the image URL is available before proceeding
-      if (!newHouse.image && !editingHouse?.image) {
-        alert('Please upload an image before submitting the form.');
+      // Validate images
+      if (
+        (editingHouse 
+          ? !editingHouse.images.length || !editingHouse.principalImage
+          : !newHouse.images.length || !newHouse.principalImage)
+      ) {
+        alert('Please upload at least one image and select a principal image.');
         return;
       }
   
       if (editingHouse) {
-        // Update an existing house
         const houseDoc = doc(db, 'houses', editingHouse.id);
         await updateDoc(houseDoc, {
           ...editingHouse,
+          // Explicitly include all fields to avoid missing data
+          images: editingHouse.images,
+          principalImage: editingHouse.principalImage,
         });
-        setHouses(
-          houses.map((house) =>
-            house.id === editingHouse.id ? editingHouse : house
-          )
-        );
+        setHouses(houses.map(h => h.id === editingHouse.id ? editingHouse : h));
         setEditingHouse(null);
       } else {
-        // Add a new house
-        const customId = crypto.randomUUID(); // Generate a unique ID for the new house
-        const houseWithId = { ...newHouse, id: customId };
-
+        const houseWithId = { 
+          ...newHouse, 
+          id: crypto.randomUUID(),
+          // Ensure images array is properly structured
+          images: newHouse.images,
+          principalImage: newHouse.principalImage
+        };
         await addHouseToFirestore(houseWithId);
       }
   
-      // Reset form visibility and state
+      // Reset state
       setIsFormVisible(false);
       setNewHouse({
-        id:'',
+        id: '',
         title: '',
         price: '0',
         size: '0',
@@ -203,13 +189,14 @@ const AdminPanel: React.FC = () => {
         rooms: '0',
         bedrooms: '0',
         bathrooms: '0',
-        wc:'0',
+        wc: '0',
         amenities: [],
         location: '',
-        image: '',
-        description:'',
+        images: [],
+        principalImage: '',
+        description: '',
         condition: 'disponible',
-        consomation:'A'
+        consomation: 'A'
       });
     } catch (error) {
       console.error('Error submitting house:', error);
@@ -247,12 +234,45 @@ const AdminPanel: React.FC = () => {
       wc:'0',
       amenities: [],
       location: '',
-      image: '',
+      images: [],
+      principalImage: '',
       description:'',
       condition: 'disponible',
       consomation:'A'
     });
     setIsFormVisible(false);
+  };
+
+  const handleDeleteImage = (index: number) => {
+    const currentImages = editingHouse ? [...editingHouse.images] : [...newHouse.images];
+    currentImages.splice(index, 1);
+  
+    const update = (prev: House) => {
+      const newPrincipal = prev.principalImage === prev.images[index] 
+        ? currentImages[0] || ''
+        : prev.principalImage;
+        
+      return {
+        ...prev,
+        images: currentImages,
+        principalImage: newPrincipal,
+      };
+    };
+  
+    editingHouse 
+      ? setEditingHouse(prev => prev ? update(prev) : null)
+      : setNewHouse(update);
+  };
+  
+  const handleSetPrincipalImage = (url: string) => {
+    const update = (prev: House) => ({
+      ...prev,
+      principalImage: url,
+    });
+  
+    editingHouse 
+      ? setEditingHouse(prev => prev ? update(prev) : null)
+      : setNewHouse(update);
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -561,26 +581,51 @@ const AdminPanel: React.FC = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
-              <div>
-              <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-1">
-                Image
-              </label>
-              <input
-                type="file"
-                id="image"
-                name="image"
-                onChange={handleImageUpload}
-                accept="image/*"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-              {newHouse.image && (
-                <img
-                  src={newHouse.image}
-                  alt="Uploaded preview"
-                  className="mt-4 h-32 w-32 object-cover rounded-md"
-                />
-              )}
-            </div>
+              <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Images (Première image sera la principale par défaut)
+                  </label>
+                  <input
+                    type="file"
+                    multiple
+                    onChange={handleImageUpload}
+                    accept="image/*"
+                    className="mb-4"
+                  />
+                  
+                  <div className="grid grid-cols-3 gap-4">
+                    {(editingHouse ? editingHouse.images : newHouse.images).map((url, index) => (
+                      <div key={url} className="relative group">
+                        <img
+                          src={url}
+                          alt={`House preview ${index}`}
+                          className="h-32 w-full object-cover rounded-md"
+                        />
+                        
+                        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteImage(index)}
+                            className="text-white bg-red-500 p-1 rounded-full mr-2"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                          
+                          <label className="flex items-center text-white text-sm">
+                            <input
+                              type="radio"
+                              name="principalImage"
+                              checked={(editingHouse ? editingHouse.principalImage : newHouse.principalImage) === url}
+                              onChange={() => handleSetPrincipalImage(url)}
+                              className="mr-1"
+                            />
+                            Principale
+                          </label>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               <div>
                 <label htmlFor="condition" className="block text-sm font-medium text-gray-700 mb-1">État</label>
                 <select

@@ -11,7 +11,8 @@ export interface House {
     wc:string;
     amenities: string[];
     location: string;
-    image: string;
+    images: string[];
+    principalImage: string;
     description: string;
     condition: 'vendu' | 'disponible' | 'sous compromis';
     consomation: "A" | "B" | "C" | "D" | "E" | "F" | "G";

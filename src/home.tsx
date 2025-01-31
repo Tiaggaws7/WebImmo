@@ -1,105 +1,51 @@
-import { useState, useEffect, useCallback } from 'react'
-import useEmblaCarousel from 'embla-carousel-react'
+import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-
 import { Link } from 'react-router-dom'
-import { House } from './types';
-
-import {collection, getDocs } from 'firebase/firestore';
-import { db } from './firebase-config';
-
+import { House } from './types'
+import { collection, getDocs } from 'firebase/firestore'
+import { db } from './firebase-config'
 import profilePicture from './assets/profile_picture.jpg'
 
-
-// Interface pour le tableau transformé
-interface SimpleHouse {
-  id: string;
-  imageUrl: string;
-} 
-
-function Button({ 
-  children, 
-  className = '', 
-  variant = 'default', 
-  size = 'default', 
-  ...props 
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'default' | 'outline'
-  size?: 'default' | 'sm' | 'lg' | 'icon'
-}) {
-  const baseStyles = 'inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background'
-  const variantStyles = {
-    default: 'bg-blue-600 text-white hover:bg-blue-700',
-    outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground'
-  }
-  const sizeStyles = {
-    default: 'h-10 py-2 px-4',
-    sm: 'h-9 px-3 rounded-md',
-    lg: 'h-11 px-8 rounded-md',
-    icon: 'h-10 w-10'
-  }
-
-  return (
-    <button
-      className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
-      {...props}
-    >
-      {children}
-    </button>
-  )
-}
-
 function Home() {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true })
-  const [prevBtnEnabled, setPrevBtnEnabled] = useState(false)
-  const [nextBtnEnabled, setNextBtnEnabled] = useState(false)
-  const [houses, setHouses] = useState<SimpleHouse[]>([]);
+  const [houses, setHouses] = useState<House[]>([])
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [touchStart, setTouchStart] = useState(0)
+  const [touchEnd, setTouchEnd] = useState(0)
 
-  const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi])
-  const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi])
-
-  const onSelect = useCallback(() => {
-    if (!emblaApi) return
-    setPrevBtnEnabled(emblaApi.canScrollPrev())
-    setNextBtnEnabled(emblaApi.canScrollNext())
-  }, [emblaApi])
-
+  // Récupération des maisons
   useEffect(() => {
     const fetchHouses = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, 'houses')); // 'houses' est le nom de votre collection
-        const data: SimpleHouse[] = querySnapshot.docs.map((doc) => {
-          const house = doc.data() as House; // Cast en type House
-          return {
-            id: doc.id, // Crée un ID numérique basé sur l'index (optionnel si déjà unique)
-            imageUrl: house.image, // Utilise le champ `image` pour `imageUrl`
-          };
-        });
-        setHouses(data);
+        const querySnapshot = await getDocs(collection(db, 'houses'))
+        const data = querySnapshot.docs.map(doc => ({
+          ...doc.data() as House,
+          id: doc.id
+        }))
+        setHouses(data)
       } catch (error) {
-        console.error('Erreur lors de la récupération des données :', error);
+        console.error('Erreur lors de la récupération des données :', error)
       }
-    };
+    }
+    fetchHouses()
+  }, [])
 
-    fetchHouses();
-  }, []);
+  // Navigation
+  const handleNext = () => setActiveIndex(prev => (prev + 1) % houses.length)
+  const handlePrev = () => setActiveIndex(prev => (prev - 1 + houses.length) % houses.length)
 
+  // Défilement automatique
   useEffect(() => {
-    if (!emblaApi) return
-    onSelect()
-    emblaApi.on('select', onSelect)
-  }, [emblaApi, onSelect])
+    const interval = setInterval(handleNext, 5000)
+    return () => clearInterval(interval)
+  }, [houses.length])
 
-  // Auto-advance functionality
-  useEffect(() => {
-    if (!emblaApi) return
-
-    const autoScroll = setInterval(() => {
-      emblaApi.scrollNext()
-    }, 5000) // Change slide every 8 seconds
-
-    return () => clearInterval(autoScroll) // Cleanup interval on unmount
-  }, [emblaApi])
+  // Gestion des gestes tactiles
+  const handleTouchStart = (e: React.TouchEvent) => setTouchStart(e.targetTouches[0].clientX)
+  const handleTouchMove = (e: React.TouchEvent) => setTouchEnd(e.targetTouches[0].clientX)
+  const handleTouchEnd = () => {
+    if (touchStart - touchEnd > 50) handleNext()
+    if (touchStart - touchEnd < -50) handlePrev()
+  }
 
   
   return (
@@ -143,39 +89,55 @@ function Home() {
         
         <section className="bg-white">
           <div className="relative">
-            <div className="embla overflow-hidden" ref={emblaRef}>
-              <div className="embla__container flex">
-                {houses.map((house) => (
-                  <div key={house.id} className="embla__slide flex-[0_0_100%] min-w-0">
+            <div 
+              className="overflow-hidden relative"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
+              <div className="flex transition-transform duration-300" style={{ transform: `translateX(-${activeIndex * 100}%)` }}>
+                {houses.map(house => (
+                  <div key={house.id} className="w-full flex-shrink-0">
                     <Link to={`/house/${house.id}`}>
-                    <img 
-                      src={house.imageUrl} 
-                      alt={`Maison ${house.id}`} 
-                      className="w-full h-[calc(100vh-64px)] object-cover"
-                    />
+                      <img 
+                        src={house.principalImage} 
+                        alt={`Maison ${house.id}`} 
+                        className="w-full h-[calc(100vh-64px)] object-cover"
+                      />
                     </Link>
                   </div>
                 ))}
               </div>
             </div>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={scrollPrev}
-              disabled={!prevBtnEnabled}
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 hover:bg-opacity-75"
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={scrollNext}
-              disabled={!nextBtnEnabled}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 hover:bg-opacity-75"
-            >
-              <ChevronRight className="h-6 w-6" />
-            </Button>
+
+            {houses.length > 1 && (
+              <>
+                <button
+                  onClick={handlePrev}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/50 p-2 rounded-full shadow-md hover:bg-white/75 transition-all"
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </button>
+                <button
+                  onClick={handleNext}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/50 p-2 rounded-full shadow-md hover:bg-white/75 transition-all"
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </button>
+
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                  {houses.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setActiveIndex(index)}
+                      className={`w-3 h-3 rounded-full transition-colors ${
+                        index === activeIndex ? 'bg-blue-600' : 'bg-white/50 hover:bg-white/75'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </section>
 
