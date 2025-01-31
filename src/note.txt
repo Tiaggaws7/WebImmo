@@ -16,10 +16,12 @@ OK rajouter la consomation energétique "A", "B", "C", "D", "E", "F", ou "G"
 
 OK rajouter WC 
 
-Image de l'accueil cliquable directement vers détail
+OK make 404 page
+
+OK firebase storage rules
+
+OK Image de l'accueil cliquable directement vers détail
 
 Rajouter plusieurs images
 
-make 404 page
-
-firebase storage rules
+make it SEO friendly ( things + Vercel hosting)

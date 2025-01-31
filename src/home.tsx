@@ -71,7 +71,7 @@ function Home() {
         const data: SimpleHouse[] = querySnapshot.docs.map((doc) => {
           const house = doc.data() as House; // Cast en type House
           return {
-            id: house.id, // Crée un ID numérique basé sur l'index (optionnel si déjà unique)
+            id: doc.id, // Crée un ID numérique basé sur l'index (optionnel si déjà unique)
             imageUrl: house.image, // Utilise le champ `image` pour `imageUrl`
           };
         });
@@ -147,11 +147,13 @@ function Home() {
               <div className="embla__container flex">
                 {houses.map((house) => (
                   <div key={house.id} className="embla__slide flex-[0_0_100%] min-w-0">
+                    <Link to={`/house/${house.id}`}>
                     <img 
                       src={house.imageUrl} 
                       alt={`Maison ${house.id}`} 
                       className="w-full h-[calc(100vh-64px)] object-cover"
                     />
+                    </Link>
                   </div>
                 ))}
               </div>
@@ -180,7 +182,7 @@ function Home() {
         <section className='my-12 flex justify-center'>
         <div className="">
           <Link to="/Acheter" className="mx-auto inline-block bg-blue-600 text-white text-lg font-medium py-3 px-8 rounded-lg shadow hover:bg-blue-700 transition duration-300">
-            Contactez-moi dès aujourd'hui 
+            Voir tous nos biens
           </Link>
         </div>
         </section>
