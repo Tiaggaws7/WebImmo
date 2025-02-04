@@ -57,7 +57,7 @@ function Home() {
             <img
               src={profilePicture}
               alt="Elise BUIL"
-              className="w-64 h-64 rounded-full object-cover"
+              className="w-64 h-90 rounded-full object-cover"
             />
             <div>
               <p className="text-lg mb-4">
@@ -99,11 +99,11 @@ function Home() {
                 {houses.map(house => (
                   <div key={house.id} className="w-full flex-shrink-0">
                     <Link to={`/house/${house.id}`}>
-                      <img 
-                        src={house.principalImage} 
-                        alt={`Maison ${house.id}`} 
-                        className="w-full h-[calc(100vh-64px)] object-cover"
-                      />
+                    <img 
+                      src={house.principalImage} 
+                      alt={`Maison ${house.id}`} 
+                      className="w-full h-64 md:h-[calc(100vh-64px)] object-cover"
+                    />
                     </Link>
                   </div>
                 ))}

@@ -48,7 +48,7 @@ const RealWhoAmI: React.FC = () => {
   return (
     <div className="bg-gray-100 text-gray-800">
       
-      <main className="container mx-auto w-2/3 p-4">
+      <main className="container mx-auto w-auto p-4">
         {/* Header */}
         <header className="bg-gray-800 text-white text-center py-6 rounded shadow">
           <h1 className="text-2xl font-bold">Elise BUIL</h1>
@@ -61,11 +61,11 @@ const RealWhoAmI: React.FC = () => {
       <section className="py-16 px-4 md:px-8 max-w-5xl mx-auto">
         <h2 className="text-3xl font-bold mb-8 text-center">À propos de moi</h2>
         <div className="flex flex-col md:flex-row items-center gap-8">
-          <img
-            src={profilePicture}
-            alt="Elise BUIL"
-            className="w-64 h-64 rounded-full object-cover"
-          />
+        <img
+              src={profilePicture}
+              alt="Elise BUIL"
+              className="w-64 h-90 rounded-full object-cover"
+            />
           <div>
               <p className="text-lg mb-4">
               Bien plus qu'un métier, une véritable passion!

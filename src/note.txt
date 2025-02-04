@@ -22,6 +22,8 @@ OK firebase storage rules
 
 OK Image de l'accueil cliquable directement vers détail
 
-Rajouter plusieurs images
+OK Rajouter plusieurs images
+
+Responsive 
 
 make it SEO friendly ( things + Vercel hosting)
