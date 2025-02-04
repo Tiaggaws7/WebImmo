@@ -179,10 +179,10 @@ export default function ModernRealEstateForm() {
                 key={index}
                 className={`flex h-12 w-12 items-center justify-center rounded-full transition-all duration-300 ${
                   index + 1 === currentStep
-                    ? 'bg-blue-600 text-white pulse'
+                    ? 'bg-primary text-white pulse'
                     : index + 1 < currentStep
-                    ? 'bg-blue-200 text-blue-700'
-                    : 'bg-gray-200 text-gray-500'
+                    ? 'bg-gray-200 text-primary'
+                    : 'bg-gray-200 text-primary'
                 }`}
               >
                 <Icon className="h-6 w-6" />
@@ -190,11 +190,11 @@ export default function ModernRealEstateForm() {
             ))}
           </div>
           <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
-            <div className="progress-bar h-full bg-blue-600 transition-all duration-500 ease-out" style={{ width: '0%' }}></div>
+            <div className="progress-bar h-full bg-primary transition-all duration-500 ease-out" style={{ width: '0%' }}></div>
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-xl bg-white p-6 shadow-lg">
+        <div className="overflow-hidden rounded-xl bg-white p-6 shadow-lg shadow-primary">
           <div className={`slide-in`} key={currentStep}>
             {/* Step 1: Address */}
             {currentStep === 1 && (
@@ -214,7 +214,7 @@ export default function ModernRealEstateForm() {
                       value={formData.address}
                       onChange={(e) => updateFormData('address', e.target.value)}
                       placeholder="12 rue Saint Denis, 75011 Paris"
-                      className="w-full rounded-lg border-2 border-gray-200 bg-gray-50 py-3 pl-12 pr-4 text-gray-800 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all duration-300"
+                      className="w-full rounded-lg border-2 border-gray-200 bg-gray-50 py-3 pl-12 pr-4 text-gray-800 placeholder-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all duration-300"
                     />
                   </div>
                 </div>
@@ -239,8 +239,8 @@ export default function ModernRealEstateForm() {
                       onClick={() => updateFormData('propertyType', type.id)}
                       className={`flex flex-col items-center justify-center p-6 rounded-xl border-2 transition-all duration-300 ${
                         formData.propertyType === type.id
-                          ? 'border-blue-500 bg-blue-50 text-blue-700'
-                          : 'border-gray-200 text-gray-600 hover:border-blue-300 hover:bg-blue-50'
+                          ? 'border-primary bg-primary-50 text-primary'
+                          : 'border-gray-200 text-gray-600 hover:border-red-300 hover:bg-red-50'
                       }`}
                     >
                       <type.icon className="mb-4 h-16 w-16" />
@@ -275,7 +275,7 @@ export default function ModernRealEstateForm() {
                           type="number"
                           value={formData[field.id as keyof typeof formData] as string}
                           onChange={(e) => updateFormData(field.id, e.target.value)}
-                          className="w-full rounded-lg border-2 border-gray-200 bg-gray-50 px-4 py-2 text-gray-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all duration-300"
+                          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-gray-800 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-300"
                         />
                         {field.unit && (
                           <span className="ml-2 text-sm text-gray-500">{field.unit}</span>
@@ -300,8 +300,8 @@ export default function ModernRealEstateForm() {
                       onClick={() => toggleFeature(feature)}
                       className={`py-4 rounded-lg border-2 transition-all duration-300 ${
                         formData.features.includes(feature)
-                          ? 'border-blue-500 bg-blue-100 text-blue-700'
-                          : 'border-gray-200 text-gray-600 hover:border-blue-300 hover:bg-blue-50'
+                          ? 'border-primary bg-red-100 text-primary'
+                          : 'border-gray-200 text-gray-600 hover:border-primary hover:bg-red-50'
                       }`}
                     >
                       {feature}
@@ -330,7 +330,7 @@ export default function ModernRealEstateForm() {
                         onClick={() => updateContactData('gender', gender)}
                         className={`px-6 py-2 rounded-full text-lg transition-all duration-300 ${
                           formData.contact.gender === gender
-                            ? 'bg-blue-500 text-white'
+                            ? 'bg-primary text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         }`}
                       >
@@ -364,7 +364,7 @@ export default function ModernRealEstateForm() {
                         value={formData.contact[field.id as keyof typeof formData.contact]}
                         onChange={(e) => updateContactData(field.id, e.target.value)}
                         placeholder={field.placeholder}
-                        className="w-full rounded-lg border-2 border-gray-200 bg-gray-50 px-4 py-2 text-gray-800 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all duration-300"
+                        className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-gray-800 placeholder-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-300"
                       />
                     </div>
                   ))}
@@ -397,7 +397,7 @@ export default function ModernRealEstateForm() {
                 onClick={currentStep === 5 ? handleSubmit : handleNext}
                 disabled={!isStepValid}
                 className={`ml-auto flex items-center px-6 py-2 rounded-lg transition-all duration-300 ${
-                  isStepValid ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  isStepValid ? 'bg-primary text-white hover:bg-black' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
               >
                 {currentStep === 5 ? "Recevoir mon estimation" : 'Étape suivante'}

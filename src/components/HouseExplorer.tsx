@@ -145,13 +145,13 @@ export default function HouseExplorer() {
   const conditions = ['all', 'disponible', 'sous compromis', 'vendu'] as const;
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 md:p-8">
+    <div className="min-h-screen bg-white p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">Disponible à la vente</h2>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="bg-violet-600 text-white py-2 px-4 rounded-lg text-sm font-semibold hover:bg-violet-700 transition-colors duration-200 flex items-center"
+            className="bg-primary text-white py-2 px-4 rounded-lg text-sm font-semibold hover:bg-black transition-colors duration-200 flex items-center"
           >
             {showFilters ? <X className="mr-2" /> : <Search className="mr-2" />}
             {showFilters ? 'Fermer les filtres' : 'Afficher les filtres'}
@@ -165,8 +165,8 @@ export default function HouseExplorer() {
               onClick={() => setCriteria(prev => ({ ...prev, condition }))}
               className={`py-2 px-4 rounded-lg text-sm font-semibold transition-colors duration-200 ${
                 criteria.condition === condition
-                  ? 'bg-violet-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  ? 'bg-primary text-black'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300 border border-primary'
               }`}
             >
               {condition === 'all' ? 'Tous' : condition.charAt(0).toUpperCase() + condition.slice(1)}
@@ -187,7 +187,7 @@ export default function HouseExplorer() {
                 type="text"
                 value={criteria.location}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
+                className="w-full px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
               />
             </div>
             <div>
@@ -200,7 +200,7 @@ export default function HouseExplorer() {
                 type="number"
                 value={criteria.maxPrice}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
+                className="w-full px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
               />
             </div>
             <div>
@@ -213,7 +213,7 @@ export default function HouseExplorer() {
                 type="number"
                 value={criteria.minSize}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
+                className="w-full px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
               />
             </div>
             <div>
@@ -228,7 +228,7 @@ export default function HouseExplorer() {
                     onClick={() => handleMultiSelectChange('propertyTypes', option.value)}
                     className={`py-1 px-3 rounded-full text-xs font-medium transition-colors duration-200 ${
                       criteria.propertyTypes.includes(option.value)
-                        ? 'bg-violet-600 text-white'
+                        ? 'bg-primary text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
@@ -246,7 +246,7 @@ export default function HouseExplorer() {
                 name="rooms"
                 value={criteria.rooms}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
+                className="w-full px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
               >
                 {[1, 2, 3, 4, 5, '6+'].map((num) => (
                   <option key={num} value={num.toString()}>{num} {num === 1 ? 'pièce' : 'pièces'}</option>
@@ -262,7 +262,7 @@ export default function HouseExplorer() {
                 name="bedrooms"
                 value={criteria.bedrooms}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
+                className="w-full px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
               >
                 {[1, 2, 3, 4, 5, '6+'].map((num) => (
                   <option key={num} value={num.toString()}>{num} {num === 1 ? 'chambre' : 'chambres'}</option>
@@ -278,7 +278,7 @@ export default function HouseExplorer() {
                 name="bathrooms"
                 value={criteria.bathrooms}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none"
+                className="w-full px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
               >
                 {[1, 2, 3, 4, '5+'].map((num) => (
                   <option key={num} value={num.toString()}>{num} {num === 1 ? 'salle de bain' : 'salles de bain'}</option>
@@ -297,7 +297,7 @@ export default function HouseExplorer() {
                     onClick={() => handleMultiSelectChange('amenities', option.value)}
                     className={`py-1 px-3 rounded-full text-xs font-medium transition-colors duration-200 ${
                       criteria.amenities.includes(option.value)
-                        ? 'bg-violet-600 text-white'
+                        ? 'bg-primary text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
@@ -317,7 +317,7 @@ export default function HouseExplorer() {
               <Link
                 to={`/house/${house.id}`}
                 key={house.id}
-                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+                className="bg-white rounded-lg shadow-md shadow-primary overflow-hidden hover:shadow-lg hover:shadow-black transition-shadow duration-300"
               >
                 <div className="relative">
                 <img 

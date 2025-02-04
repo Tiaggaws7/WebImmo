@@ -66,7 +66,7 @@ export default function ProfessionalClassicBlogPage() {
           key={category}
           className={`text-left py-2 px-4 rounded transition-colors ${
             selectedCategory === category
-              ? 'bg-blue-100 text-blue-800 font-semibold'
+              ? 'bg-primary text-white font-semibold'
               : 'text-gray-600 hover:bg-gray-100'
           }`}
           onClick={() => {
@@ -81,7 +81,7 @@ export default function ProfessionalClassicBlogPage() {
   );
 
   const ArticleCard = ({ article }: { article: Article }) => (
-    <article className="bg-white border border-gray-200 rounded-lg p-6 transition-shadow duration-300 hover:shadow-md">
+    <article className="bg-white border border-primary rounded-lg p-6 transition-shadow duration-300 hover:shadow-md hover:sahdow-primary">
       <h2 className="text-2xl font-serif font-semibold mb-2">
         <a
           href="#"
@@ -89,7 +89,7 @@ export default function ProfessionalClassicBlogPage() {
             e.preventDefault();
             setSelectedArticle(article);
           }}
-          className="text-gray-800 hover:text-blue-600 transition-colors"
+          className="text-gray-800 hover:text-primary transition-colors"
         >
           {article.title}
         </a>
@@ -158,7 +158,7 @@ export default function ProfessionalClassicBlogPage() {
   };
 
   return (
-    <div className="bg-gray-100">
+    <div className="bg-white">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <h1 className="text-5xl font-serif font-bold mb-12 text-center text-gray-800">
           Actualités

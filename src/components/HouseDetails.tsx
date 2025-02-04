@@ -51,7 +51,7 @@ const HouseDetails: React.FC = () => {
     <div className="min-h-screen bg-gray-100 p-4 md:p-8">
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
         <div className="p-6">
-          <Link to="/Acheter" className="inline-flex items-center text-violet-600 hover:text-violet-800 mb-4">
+          <Link to="/Acheter" className="inline-flex items-center text-primary hover:text-black mb-4">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Retour à la liste
           </Link>

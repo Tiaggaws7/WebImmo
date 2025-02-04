@@ -79,7 +79,7 @@ function Home() {
               Au plaisir de vous rencontrer, 
               </p>
               <div className="mt-12">
-                <Link to="/EliseBUIL" className="mx-auto inline-block bg-blue-600 text-white text-lg font-medium py-3 px-8 rounded-lg shadow hover:bg-blue-700 transition duration-300">
+                <Link to="/EliseBUIL" className="mx-auto inline-block bg-primary text-white text-lg font-medium py-3 px-8 rounded-lg shadow hover:bg-black transition duration-300">
                   Contactez-moi dès aujourd'hui 
                 </Link>
               </div>
@@ -143,7 +143,7 @@ function Home() {
 
         <section className='my-12 flex justify-center'>
         <div className="">
-          <Link to="/Acheter" className="mx-auto inline-block bg-blue-600 text-white text-lg font-medium py-3 px-8 rounded-lg shadow hover:bg-blue-700 transition duration-300">
+          <Link to="/Acheter" className="mx-auto inline-block bg-primary text-white text-lg font-medium py-3 px-8 rounded-lg shadow hover:bg-black transition duration-300">
             Voir tous nos biens
           </Link>
         </div>

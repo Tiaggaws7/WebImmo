@@ -46,7 +46,7 @@ const RealWhoAmI: React.FC = () => {
 
 
   return (
-    <div className="bg-gray-100 text-gray-800">
+    <div className="bg-white text-gray-800">
       
       <main className="container mx-auto w-auto p-4">
         {/* Header */}
@@ -93,11 +93,11 @@ const RealWhoAmI: React.FC = () => {
         <section className="mb-12 bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-2xl font-semibold mb-4 text-gray-800">Témoignages Clients</h2>
           <div className="space-y-6">
-            <blockquote className="italic text-gray-600 border-l-4 border-blue-500 pl-4">
+            <blockquote className="italic text-gray-600 border-l-4 border-primary pl-4">
             " Nous sommes ravis de l'accompagnement et de la conscience professionnelle d'Elise pour la recherche et l'achat de notre maison. Nous la recommandons vivement." 
               <footer className="text-gray-500 mt-2">- Jennifer et Xavier ROLLAND</footer>
             </blockquote>
-            <blockquote className="italic text-gray-600 border-l-4 border-blue-500 pl-4">
+            <blockquote className="italic text-gray-600 border-l-4 border-primary pl-4">
             "Elise m'a permis de vendre mon appartement rapidement. Je la remercie pour sa disponibilité."
               <footer className="text-gray-500 mt-2">- Guillaume RABILLER</footer>
             </blockquote>
@@ -194,7 +194,7 @@ const RealWhoAmI: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-black text-white font-medium py-3 rounded-md shadow hover:bg-gray-800 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-50 transition duration-150"
+                className="w-full bg-primary text-white font-medium py-3 rounded-md shadow hover:bg-gray-800 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-50 transition duration-150"
               >
                 {isSubmitting ? "Envoi en cours..." : "Envoyer le Message"}
               </button>
