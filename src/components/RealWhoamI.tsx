@@ -90,7 +90,7 @@ const RealWhoAmI: React.FC = () => {
       </section>
 
         {/* Testimonials */}
-        <section className="mb-12 bg-white p-6 rounded-lg shadow-md">
+        <section className="mb-12 bg-white p-6 rounded-lg shadow-md shadow-primary">
           <h2 className="text-2xl font-semibold mb-4 text-gray-800">Témoignages Clients</h2>
           <div className="space-y-6">
             <blockquote className="italic text-gray-600 border-l-4 border-primary pl-4">
@@ -105,7 +105,7 @@ const RealWhoAmI: React.FC = () => {
         </section>
 
        {/* Contact Section */}
-        <section id="contact" className="bg-white mt-6 p-6 rounded-lg shadow-lg">
+        <section id="contact" className="bg-white mt-6 p-6 rounded-lg shadow-md shadow-primary  ">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6">Contactez-moi</h2>
           {successMessage ? (
             <div className="text-center">

@@ -101,7 +101,7 @@ export default function ProfessionalClassicBlogPage() {
         </span>
         <button
           onClick={() => setSelectedArticle(article)}
-          className="text-blue-600 hover:text-blue-800 transition-colors font-semibold"
+          className="text-electrique hover:text-blue-800 transition-colors font-semibold"
         >
           Lire la suite →
         </button>
@@ -149,7 +149,7 @@ export default function ProfessionalClassicBlogPage() {
         </div>
         <button
           onClick={() => setSelectedArticle(null)}
-          className="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+          className="inline-block bg-electrique text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
         >
           ← Retour à tous les articles
         </button>
