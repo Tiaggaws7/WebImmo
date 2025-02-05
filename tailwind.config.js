@@ -7,7 +7,8 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#D90115' // You can use this name or any other you prefer
+        primary: '#D90115',
+        electrique: '#2C75FF' // You can use this name or any other you prefer
       }
     },
   },

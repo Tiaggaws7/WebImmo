@@ -336,7 +336,7 @@ export default function HouseExplorer() {
                       {getConditionText(house.condition)}
                     </div>
                   </div>
-                  <p className="text-violet-600 font-bold mb-2">
+                  <p className="text-electrique font-bold mb-2">
                     {(() => {
                       const cleanPrice = house.price.replace(/[^0-9.-]+/g, ''); // Remove non-numeric characters
                       const numericPrice = Number(cleanPrice); // Convert to a number
