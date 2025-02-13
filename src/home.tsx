@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Helmet } from "react-helmet-async";
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { House } from './types'
@@ -50,6 +51,22 @@ function Home() {
   
   return (
     <div className="flex flex-col min-h-screen">
+      <Helmet>
+        <title>Accueil | Elise Buil Immobilier Guadeloupe</title>
+        <meta name="description" content="Découvrez les meilleures offres immobilières en Guadeloupe avec Elise Buil. Achat, vente et estimation de biens immobiliers." />
+        <meta name="keywords" content="Immobilier Guadeloupe, Achat maison Guadeloupe, Vente appartement, Annonces immobilières" />
+        <meta name="author" content="Elise Buil" />
+        
+        {/* Open Graph for Facebook & Social Media */}
+        <meta property="og:title" content="Accueil | Elise Buil Immobilier Guadeloupe" />
+        <meta property="og:description" content="Découvrez les meilleures offres immobilières en Guadeloupe avec Elise Buil." />
+        <meta property="og:image" content={profilePicture} />
+        <meta property="og:url" content="https://elisebuilimmobilierguadeloupe.com/" />
+        <meta property="og:type" content="website" />
+        
+        {/* Canonical URL (SEO best practice) */}
+        <link rel="canonical" href="https://elisebuilimmobilierguadeloupe.com/" />
+      </Helmet>
       <main className="flex-grow">
         <section className="py-16 px-4 md:px-8 max-w-5xl mx-auto">
           <h2 className="text-3xl font-bold mb-8 text-center">À propos de moi</h2>

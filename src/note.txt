@@ -1,29 +1,21 @@
-OK Enlever le footer partout 
-
-OK commodité changer en Annexe mettre dans admin
-
-OK changer taille en surface partout acheter et admin
-
-OK Le blog d'investimmo à changer en Actualités
-
-OK bdd rules   
-
-OK un bien peut avoir potentiellement plusieurs types, 
-
-OK selection sous forme de button comme les filtres pour les types
-
-OK rajouter la consomation energétique "A", "B", "C", "D", "E", "F", ou "G" 
-
-OK rajouter WC 
-
-OK make 404 page
-
-OK firebase storage rules
-
-OK Image de l'accueil cliquable directement vers détail
-
-OK Rajouter plusieurs images
-
-Responsive 
-
 make it SEO friendly ( things + Vercel hosting)
+
+helmet in:
+
+OK home
+
+notFound ( check the url )
+
+OK blog
+
+OK estimationForm
+
+OK houseDetail
+
+OK houseExplorer
+
+OK RealWhoamI
+
+OK Search-house
+
+OK Selling_form

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import emailjs from "emailjs-com";
 
 import profilePicture from "../assets/profile_picture.jpg"
@@ -47,7 +48,15 @@ const RealWhoAmI: React.FC = () => {
 
   return (
     <div className="bg-white text-gray-800">
-      
+      <Helmet>
+        <title>À Propos de Elise BUIL - Vente et Location Immobilière</title>
+        <meta name="description" content="Découvrez l'expertise d'Elise BUIL en vente et location immobilière. Un accompagnement personnalisé, juridique et commercial pour vos projets." />
+        <meta name="keywords" content="Elise BUIL, immobilier, vente immobilière, location, accompagnement juridique, agent immobilier" />
+        <meta name="robots" content="index, follow" />
+        <meta name="author" content="Elise Buil" />
+        <link rel="canonical" href="https://elisebuilimmobilierguadeloupe.com/elisebuil" />
+      </Helmet>
+
       <main className="container mx-auto w-auto p-4">
         {/* Header */}
         <header className="bg-gray-800 text-white text-center py-6 rounded shadow">

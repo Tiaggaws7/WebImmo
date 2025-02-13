@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { createClient } from 'contentful';
 import { documentToReactComponents } from '@contentful/rich-text-react-renderer';
 import { BLOCKS, MARKS } from '@contentful/rich-text-types';
@@ -159,6 +160,13 @@ export default function ProfessionalClassicBlogPage() {
 
   return (
     <div className="bg-white">
+      <Helmet>
+        <title>Actualités Immobilières | Elise Buil Immobilier</title>
+        <meta name="description" content="Découvrez les dernières actualités et conseils en immobilier en Guadeloupe. Suivez les tendances du marché et nos recommandations." />
+        <meta name="keywords" content="actualités immobilières, marché immobilier Guadeloupe, conseils immobilier, achat, vente" />
+        <meta name="author" content="Elise Buil" />
+        <link rel="canonical" href="https://elisebuilimmobilierguadeloupe.com/Blog" />
+      </Helmet>
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <h1 className="text-5xl font-serif font-bold mb-12 text-center text-gray-800">
           Actualités

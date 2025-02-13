@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom"
 import { ArrowRight } from "lucide-react"
+import { Helmet } from "react-helmet-async"
 
 const NavigationPage = () => {
   const navigationLinks = [
@@ -13,6 +14,13 @@ const NavigationPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Helmet>
+        <title>Page introuvable | Elise Buil Immobilier</title>
+        <meta name="description" content="La page que vous recherchez est introuvable. Retournez à l'accueil ou explorez nos services immobiliers." />
+        <meta name="keywords" content="404, page introuvable, immobilier Guadeloupe, achat maison, vente appartement" />
+        <meta name="author" content="Elise Buil" />
+        <link rel="canonical" href="https://elisebuilimmobilierguadeloupe.com/" />
+      </Helmet>
       <main className="flex-grow container mx-auto px-4 py-12">
         <p className="text-center">404 - page introuvable</p>
         <br/>

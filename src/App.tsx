@@ -1,4 +1,5 @@
 import './App.css';
+import { HelmetProvider } from "react-helmet-async";
 import { BrowserRouter, Route, Routes, /*useLocation*/ } from 'react-router-dom';
 import Home from './home.tsx';
 import NotFound from './NotFound.tsx';
@@ -41,10 +42,13 @@ const AppContent = () => {
 
 function App() {
   return (
-    <BrowserRouter basename="/">
-      <AppContent />
-    </BrowserRouter>
+    <HelmetProvider>
+      <BrowserRouter basename="/">
+        <AppContent />
+      </BrowserRouter>
+    </HelmetProvider>
   );
 }
+
 
 export default App;

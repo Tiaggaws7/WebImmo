@@ -5,6 +5,7 @@ import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react"
 import { doc, getDoc } from "firebase/firestore"
 import { db } from "../firebase-config"
 import type { House } from "../types"
+import { Helmet } from "react-helmet-async"
 
 const HouseDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -49,6 +50,13 @@ const HouseDetails: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 md:p-8">
+      <Helmet>
+        <title>{house ? `${house.title} | Maison à vendre en Guadeloupe` : "Détails du bien | Immobilier Guadeloupe"}</title>
+        <meta name="description" content={house ? `Découvrez cette propriété à ${house.location} : ${house.size} m², ${house.rooms} pièces, ${house.bedrooms} chambres. Prix : ${house.price}. Contactez-nous pour plus d'infos !` : "Trouvez la maison de vos rêves en Guadeloupe avec nos annonces immobilières exclusives."} />
+        <meta name="keywords" content="maison à vendre Guadeloupe, immobilier Guadeloupe, achat maison, maison avec piscine, annonces immobilières" />
+        <meta name="author" content="Elise Buil" />
+        <link rel="canonical" href={house ? `https://elisebuilimmobilierguadeloupe.com/Acheter/${house.id}` : "https://elisebuilimmobilierguadeloupe.com/Acheter"} />
+      </Helmet>
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
         <div className="p-6">
           <Link to="/Acheter" className="inline-flex items-center text-primary hover:text-black mb-4">

@@ -1,4 +1,5 @@
 import React, { useState, } from 'react'
+import { Helmet } from 'react-helmet-async';
 import emailjs from 'emailjs-com';
 
 export default function Selling_form() {
@@ -54,6 +55,14 @@ export default function Selling_form() {
 
   return (
     <div className="min-h-screen bg-white p-4 flex items-center justify-center">
+      <Helmet>
+        <title>Vendez Votre Bien Immobilier - Obtenez une Estimation Gratuite</title>
+        <meta name="description" content="Obtenez une estimation gratuite de votre bien immobilier et bénéficiez d'un accompagnement complet pour la vente de votre maison ou appartement." />
+        <meta name="keywords" content="vente immobilier, estimation gratuite, vendre maison, vendre appartement, immobilier France" />
+        <meta name="robots" content="index, follow" />
+        <meta name="author" content="Elise Buil" />
+        <link rel="canonical" href="https://elisebuilimmobilierguadeloupe.com/Vendre" />
+      </Helmet>
       <div 
         className="w-full max-w-5xl bg-white rounded-xl shadow-lg shadow-primary overflow-hidden flex flex-col lg:flex-row"
         style={{ maxHeight: '95vh' }}

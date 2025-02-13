@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Helmet } from 'react-helmet-async';
 import { Search, X } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
@@ -146,6 +147,14 @@ export default function HouseExplorer() {
 
   return (
     <div className="min-h-screen bg-white p-4 md:p-8">
+      <Helmet>
+        <title>Biens Disponibles à la Vente - Votre Agence Immobilière</title>
+        <meta name="description" content="Découvrez tous nos biens immobiliers disponibles à la vente. Trouvez la maison ou l'appartement idéal selon vos critères de recherche." />
+        <meta name="keywords" content="immobilier, achat maison, achat appartement, biens à vendre, immobilier France" />
+        <meta name="robots" content="index, follow" />
+        <meta name="author" content="Elise Buil" />
+        <link rel="canonical" href="https://elisebuilimmobilierguadeloupe.com/Acheter" />
+      </Helmet>
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">Disponible à la vente</h2>
