@@ -12,6 +12,9 @@ function Home() {
   const [activeIndex, setActiveIndex] = useState(0)
   const [touchStart, setTouchStart] = useState(0)
   const [touchEnd, setTouchEnd] = useState(0)
+  const [mouseDownX, setMouseDownX] = useState(0)
+  const [mouseMoveX, setMouseMoveX] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
 
   // Récupération des maisons
   useEffect(() => {
@@ -48,6 +51,29 @@ function Home() {
     if (touchStart - touchEnd < -50) handlePrev()
   }
 
+  // Gestion du glissement souris
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setMouseDownX(e.clientX)
+    setMouseMoveX(e.clientX)
+    setIsDragging(false)
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (mouseDownX !== 0) {
+      setIsDragging(true)
+      setMouseMoveX(e.clientX)
+    }
+  }
+
+  const handleMouseEnd = () => {
+    if (isDragging) {
+      const delta = mouseDownX - mouseMoveX
+      if (delta > 50) handleNext()
+      if (delta < -50) handlePrev()
+    }
+    setMouseDownX(0)
+    setIsDragging(false)
+  }
   
   return (
     <div className="flex flex-col min-h-screen">
@@ -60,7 +86,6 @@ function Home() {
         {/* Open Graph for Facebook & Social Media */}
         <meta property="og:title" content="Accueil | Elise Buil Immobilier Guadeloupe" />
         <meta property="og:description" content="Découvrez les meilleures offres immobilières en Guadeloupe avec Elise Buil." />
-        <meta property="og:image" content={profilePicture} />
         <meta property="og:url" content="https://elisebuilimmobilierguadeloupe.com/" />
         <meta property="og:type" content="website" />
         
@@ -105,58 +130,64 @@ function Home() {
         </section>
         
         <section className="bg-white">
-          <div className="relative">
-            <div 
-              className="overflow-hidden relative"
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-            >
-              <div className="flex transition-transform duration-300" style={{ transform: `translateX(-${activeIndex * 100}%)` }}>
-                {houses.map(house => (
-                  <div key={house.id} className="w-full flex-shrink-0">
-                    <Link to={`/house/${house.id}`}>
+        <div className="relative group">
+          <div 
+            className="overflow-hidden relative"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            <div className="flex transition-transform duration-300 ease-out" style={{ transform: `translateX(-${activeIndex * 100}%)` }}>
+              {houses.map(house => (
+                <div key={house.id} className="w-full flex-shrink-0 relative">
+                  <Link to={`/house/${house.id}`} className="block">
                     <img 
                       src={house.principalImage} 
                       alt={`Maison ${house.id}`} 
                       className="w-full h-64 md:h-[calc(100vh-64px)] object-cover"
                     />
-                    </Link>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {houses.length > 1 && (
-              <>
-                <button
-                  onClick={handlePrev}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/50 p-2 rounded-full shadow-md hover:bg-white/75 transition-all"
-                >
-                  <ChevronLeft className="h-6 w-6" />
-                </button>
-                <button
-                  onClick={handleNext}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/50 p-2 rounded-full shadow-md hover:bg-white/75 transition-all"
-                >
-                  <ChevronRight className="h-6 w-6" />
-                </button>
-
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                  {houses.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setActiveIndex(index)}
-                      className={`w-3 h-3 rounded-full transition-colors ${
-                        index === activeIndex ? 'bg-blue-600' : 'bg-white/50 hover:bg-white/75'
-                      }`}
-                    />
-                  ))}
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-black/10"></div>
+                  </Link>
                 </div>
-              </>
-            )}
+              ))}
+            </div>
           </div>
-        </section>
+
+    {houses.length > 1 && (
+      <>
+        <button
+          onClick={handlePrev}
+          className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 bg-white/90 p-3 rounded-full shadow-lg hover:bg-white transition-all duration-300 opacity-0 group-hover:opacity-100"
+          aria-label="Previous image"
+        >
+          <ChevronLeft className="h-8 w-8 text-gray-900 hover:text-blue-600" />
+        </button>
+        <button
+          onClick={handleNext}
+          className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 bg-white/90 p-3 rounded-full shadow-lg hover:bg-white transition-all duration-300 opacity-0 group-hover:opacity-100"
+          aria-label="Next image"
+        >
+          <ChevronRight className="h-8 w-8 text-gray-900 hover:text-blue-600" />
+        </button>
+
+        {/* Progress Dots */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+          {houses.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setActiveIndex(index)}
+              className={`w-4 h-4 rounded-full transition-all duration-300 ${
+                index === activeIndex 
+                  ? 'bg-blue-600 scale-125' 
+                  : 'bg-white/80 hover:bg-white scale-100'
+              }`}
+            />
+          ))}
+        </div>
+      </>
+    )}
+  </div>
+</section>
 
         <section className='my-12 flex justify-center'>
         <div className="">
