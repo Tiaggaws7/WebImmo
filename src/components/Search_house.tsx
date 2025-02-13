@@ -1,5 +1,4 @@
 'use client'
-import { Helmet } from 'react-helmet-async'
 import { useState } from 'react'
 import { Search, Home, ChevronDown, ChevronUp } from 'lucide-react'
 
