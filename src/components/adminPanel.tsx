@@ -644,7 +644,9 @@ const AdminPanel: React.FC = () => {
                 </select>
               </div>
               <div className="md:col-span-2">
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                  Description (Markdown supporté)
+                </label>
                 <textarea
                   id="description"
                   name="description"
@@ -652,8 +654,23 @@ const AdminPanel: React.FC = () => {
                   onChange={handleInputChange}
                   rows={4}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                ></textarea>
+                  placeholder="Utilisez **gras**, *italique*, [liens](https://)..."
+                ></textarea>                <p className="mt-1 text-sm text-gray-500">
+                Syntaxe supportée :
+              </p>
+              <ul className="mt-1 text-sm text-gray-500 list-disc list-inside">
+                <li><strong>Gras</strong> : <code>**texte**</code> ou <code>__texte__</code></li>
+                <li><em>Italique</em> : <code>*texte*</code> ou <code>_texte_</code></li>
+                <li><del>Barré</del> : <code>~~texte~~</code></li>
+                <li>En-têtes : <code># Titre 1</code> à <code>###### Titre 6</code></li>
+                <li>Listes non ordonnées : <code>- élément</code>, <code>* élément</code> ou <code>+ élément</code></li>
+                <li>Listes ordonnées : <code>1. élément</code>, <code>2. élément</code>, etc.</li>
+                <li>Liens : <code>[texte du lien](https://exemple.com)</code></li>
+                <li>Citations : <code> texte cité</code></li>
+                <li>Lignes horizontales : <code>---</code>, <code>***</code> ou <code>___</code></li>
+              </ul>
               </div>
+
               <div className="md:col-span-2 flex justify-end space-x-4">
                 <button
                   type="button"

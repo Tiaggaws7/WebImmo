@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import emailjs from "emailjs-com";
-
 import profilePicture from "../assets/profile_picture.jpg"
 
 const RealWhoAmI: React.FC = () => {
@@ -34,9 +33,19 @@ const RealWhoAmI: React.FC = () => {
       const templateID = import.meta.env.VITE_EMAILJS_VENDRE_TEMPLATE_ID;
       const userID = import.meta.env.VITE_EMAILJS_USER_ID;
 
-      await emailjs.send(serviceID, templateID, formData, userID);
+
+      const templateParams = {
+        to_email: "tiagobuil.tb@gmail.com", // Explicit recipient email
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        message: formData.message,
+      };
+
+      await emailjs.send(serviceID, templateID, templateParams, userID);
 
       setSuccessMessage("Votre message a été envoyé avec succès ! Merci de m'avoir contacté.");
+      setFormData({ name: "", email: "", phone: "", message: "" });
     } catch (error) {
       console.error("EmailJS Error:", error);
       setErrorMessage("Une erreur s'est produite lors de l'envoi de votre message. Veuillez réessayer plus tard.");

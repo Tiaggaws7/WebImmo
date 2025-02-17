@@ -1,4 +1,5 @@
 import type React from "react"
+import ReactMarkdown from 'react-markdown';
 import { useEffect, useState } from "react"
 import { useParams, Link } from "react-router-dom"
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react"
@@ -169,7 +170,8 @@ const HouseDetails: React.FC = () => {
           </div>
           <div className="mt-6">
             <h2 className="text-xl font-semibold mb-2">Description</h2>
-            <p className="text-gray-700">{house.description}</p>
+            <ReactMarkdown>{house.description}</ReactMarkdown>
+            {/*<p className="text-gray-700">{house.description}</p>*/}
           </div>
         </div>
       </div>
