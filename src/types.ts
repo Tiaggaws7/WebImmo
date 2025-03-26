@@ -17,3 +17,14 @@ export interface House {
     condition: 'vendu' | 'disponible' | 'sous compromis';
     consomation: "A" | "B" | "C" | "D" | "E" | "F" | "G";
   }
+
+  export type Article = {
+    id: string;
+    title: string;
+    category: string;
+    excerpt: string;
+    content: any; // Contentful rich text might be an object
+    author: string;
+    date: string;
+  };
+  
