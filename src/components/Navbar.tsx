@@ -48,7 +48,7 @@ const NavLinks = () => (
     <Link to="/Acheter" className="block text-black hover:text-red-300">
       Acheter
     </Link>
-    <Link to="/Blog" className="block text-black hover:text-red-300">
+    <Link to="https://blog.elisebuilimmobilierguadeloupe.com/" className="block text-black hover:text-red-300">
       Actualités
     </Link>
     <Link to="/EliseBUIL" className="block text-black hover:text-red-300">
