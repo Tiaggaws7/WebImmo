@@ -640,6 +640,8 @@ const AdminPanel: React.FC = () => {
                   <option value="vendu">Vendu</option>
                   <option value="disponible">Disponible</option>
                   <option value="sous compromis">sous compromis</option>
+                  <option value="sous offre">sous offre</option>
+                  <option value="en attente">en attente</option>
 
                 </select>
               </div>
@@ -724,11 +726,17 @@ const AdminPanel: React.FC = () => {
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                       house.condition === 'vendu' ? 'bg-red-100 text-red-800' : 
                       house.condition === 'disponible' ? 'bg-green-100 text-green-800' :
-                      'bg-yellow-100 text-yellow-800'
+                      house.condition === 'sous compromis' ? 'bg-orange-100 text-orange-800' :
+                      house.condition === 'sous offre' ? 'bg-blue-100 text-blue-800' :
+                      house.condition === 'en attente' ? 'bg-purple-100 text-purple-800' :
+                      'bg-gray-100 text-gray-800'
                     }`}>
                       {house.condition === 'vendu' ? 'Vendu' : 
                        house.condition === 'disponible' ? 'Disponible' : 
-                       'Sous compromis'}
+                       house.condition === 'sous compromis' ? 'Sous compromis' :
+                       house.condition === 'sous offre' ? 'Sous offre' :
+                       house.condition === 'en attente' ? 'En attente' :
+                       house.condition}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

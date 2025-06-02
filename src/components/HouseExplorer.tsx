@@ -50,6 +50,11 @@ export default function HouseExplorer() {
 
   useEffect(() => {
     const filtered = houses.filter((house) => {
+      // Exclure les biens "en attente" de tous les affichages, sauf si explicitement sélectionné
+      if (house.condition === 'en attente' && criteria.condition !== 'en attente') {
+        return false;
+      }
+
       return (
         (criteria.condition === 'all' || house.condition === criteria.condition) &&
         parseInt(house.price) <= criteria.maxPrice &&
@@ -112,6 +117,10 @@ export default function HouseExplorer() {
         return 'bg-red-500 text-white';
       case 'sous compromis':
         return 'bg-yellow-500 text-black';
+      case 'sous offre':
+        return 'bg-orange-500 text-white';
+      case 'en attente':
+        return 'bg-gray-500 text-white';
       default:
         return 'bg-green-500 text-white';
     }
@@ -123,6 +132,10 @@ export default function HouseExplorer() {
         return 'VENDU';
       case 'sous compromis':
         return 'SOUS COMPROMIS';
+      case 'sous offre':
+        return 'SOUS OFFRE';
+      case 'en attente':
+        return 'EN ATTENTE';
       default:
         return 'DISPONIBLE';
     }
@@ -143,7 +156,7 @@ export default function HouseExplorer() {
     { value: 'ascenseur', label: 'Ascenseur' },
   ]
 
-  const conditions = ['all', 'disponible', 'sous compromis', 'vendu'] as const;
+  const conditions = ['all', 'disponible', 'sous compromis', 'vendu', 'sous offre'] as const;
 
   return (
     <div className="min-h-screen bg-white p-4 md:p-8">
@@ -167,7 +180,7 @@ export default function HouseExplorer() {
           </button>
         </div>
 
-        <div className="flex justify-center space-x-4 mb-6">
+        <div className="flex justify-center flex-wrap gap-2 mb-6">
             {conditions.map((condition) => (
             <button
               key={condition}
@@ -178,7 +191,10 @@ export default function HouseExplorer() {
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300 border border-primary'
               }`}
             >
-              {condition === 'all' ? 'Tous' : condition.charAt(0).toUpperCase() + condition.slice(1)}
+              {condition === 'all' ? 'Tous' : 
+               condition === 'sous offre' ? 'Sous Offre' :
+               condition === 'sous compromis' ? 'Sous Compromis' :
+               condition.charAt(0).toUpperCase() + condition.slice(1)}
             </button>
           ))}
         </div>
@@ -381,4 +397,3 @@ export default function HouseExplorer() {
     </div>
   );
 }
-
