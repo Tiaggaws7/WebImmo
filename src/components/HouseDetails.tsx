@@ -107,6 +107,26 @@ const HouseDetails: React.FC = () => {
               </>
             )}
           </div>
+          {/* Section Vidéos */}
+{house.videos && house.videos.length > 0 && (
+  <div className="mt-8">
+    <h2 className="text-2xl font-bold mb-4">Vidéos</h2>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {house.videos.map((videoUrl, index) => (
+        <div key={index} className="aspect-w-16 aspect-h-9">
+          <video
+            src={videoUrl}
+            controls
+            className="w-full h-full object-cover rounded-lg shadow-md"
+          >
+            Votre navigateur ne supporte pas la lecture de vidéos.
+          </video>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+<br/> <br/>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h2 className="text-xl font-semibold mb-2">Détails de la propriété</h2>

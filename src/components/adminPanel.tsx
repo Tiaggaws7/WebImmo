@@ -36,6 +36,7 @@ const AdminPanel: React.FC = () => {
     amenities: [],
     location: '',
     images: [],
+    videos: [],
     principalImage: '',
     description:'',
     condition: 'disponible',
@@ -111,6 +112,48 @@ const AdminPanel: React.FC = () => {
       }
     }
   };
+
+const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  if (e.target.files?.length) {
+    const files = Array.from(e.target.files);
+    const storage = getStorage();
+
+    try {
+      const uploadedUrls = await Promise.all(
+        files.map(async (file) => {
+          const storageRef = ref(storage, `houses/videos/${file.name}-${Date.now()}`);
+          const snapshot = await uploadBytes(storageRef, file);
+          return await getDownloadURL(snapshot.ref);
+        })
+      );
+
+      const updateState = (prev: House) => ({
+        ...prev,
+        videos: [...prev.videos, ...uploadedUrls], // Append new video URLs
+      });
+
+      editingHouse 
+        ? setEditingHouse(prev => prev ? updateState(prev) : null)
+        : setNewHouse(updateState);
+    } catch (error) {
+      console.error("Error uploading videos:", error);
+    }
+  }
+};
+
+const handleDeleteVideo = (index: number) => {
+  const currentVideos = editingHouse ? [...editingHouse.videos] : [...newHouse.videos];
+  currentVideos.splice(index, 1);
+
+  const update = (prev: House) => ({
+    ...prev,
+    videos: currentVideos,
+  });
+
+  editingHouse 
+    ? setEditingHouse(prev => prev ? update(prev) : null)
+    : setNewHouse(update);
+};
   
   
   // Handle input changes
@@ -163,6 +206,7 @@ const AdminPanel: React.FC = () => {
           ...editingHouse,
           // Explicitly include all fields to avoid missing data
           images: editingHouse.images,
+          videos: editingHouse.videos || '', // Include video URL
           principalImage: editingHouse.principalImage,
         });
         setHouses(houses.map(h => h.id === editingHouse.id ? editingHouse : h));
@@ -193,6 +237,7 @@ const AdminPanel: React.FC = () => {
         amenities: [],
         location: '',
         images: [],
+        videos: [],
         principalImage: '',
         description: '',
         condition: 'disponible',
@@ -235,6 +280,7 @@ const AdminPanel: React.FC = () => {
       amenities: [],
       location: '',
       images: [],
+      videos: [],
       principalImage: '',
       description:'',
       condition: 'disponible',
@@ -592,6 +638,17 @@ const AdminPanel: React.FC = () => {
                     accept="image/*"
                     className="mb-4"
                   />
+
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Vidéo
+                    </label>
+                    <input
+                      type="file"
+                      multiple
+                      onChange={handleVideoUpload}
+                      accept="video/*"
+                      className="mb-4"
+                    />
                   
                   <div className="grid grid-cols-3 gap-4">
                     {(editingHouse ? editingHouse.images : newHouse.images).map((url, index) => (
@@ -621,6 +678,31 @@ const AdminPanel: React.FC = () => {
                             />
                             Principale
                           </label>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="md:col-span-2 mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Aperçu des vidéos
+                  </label>
+                  <div className="grid grid-cols-2 gap-4">
+                    {(editingHouse ? editingHouse.videos : newHouse.videos).map((url, index) => (
+                      <div key={url} className="relative group">
+                        <video
+                          src={url}
+                          controls
+                          className="h-48 w-full object-cover rounded-md"
+                        />
+                        <div className="absolute top-2 right-2">
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteVideo(index)}
+                            className="text-white bg-red-500 p-1 rounded-full opacity-50 group-hover:opacity-100 transition-opacity"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
                         </div>
                       </div>
                     ))}

@@ -12,6 +12,7 @@ export interface House {
     amenities: string[];
     location: string;
     images: string[];
+    videos: string[];
     principalImage: string;
     description: string;
     condition: 'vendu' | 'disponible' | 'sous compromis' | 'sous offre' |'en attente';
