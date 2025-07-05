@@ -50,10 +50,29 @@ const AdminPanel: React.FC = () => {
       try {
         const houseCollection = collection(db, 'houses');
         const houseSnapshot = await getDocs(houseCollection);
-        const houseList: House[] = houseSnapshot.docs.map((doc) => ({
-          ...(doc.data() as House),
-          id: doc.id,
-        }));
+        const houseList: House[] = houseSnapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            title: data.title || '',
+            price: data.price || '0',
+            size: data.size || '0',
+            rooms: data.rooms || '0',
+            bedrooms: data.bedrooms || '0',
+            bathrooms: data.bathrooms || '0',
+            wc: data.wc || '0',
+            location: data.location || '',
+            description: data.description || '',
+            condition: data.condition || 'disponible',
+            consomation: data.consomation || 'A',
+            principalImage: data.principalImage || '',
+            // On garantit que les tableaux ne sont jamais 'undefined'
+            images: data.images || [],
+            videos: data.videos || [],
+            types: data.types || [],
+            amenities: data.amenities || [],
+          } as House;
+        });
         setHouses(houseList);
       } catch (error) {
         console.error('Error fetching houses:', error);
