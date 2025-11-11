@@ -6,6 +6,7 @@ import { House } from './types'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from './firebase-config'
 import profilePicture from './assets/profile_picture.jpg'
+//import GoogleReviews from './components/GoogleReviews'; // Assurez-vous que le chemin est correct
 
 function Home() {
   const [houses, setHouses] = useState<House[]>([])
@@ -13,6 +14,7 @@ function Home() {
   const [touchStart, setTouchStart] = useState(0)
   const [touchEnd, setTouchEnd] = useState(0)
 
+  // ... (le reste de votre logique useState, useEffect, etc. reste inchangé)
   // Récupération des maisons
   useEffect(() => {
     const fetchHouses = async () => {
@@ -47,7 +49,6 @@ function Home() {
     if (touchStart - touchEnd > 50) handleNext()
     if (touchStart - touchEnd < -50) handlePrev()
   }
-
   
   return (
     <div className="flex flex-col min-h-screen">
@@ -62,19 +63,41 @@ function Home() {
         <meta property="og:description" content="Découvrez les meilleures offres immobilières en Guadeloupe avec Elise Buil." />
         <meta property="og:url" content="https://elisebuilimmobilierguadeloupe.com/" />
         <meta property="og:type" content="website" />
-        
+         {/* Google Tag (gtag.js) */}
+        <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=AW-17711266631"
+        ></script>
+        <script>
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'AW-17711266631');
+          `}
+        </script>
         {/* Canonical URL (SEO best practice) */}
         <link rel="canonical" href="https://elisebuilimmobilierguadeloupe.com/" />
       </Helmet>
       <main className="flex-grow">
         <section className="py-16 px-4 md:px-8 max-w-5xl mx-auto">
-          <h2 className="text-3xl font-bold mb-8 text-center">À propos de moi</h2>
-          <div className="flex flex-col md:flex-row items-center gap-8">
-            <img
-              src={profilePicture}
-              alt="Elise BUIL"
-              className="w-64 h-90 rounded-full object-cover"
-            />
+          <h2 className="text-3xl font-bold mb-12 text-center">À propos de moi</h2>
+          
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
+            
+            <div className="flex flex-col items-center gap-8 flex-shrink-0">
+              
+              {/*<div className="w-64 p-4 border rounded-xl shadow-lg bg-gray-50 transform hover:scale-105 transition-transform duration-300">
+                <GoogleReviews />
+              </div>*/}
+
+              <img
+                src={profilePicture}
+                alt="Elise BUIL"
+                className="w-64 h-90 rounded-full object-cover"
+              />
+            </div>
+
             <div>
               <p className="text-lg mb-4">
               Bien plus qu'un métier, une véritable passion!
@@ -90,7 +113,8 @@ function Home() {
               </p>
               <p className="text-lg mb-4">
               N'hésitez pas à prendre contact avec moi pour échanger sur vos projets, je me ferai un plaisir de pouvoir répondre à vos questions.
-              <br/> Ensemble, construisons une relation solide et fiable pour mener à bien votre vente immobilière en toute sécurité!              </p>
+              <br/> Ensemble, construisons une relation solide et fiable pour mener à bien votre vente immobilière en toute sécurité!              
+              </p>
               <p className="text-lg">
               Au plaisir de vous rencontrer, 
               </p>
