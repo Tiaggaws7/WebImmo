@@ -6,7 +6,7 @@ import { House } from './types'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from './firebase-config'
 import profilePicture from './assets/profile_picture.jpg'
-import GoogleReviews from './components/GoogleReviews';
+/*import GoogleReviews from './components/GoogleReviews';*/
 
 function Home() {
   const [houses, setHouses] = useState<House[]>([])
@@ -87,9 +87,10 @@ function Home() {
 
             <div className="flex flex-col items-center gap-8 flex-shrink-0">
 
-              <div className="w-64 transform hover:scale-105 transition-transform duration-300">
+              {/* TODO: Google Reviews - en développement, à réactiver quand prêt */}
+              {/* <div className="w-64 transform hover:scale-105 transition-transform duration-300">
                 <GoogleReviews />
-              </div>
+              </div> */}
 
               <img
                 src={profilePicture}

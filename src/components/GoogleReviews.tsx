@@ -8,6 +8,8 @@ interface Review {
   rating: number;
   text: string;
   time: number; // Unix timestamp (seconds)
+  profile_photo_url?: string;
+  relative_time_description?: string;
 }
 
 // --- Component ---
@@ -34,7 +36,6 @@ const GoogleReview: React.FC = () => {
           setBusinessName((data.businessName as string) || "");
           setBusinessType((data.businessType as string[]) || []);
         } else {
-          console.log("No review summary document found!");
           setError("Les avis ne sont pas disponibles pour le moment.");
         }
       } catch (err) {
@@ -51,11 +52,21 @@ const GoogleReview: React.FC = () => {
   const renderStars = (rating: number) => {
     const stars = [];
     const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.3;
 
     for (let i = 0; i < fullStars; i++) {
       stars.push(
         <span key={`star-full-${i}`} className="text-yellow-400 text-xl">
           ★
+        </span>
+      );
+    }
+
+    if (hasHalfStar && stars.length < 5) {
+      stars.push(
+        <span key="star-half" className="text-yellow-400 text-xl" style={{ position: 'relative', display: 'inline-block' }}>
+          <span style={{ color: '#d1d5db' }}>★</span>
+          <span style={{ position: 'absolute', left: 0, top: 0, overflow: 'hidden', width: '50%' }}>★</span>
         </span>
       );
     }
@@ -81,20 +92,12 @@ const GoogleReview: React.FC = () => {
   };
 
   // Structured data for SEO
+  // ⚠️ Mettez à jour ces informations avec celles de votre agence
   const jsonLdScript = {
     "@context": "https://schema.org",
     "@type": "RealEstateAgent",
-    name: "Elise BUIL Immobilier",
+    name: businessName || "Elise BUIL Immobilier",
     url: "https://elisebuilimmobilierguadeloupe.com/",
-    telephone: "YOUR_PHONE_NUMBER",
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: "YOUR_STREET_ADDRESS",
-      addressLocality: "YOUR_CITY",
-      postalCode: "YOUR_POSTAL_CODE",
-      addressCountry: "GP",
-    },
-    image: "URL_TO_YOUR_LOGO",
     aggregateRating: {
       "@type": "AggregateRating",
       ratingValue: averageRating.toFixed(1),
@@ -140,36 +143,50 @@ const GoogleReview: React.FC = () => {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdScript) }}
       />
+
+      {/* Google Logo */}
       <img
-        src="https://lh3.googleusercontent.com/a/ACg8ocK_g-14R4OT8g_SAo-o3uk5V_T2a9V5pYJ_7a-S2zY=s128-c0x00000000-cc-rp-mo-ba4"
-        alt="Google Reviews"
-        className="h-12 w-12 mx-auto mb-3"
+        src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png"
+        alt="Google"
+        className="h-6 mx-auto mb-3"
       />
-      <h3 className="text-xl font-bold text-gray-800 mb-1">
+
+      {/* Nom de l'agence */}
+      <h3 className="text-lg font-bold text-gray-800 mb-1">
         {businessName || "Avis de nos clients"}
       </h3>
+
+      {/* Type d'établissement */}
       {businessType.length > 0 && (
-        <p className="text-sm text-gray-600 mb-2">
+        <p className="text-sm text-gray-500 mb-2">
           {translateBusinessType(businessType[0])}
         </p>
       )}
-      <div className="text-gray-600 mb-2">
-        <span className="font-semibold text-lg">
+
+      {/* Note moyenne */}
+      <div className="text-gray-600 mb-1">
+        <span className="font-bold text-2xl text-gray-800">
           {averageRating.toFixed(1)}
         </span>
-        {" sur 5"}
+        <span className="text-sm text-gray-500 ml-1">/ 5</span>
       </div>
-      <div className="inline-flex items-center justify-center space-x-1 leading-none mb-4">
+
+      {/* Étoiles */}
+      <div className="inline-flex items-center justify-center space-x-0.5 leading-none mb-3">
         {renderStars(averageRating)}
       </div>
-      <a
-        href="https://maps.app.goo.gl/aDU4gSfJta9741hV7"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-sm text-blue-600 hover:underline"
-      >
-        Basé sur {reviewCount} avis Google
-      </a>
+
+      {/* Lien vers Google Maps */}
+      <div>
+        <a
+          href="https://maps.app.goo.gl/aDU4gSfJta9741hV7"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm text-blue-600 hover:underline"
+        >
+          Basé sur {reviewCount} avis Google
+        </a>
+      </div>
     </div>
   );
 };
