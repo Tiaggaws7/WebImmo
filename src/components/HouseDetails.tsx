@@ -65,7 +65,7 @@ const HouseDetails: React.FC = () => {
             Retour à la liste
           </Link>
           <h1 className="text-3xl font-bold mb-4">{house.title}</h1>
-          
+
           {/* Début du carrousel */}
           <div className="relative mb-6 group">
             <div className="aspect-w-16 aspect-h-9">
@@ -98,9 +98,8 @@ const HouseDetails: React.FC = () => {
                     <button
                       key={index}
                       onClick={() => setActiveImageIndex(index)}
-                      className={`w-3 h-3 rounded-full transition-all ${
-                        index === activeImageIndex ? 'bg-violet-600' : 'bg-white/80 hover:bg-white'
-                      }`}
+                      className={`w-3 h-3 rounded-full transition-all ${index === activeImageIndex ? 'bg-violet-600' : 'bg-white/80 hover:bg-white'
+                        }`}
                     />
                   ))}
                 </div>
@@ -108,25 +107,41 @@ const HouseDetails: React.FC = () => {
             )}
           </div>
           {/* Section Vidéos */}
-{house.videos && house.videos.length > 0 && (
-  <div className="mt-8">
-    <h2 className="text-2xl font-bold mb-4">Vidéos</h2>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {house.videos.map((videoUrl, index) => (
-        <div key={index} className="aspect-w-16 aspect-h-9">
-          <video
-            src={videoUrl}
-            controls
-            className="w-full h-full object-cover rounded-lg shadow-md"
-          >
-            Votre navigateur ne supporte pas la lecture de vidéos.
-          </video>
-        </div>
-      ))}
-    </div>
-  </div>
-)}
-<br/> <br/>
+          {house.videos && house.videos.length > 0 && (
+            <div className="mt-8">
+              <h2 className="text-2xl font-bold mb-4">Vidéos</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {house.videos.map((videoUrl, index) => (
+                  <div key={index} className="aspect-w-16 aspect-h-9">
+                    <video
+                      src={videoUrl}
+                      controls
+                      className="w-full h-full object-cover rounded-lg shadow-md"
+                    >
+                      Votre navigateur ne supporte pas la lecture de vidéos.
+                    </video>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {/* Section Visite Virtuelle */}
+          {house.virtualTourUrl && (
+            <div className="mt-8">
+              <h2 className="text-2xl font-bold mb-4">Visite virtuelle</h2>
+              <div style={{ position: 'relative', height: 0, paddingTop: '60%' }}>
+                <iframe
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                  src={house.virtualTourUrl}
+                  title="Visite virtuelle"
+                  frameBorder="0"
+                  allowFullScreen
+                  allow="fullscreen; accelerometer; gyroscope; magnetometer; vr; xr; xr-spatial-tracking; autoplay; camera; microphone"
+                />
+              </div>
+            </div>
+          )}
+          <br /> <br />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h2 className="text-xl font-semibold mb-2">Détails de la propriété</h2>
@@ -137,11 +152,11 @@ const HouseDetails: React.FC = () => {
                     const numericPrice = Number(cleanPrice)
                     return !isNaN(numericPrice)
                       ? numericPrice.toLocaleString("fr-FR", {
-                          style: "currency",
-                          currency: "EUR",
-                          minimumFractionDigits: 0,
-                          maximumFractionDigits: 0,
-                        })
+                        style: "currency",
+                        currency: "EUR",
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0,
+                      })
                       : "Invalid price"
                   })()}
                 </li>

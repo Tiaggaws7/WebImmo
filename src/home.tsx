@@ -6,7 +6,7 @@ import { House } from './types'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from './firebase-config'
 import profilePicture from './assets/profile_picture.jpg'
-//import GoogleReviews from './components/GoogleReviews'; // Assurez-vous que le chemin est correct
+import GoogleReviews from './components/GoogleReviews';
 
 function Home() {
   const [houses, setHouses] = useState<House[]>([])
@@ -49,7 +49,7 @@ function Home() {
     if (touchStart - touchEnd > 50) handleNext()
     if (touchStart - touchEnd < -50) handlePrev()
   }
-  
+
   return (
     <div className="flex flex-col min-h-screen">
       <Helmet>
@@ -57,13 +57,13 @@ function Home() {
         <meta name="description" content="Découvrez les meilleures offres immobilières en Guadeloupe avec Elise Buil. Achat, vente et estimation de biens immobiliers." />
         <meta name="keywords" content="Immobilier Guadeloupe, Achat maison Guadeloupe, Vente appartement, Annonces immobilières" />
         <meta name="author" content="Elise Buil" />
-        
+
         {/* Open Graph for Facebook & Social Media */}
         <meta property="og:title" content="Accueil | Elise Buil Immobilier Guadeloupe" />
         <meta property="og:description" content="Découvrez les meilleures offres immobilières en Guadeloupe avec Elise Buil." />
         <meta property="og:url" content="https://elisebuilimmobilierguadeloupe.com/" />
         <meta property="og:type" content="website" />
-         {/* Google Tag (gtag.js) */}
+        {/* Google Tag (gtag.js) */}
         <script
           async
           src="https://www.googletagmanager.com/gtag/js?id=AW-17711266631"
@@ -82,14 +82,14 @@ function Home() {
       <main className="flex-grow">
         <section className="py-16 px-4 md:px-8 max-w-5xl mx-auto">
           <h2 className="text-3xl font-bold mb-12 text-center">À propos de moi</h2>
-          
+
           <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
-            
+
             <div className="flex flex-col items-center gap-8 flex-shrink-0">
-              
-              {/*<div className="w-64 p-4 border rounded-xl shadow-lg bg-gray-50 transform hover:scale-105 transition-transform duration-300">
+
+              <div className="w-64 transform hover:scale-105 transition-transform duration-300">
                 <GoogleReviews />
-              </div>*/}
+              </div>
 
               <img
                 src={profilePicture}
@@ -100,36 +100,36 @@ function Home() {
 
             <div>
               <p className="text-lg mb-4">
-              Bien plus qu'un métier, une véritable passion!
+                Bien plus qu'un métier, une véritable passion!
               </p>
               <p className="text-lg mb-4">
-              Riche d’une forte expérience dans le secteur de l’immobilier, je mets mon expertise à votre service pour vous accompagner dans toutes vos démarches liées à la vente de votre bien. Je mets un point d’honneur à développer une véritable relation basée sur l’écoute et le respect de vos besoins.  
+                Riche d’une forte expérience dans le secteur de l’immobilier, je mets mon expertise à votre service pour vous accompagner dans toutes vos démarches liées à la vente de votre bien. Je mets un point d’honneur à développer une véritable relation basée sur l’écoute et le respect de vos besoins.
               </p>
               <p className="text-lg mb-4">
-              Issue d'une formation juridique en droit immobilier, je vous propose un accompagnement spécialisé dans la concrétisation de vos projets immobiliers, notamment en proposant la rédaction du compromis de vente en collaboration avec votre notaire , vous faisant ainsi bénéficier d'un temps précieux.
+                Issue d'une formation juridique en droit immobilier, je vous propose un accompagnement spécialisé dans la concrétisation de vos projets immobiliers, notamment en proposant la rédaction du compromis de vente en collaboration avec votre notaire , vous faisant ainsi bénéficier d'un temps précieux.
               </p>
               <p className="text-lg mb-4">
-              Mon service de vente immobilière se distingue par une approche unique alliant expertise juridique et authentique relation d’échanges.
+                Mon service de vente immobilière se distingue par une approche unique alliant expertise juridique et authentique relation d’échanges.
               </p>
               <p className="text-lg mb-4">
-              N'hésitez pas à prendre contact avec moi pour échanger sur vos projets, je me ferai un plaisir de pouvoir répondre à vos questions.
-              <br/> Ensemble, construisons une relation solide et fiable pour mener à bien votre vente immobilière en toute sécurité!              
+                N'hésitez pas à prendre contact avec moi pour échanger sur vos projets, je me ferai un plaisir de pouvoir répondre à vos questions.
+                <br /> Ensemble, construisons une relation solide et fiable pour mener à bien votre vente immobilière en toute sécurité!
               </p>
               <p className="text-lg">
-              Au plaisir de vous rencontrer, 
+                Au plaisir de vous rencontrer,
               </p>
               <div className="mt-12">
                 <Link to="/EliseBUIL" className="mx-auto inline-block bg-primary text-white text-lg font-medium py-3 px-8 rounded-lg shadow hover:bg-black transition duration-300">
-                  Contactez-moi dès aujourd'hui 
+                  Contactez-moi dès aujourd'hui
                 </Link>
               </div>
             </div>
           </div>
         </section>
-        
+
         <section className="bg-white">
           <div className="relative group">
-            <div 
+            <div
               className="overflow-hidden relative"
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
@@ -139,9 +139,9 @@ function Home() {
                 {houses.map(house => (
                   <div key={house.id} className="w-full flex-shrink-0 relative">
                     <Link to={`/house/${house.id}`} className="block">
-                      <img 
-                        src={house.principalImage} 
-                        alt={`Maison ${house.id}`} 
+                      <img
+                        src={house.principalImage}
+                        alt={`Maison ${house.id}`}
                         className="w-full h-64 md:h-[calc(100vh-64px)] object-cover"
                       />
                       <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-black/10"></div>
@@ -174,11 +174,10 @@ function Home() {
                     <button
                       key={index}
                       onClick={() => setActiveIndex(index)}
-                      className={`w-4 h-4 rounded-full transition-all duration-300 ${
-                        index === activeIndex 
-                          ? 'bg-blue-600 scale-125' 
-                          : 'bg-white/80 hover:bg-white scale-100'
-                      }`}
+                      className={`w-4 h-4 rounded-full transition-all duration-300 ${index === activeIndex
+                        ? 'bg-blue-600 scale-125'
+                        : 'bg-white/80 hover:bg-white scale-100'
+                        }`}
                     />
                   ))}
                 </div>
@@ -188,11 +187,11 @@ function Home() {
         </section>
 
         <section className='my-12 flex justify-center'>
-        <div className="">
-          <Link to="/Acheter" className="mx-auto inline-block bg-primary text-white text-lg font-medium py-3 px-8 rounded-lg shadow hover:bg-black transition duration-300">
-            Voir tous nos biens
-          </Link>
-        </div>
+          <div className="">
+            <Link to="/Acheter" className="mx-auto inline-block bg-primary text-white text-lg font-medium py-3 px-8 rounded-lg shadow hover:bg-black transition duration-300">
+              Voir tous nos biens
+            </Link>
+          </div>
         </section>
       </main>
     </div>

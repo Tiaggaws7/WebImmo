@@ -1,0 +1,161 @@
+═══════════════════════════════════════════════════════════════════
+   PROBLÈME AVEC LES AVIS GOOGLE SUR LE SITE WEB
+═══════════════════════════════════════════════════════════════════
+
+📋 QU'EST-CE QUI NE FONCTIONNE PAS ?
+────────────────────────────────────────────────────────────────────
+
+Le site web essaie d'afficher automatiquement vos vrais avis Google, 
+mais pour l'instant il affiche des faux avis de test.
+
+Pourquoi ? Parce que votre entreprise "Elise BUIL" n'a pas encore 
+de "Place ID" valide accessible par l'API de Google.
+
+
+🔍 QU'EST-CE QU'UN PLACE ID ?
+────────────────────────────────────────────────────────────────────
+
+C'est un code unique que Google donne à chaque entreprise pour 
+identifier son profil. Sans ce code, impossible de récupérer 
+automatiquement vos avis depuis Google.
+
+Exemple : ChIJv1p8O86r56ER0VSSIKxRfqA
+
+
+✅ SOLUTION : VÉRIFIER VOTRE PROFIL GOOGLE
+────────────────────────────────────────────────────────────────────
+
+Pour que votre Place ID devienne accessible, vous devez VÉRIFIER 
+et REVENDIQUER votre profil Google My Business.
+
+
+📝 ÉTAPES À SUIVRE (détaillées)
+────────────────────────────────────────────────────────────────────
+
+ÉTAPE 1 : Aller sur Google My Business
+────────────────────────────────────
+→ Ouvrez votre navigateur (Chrome, Firefox, etc.)
+→ Allez sur le site : https://business.google.com/
+→ Connectez-vous avec votre compte Google
+
+
+ÉTAPE 2 : Trouver votre entreprise
+────────────────────────────────────
+→ Si vous voyez "Elise BUIL" dans la liste, cliquez dessus
+→ Si vous ne voyez RIEN, cliquez sur "Ajouter votre établissement"
+
+
+ÉTAPE 3 : Revendiquer/Vérifier le profil
+────────────────────────────────────
+Si le profil existe déjà (visible sur Google Maps) :
+  → Cliquez sur "Revendiquer cet établissement"
+  → Google va vous demander de VÉRIFIER que c'est bien vous
+  
+Si le profil n'existe pas :
+  → Cliquez sur "Créer un profil"
+  → Remplissez les informations de l'entreprise
+
+
+ÉTAPE 4 : Processus de vérification
+────────────────────────────────────
+Google va vous proposer plusieurs méthodes de vérification :
+
+a) PAR COURRIER (le plus courant)
+   → Google envoie une carte postale avec un code à votre adresse
+   → Vous recevez le courrier (5-14 jours)
+   → Vous entrez le code sur le site
+
+b) PAR TÉLÉPHONE (si disponible)
+   → Google appelle votre entreprise
+   → Vous recevez un code par téléphone
+   → Vous entrez le code sur le site
+
+c) PAR EMAIL (rare)
+   → Google envoie un email
+   → Vous cliquez sur le lien de vérification
+
+d) VÉRIFICATION INSTANTANÉE (rare)
+   → Si votre entreprise est déjà vérifiée ailleurs
+
+
+ÉTAPE 5 : Attendre la validation
+────────────────────────────────────
+→ Une fois le code entré, le profil sera VÉRIFIÉ
+→ Cela peut prendre 1-3 jours pour que tout soit actif
+
+
+ÉTAPE 6 : Obtenir le Place ID
+────────────────────────────────────
+Une fois votre profil vérifié :
+
+→ Allez sur : https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder
+
+→ Dans la barre de recherche de la carte, tapez :
+   "Elise BUIL Guadeloupe"
+
+→ Cliquez sur votre entreprise quand elle apparaît
+
+→ Le Place ID apparaîtra en dessous (format : ChIJ...)
+
+→ COPIEZ ce code (il ressemble à : ChIJxxxxxxxxxxxxxx)
+
+
+ÉTAPE 7 : Donner le Place ID au développeur
+────────────────────────────────────
+→ Une fois que vous avez le Place ID, envoyez-le à votre 
+  développeur web
+
+→ Il devra l'entrer dans la configuration du site avec 
+  cette commande :
+
+  firebase functions:secrets:set GOOGLE_PLACE_ID
+
+→ Ensuite il mettra à jour le site
+
+
+⏱️ COMBIEN DE TEMPS ÇA PREND ?
+────────────────────────────────────────────────────────────────────
+
+- Demander la vérification : 5 minutes
+- Recevoir le code (courrier) : 5-14 jours
+- Entrer le code et validation : 1-3 jours
+- Total : 1-3 semaines environ
+
+
+💡 CONSEILS IMPORTANTS
+────────────────────────────────────────────────────────────────────
+
+✓ Utilisez une ADRESSE EMAIL que vous consultez régulièrement
+✓ Vérifiez que l'adresse postale est EXACTE (pour le courrier)
+✓ Gardez le code de vérification EN SÉCURITÉ
+✓ Ne créez PAS plusieurs profils pour la même entreprise
+✓ Complétez au maximum les informations (horaires, photos, etc.)
+
+
+❓ QUE FAIRE SI VOUS AVEZ DES PROBLÈMES ?
+────────────────────────────────────────────────────────────────────
+
+Problème : "Je ne reçois pas le courrier"
+→ Attendez 14 jours, puis demandez un nouveau code
+
+Problème : "Mon entreprise n'apparaît pas"
+→ Créez un nouveau profil depuis zéro
+
+Problème : "On me dit que le profil est déjà revendiqué"
+→ Contactez le support Google My Business
+
+Support Google : https://support.google.com/business/
+
+
+📞 LIENS UTILES
+────────────────────────────────────────────────────────────────────
+
+• Google My Business : https://business.google.com/
+• Aide Google My Business : https://support.google.com/business/
+• Place ID Finder : https://developers.google.com/maps/documentation/javascript/examples/places-placeid-finder
+
+
+═══════════════════════════════════════════════════════════════════
+   Document créé le : 5 février 2026
+   Pour : Site web Elise BUIL Immobilier
+═══════════════════════════════════════════════════════════════════

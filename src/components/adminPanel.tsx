@@ -24,7 +24,7 @@ const AdminPanel: React.FC = () => {
   const [user, setUser] = useState<any>(null); // Stocke l'utilisateur Firebase
   const [error, setError] = useState('');
   const [newHouse, setNewHouse] = useState<House>({
-    id:'',
+    id: '',
     title: '',
     price: '0',
     size: '0',
@@ -32,15 +32,16 @@ const AdminPanel: React.FC = () => {
     rooms: '0',
     bedrooms: '0',
     bathrooms: '0',
-    wc:'0',
+    wc: '0',
     amenities: [],
     location: '',
     images: [],
     videos: [],
     principalImage: '',
-    description:'',
+    description: '',
     condition: 'disponible',
-    consomation:'A'
+    consomation: 'A',
+    virtualTourUrl: ''
   });
   const [tempAmenitiesInput, setTempAmenitiesInput] = React.useState<string>(''); // Temporary input state
 
@@ -71,6 +72,7 @@ const AdminPanel: React.FC = () => {
             videos: data.videos || [],
             types: data.types || [],
             amenities: data.amenities || [],
+            virtualTourUrl: data.virtualTourUrl || '',
           } as House;
         });
         setHouses(houseList);
@@ -95,7 +97,7 @@ const AdminPanel: React.FC = () => {
     try {
       const houseCollection = collection(db, "houses");
       const docRef = await addDoc(houseCollection, house);
-  
+
       setHouses([...houses, { ...house, id: docRef.id }]);
       console.log("House added to Firestore with ID:", docRef.id);
     } catch (error) {
@@ -107,7 +109,7 @@ const AdminPanel: React.FC = () => {
     if (e.target.files?.[0]) {
       const files = Array.from(e.target.files);
       const storage = getStorage();
-  
+
       try {
         const uploadedUrls = await Promise.all(
           files.map(async (file) => {
@@ -116,14 +118,14 @@ const AdminPanel: React.FC = () => {
             return await getDownloadURL(snapshot.ref);
           })
         );
-  
+
         const updateState = (prev: House) => ({
           ...prev,
           images: [...prev.images, ...uploadedUrls],
           principalImage: prev.principalImage || uploadedUrls[0],
         });
-  
-        editingHouse 
+
+        editingHouse
           ? setEditingHouse(prev => prev ? updateState(prev) : null)
           : setNewHouse(updateState);
       } catch (error) {
@@ -132,49 +134,49 @@ const AdminPanel: React.FC = () => {
     }
   };
 
-const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  if (e.target.files?.length) {
-    const files = Array.from(e.target.files);
-    const storage = getStorage();
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.length) {
+      const files = Array.from(e.target.files);
+      const storage = getStorage();
 
-    try {
-      const uploadedUrls = await Promise.all(
-        files.map(async (file) => {
-          const storageRef = ref(storage, `houses/videos/${file.name}-${Date.now()}`);
-          const snapshot = await uploadBytes(storageRef, file);
-          return await getDownloadURL(snapshot.ref);
-        })
-      );
+      try {
+        const uploadedUrls = await Promise.all(
+          files.map(async (file) => {
+            const storageRef = ref(storage, `houses/videos/${file.name}-${Date.now()}`);
+            const snapshot = await uploadBytes(storageRef, file);
+            return await getDownloadURL(snapshot.ref);
+          })
+        );
 
-      const updateState = (prev: House) => ({
-        ...prev,
-        videos: [...prev.videos, ...uploadedUrls], // Append new video URLs
-      });
+        const updateState = (prev: House) => ({
+          ...prev,
+          videos: [...prev.videos, ...uploadedUrls], // Append new video URLs
+        });
 
-      editingHouse 
-        ? setEditingHouse(prev => prev ? updateState(prev) : null)
-        : setNewHouse(updateState);
-    } catch (error) {
-      console.error("Error uploading videos:", error);
+        editingHouse
+          ? setEditingHouse(prev => prev ? updateState(prev) : null)
+          : setNewHouse(updateState);
+      } catch (error) {
+        console.error("Error uploading videos:", error);
+      }
     }
-  }
-};
+  };
 
-const handleDeleteVideo = (index: number) => {
-  const currentVideos = editingHouse ? [...editingHouse.videos] : [...newHouse.videos];
-  currentVideos.splice(index, 1);
+  const handleDeleteVideo = (index: number) => {
+    const currentVideos = editingHouse ? [...editingHouse.videos] : [...newHouse.videos];
+    currentVideos.splice(index, 1);
 
-  const update = (prev: House) => ({
-    ...prev,
-    videos: currentVideos,
-  });
+    const update = (prev: House) => ({
+      ...prev,
+      videos: currentVideos,
+    });
 
-  editingHouse 
-    ? setEditingHouse(prev => prev ? update(prev) : null)
-    : setNewHouse(update);
-};
-  
-  
+    editingHouse
+      ? setEditingHouse(prev => prev ? update(prev) : null)
+      : setNewHouse(update);
+  };
+
+
   // Handle input changes
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -191,13 +193,13 @@ const handleDeleteVideo = (index: number) => {
   const handleAmenitiesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTempAmenitiesInput(e.target.value); // Update raw input value
   };
-  
+
   const handleAmenitiesBlur = () => {
     const amenities = tempAmenitiesInput
       .split(',')
       .map((item) => item.trim())
       .filter((item) => item); // Remove empty strings
-  
+
     if (editingHouse) {
       setEditingHouse({ ...editingHouse, amenities });
     } else {
@@ -207,18 +209,18 @@ const handleDeleteVideo = (index: number) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     try {
       // Validate images
       if (
-        (editingHouse 
+        (editingHouse
           ? !editingHouse.images.length || !editingHouse.principalImage
           : !newHouse.images.length || !newHouse.principalImage)
       ) {
         alert('Please upload at least one image and select a principal image.');
         return;
       }
-  
+
       if (editingHouse) {
         const houseDoc = doc(db, 'houses', editingHouse.id);
         await updateDoc(houseDoc, {
@@ -231,8 +233,8 @@ const handleDeleteVideo = (index: number) => {
         setHouses(houses.map(h => h.id === editingHouse.id ? editingHouse : h));
         setEditingHouse(null);
       } else {
-        const houseWithId = { 
-          ...newHouse, 
+        const houseWithId = {
+          ...newHouse,
           id: crypto.randomUUID(),
           // Ensure images array is properly structured
           images: newHouse.images,
@@ -240,7 +242,7 @@ const handleDeleteVideo = (index: number) => {
         };
         await addHouseToFirestore(houseWithId);
       }
-  
+
       // Reset state
       setIsFormVisible(false);
       setNewHouse({
@@ -260,7 +262,8 @@ const handleDeleteVideo = (index: number) => {
         principalImage: '',
         description: '',
         condition: 'disponible',
-        consomation: 'A'
+        consomation: 'A',
+        virtualTourUrl: ''
       });
     } catch (error) {
       console.error('Error submitting house:', error);
@@ -275,6 +278,9 @@ const handleDeleteVideo = (index: number) => {
 
   // Delete house
   const handleDelete = async (id: string) => {
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce bien ? Cette action est irréversible.')) {
+      return;
+    }
     try {
       const houseDoc = doc(db, 'houses', id);
       await deleteDoc(houseDoc);
@@ -287,7 +293,7 @@ const handleDeleteVideo = (index: number) => {
   const handleCancel = () => {
     setEditingHouse(null);
     setNewHouse({
-      id:'',
+      id: '',
       title: '',
       price: '0',
       size: '0',
@@ -295,15 +301,16 @@ const handleDeleteVideo = (index: number) => {
       rooms: '0',
       bedrooms: '0',
       bathrooms: '0',
-      wc:'0',
+      wc: '0',
       amenities: [],
       location: '',
       images: [],
       videos: [],
       principalImage: '',
-      description:'',
+      description: '',
       condition: 'disponible',
-      consomation:'A'
+      consomation: 'A',
+      virtualTourUrl: ''
     });
     setIsFormVisible(false);
   };
@@ -311,31 +318,31 @@ const handleDeleteVideo = (index: number) => {
   const handleDeleteImage = (index: number) => {
     const currentImages = editingHouse ? [...editingHouse.images] : [...newHouse.images];
     currentImages.splice(index, 1);
-  
+
     const update = (prev: House) => {
-      const newPrincipal = prev.principalImage === prev.images[index] 
+      const newPrincipal = prev.principalImage === prev.images[index]
         ? currentImages[0] || ''
         : prev.principalImage;
-        
+
       return {
         ...prev,
         images: currentImages,
         principalImage: newPrincipal,
       };
     };
-  
-    editingHouse 
+
+    editingHouse
       ? setEditingHouse(prev => prev ? update(prev) : null)
       : setNewHouse(update);
   };
-  
+
   const handleSetPrincipalImage = (url: string) => {
     const update = (prev: House) => ({
       ...prev,
       principalImage: url,
     });
-  
-    editingHouse 
+
+    editingHouse
       ? setEditingHouse(prev => prev ? update(prev) : null)
       : setNewHouse(update);
   };
@@ -346,7 +353,7 @@ const handleDeleteVideo = (index: number) => {
     try {
       await signInWithEmailAndPassword(auth, username, password);
       alert("Bienvenue !");
-       // Navigate to the admin dashboard
+      // Navigate to the admin dashboard
     } catch (err: any) {
       setError("Problème d'email ou de mot de passe. Veuillez réessayer.");
     }
@@ -378,15 +385,15 @@ const handleDeleteVideo = (index: number) => {
     selectedTypes: string[]
     onChange: (types: string[]) => void
   }
-  
+
   function PropertyTypeSelector({ selectedTypes, onChange }: PropertyTypeSelectorProps) {
     const propertyTypes = ["appartement", "maison", "local commercial", "terrain"]
-  
+
     const toggleType = (type: string) => {
       const newTypes = selectedTypes.includes(type) ? selectedTypes.filter((t) => t !== type) : [...selectedTypes, type]
       onChange(newTypes)
     }
-  
+
     return (
       <div className="flex flex-wrap gap-2">
         {propertyTypes.map((type) => (
@@ -394,8 +401,7 @@ const handleDeleteVideo = (index: number) => {
             key={type}
             onClick={() => toggleType(type)}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors
-              ${
-                selectedTypes.includes(type) ? "bg-purple-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              ${selectedTypes.includes(type) ? "bg-purple-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             type="button"
           >
@@ -457,16 +463,16 @@ const handleDeleteVideo = (index: number) => {
           </form>
           {error && <p style={{ color: "red" }}>{error}</p>}
           <Link
-              to='/'
-              className="flex items-center justify-between p-6 bg-white shadow-md rounded-lg hover:shadow-lg transition-shadow"
-            >
-              <div className="flex items-center">
-                <span className="text-2xl mr-4">🏡</span>
-                <span className="text-lg font-medium">Retour à l'accueil</span>
-              </div>
-              <ArrowRight className="h-5 w-5 text-gray-400" />
-            </Link>
-        </div>        
+            to='/'
+            className="flex items-center justify-between p-6 bg-white shadow-md rounded-lg hover:shadow-lg transition-shadow"
+          >
+            <div className="flex items-center">
+              <span className="text-2xl mr-4">🏡</span>
+              <span className="text-lg font-medium">Retour à l'accueil</span>
+            </div>
+            <ArrowRight className="h-5 w-5 text-gray-400" />
+          </Link>
+        </div>
       </div>
     );
   }
@@ -484,7 +490,7 @@ const handleDeleteVideo = (index: number) => {
             Se déconnecter
           </button>
         </div>
-        
+
         <div className="mb-6 flex justify-end">
           <button
             onClick={() => setIsFormVisible(true)}
@@ -621,7 +627,7 @@ const handleDeleteVideo = (index: number) => {
               </div>
               <div>
                 <label htmlFor="amenities" className="block text-sm font-medium text-gray-700 mb-1">
-                Annexes (séparées par une virgule)
+                  Annexes (séparées par une virgule)
                 </label>
                 <input
                   type="text"
@@ -647,86 +653,103 @@ const handleDeleteVideo = (index: number) => {
                 />
               </div>
               <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Images (Première image sera la principale par défaut)
-                  </label>
-                  <input
-                    type="file"
-                    multiple
-                    onChange={handleImageUpload}
-                    accept="image/*"
-                    className="mb-4"
-                  />
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Images (Première image sera la principale par défaut)
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  onChange={handleImageUpload}
+                  accept="image/*"
+                  className="mb-4"
+                />
 
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Vidéo
-                    </label>
-                    <input
-                      type="file"
-                      multiple
-                      onChange={handleVideoUpload}
-                      accept="video/*"
-                      className="mb-4"
-                    />
-                  
-                  <div className="grid grid-cols-3 gap-4">
-                    {(editingHouse ? editingHouse.images : newHouse.images).map((url, index) => (
-                      <div key={url} className="relative group">
-                        <img
-                          src={url}
-                          alt={`House preview ${index}`}
-                          className="h-32 w-full object-cover rounded-md"
-                        />
-                        
-                        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteImage(index)}
-                            className="text-white bg-red-500 p-1 rounded-full mr-2"
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </button>
-                          
-                          <label className="flex items-center text-white text-sm">
-                            <input
-                              type="radio"
-                              name="principalImage"
-                              checked={(editingHouse ? editingHouse.principalImage : newHouse.principalImage) === url}
-                              onChange={() => handleSetPrincipalImage(url)}
-                              className="mr-1"
-                            />
-                            Principale
-                          </label>
-                        </div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Vidéo
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  onChange={handleVideoUpload}
+                  accept="video/*"
+                  className="mb-4"
+                />
+
+                <div className="grid grid-cols-3 gap-4">
+                  {(editingHouse ? editingHouse.images : newHouse.images).map((url, index) => (
+                    <div key={url} className="relative group">
+                      <img
+                        src={url}
+                        alt={`House preview ${index}`}
+                        className="h-32 w-full object-cover rounded-md"
+                      />
+
+                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteImage(index)}
+                          className="text-white bg-red-500 p-1 rounded-full mr-2"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </button>
+
+                        <label className="flex items-center text-white text-sm">
+                          <input
+                            type="radio"
+                            name="principalImage"
+                            checked={(editingHouse ? editingHouse.principalImage : newHouse.principalImage) === url}
+                            onChange={() => handleSetPrincipalImage(url)}
+                            className="mr-1"
+                          />
+                          Principale
+                        </label>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="md:col-span-2 mt-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Aperçu des vidéos
-                  </label>
-                  <div className="grid grid-cols-2 gap-4">
-                    {(editingHouse ? editingHouse.videos : newHouse.videos).map((url, index) => (
-                      <div key={url} className="relative group">
-                        <video
-                          src={url}
-                          controls
-                          className="h-48 w-full object-cover rounded-md"
-                        />
-                        <div className="absolute top-2 right-2">
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteVideo(index)}
-                            className="text-white bg-red-500 p-1 rounded-full opacity-50 group-hover:opacity-100 transition-opacity"
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </button>
-                        </div>
+              </div>
+              <div className="md:col-span-2 mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Aperçu des vidéos
+                </label>
+                <div className="grid grid-cols-2 gap-4">
+                  {(editingHouse ? editingHouse.videos : newHouse.videos).map((url, index) => (
+                    <div key={url} className="relative group">
+                      <video
+                        src={url}
+                        controls
+                        className="h-48 w-full object-cover rounded-md"
+                      />
+                      <div className="absolute top-2 right-2">
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteVideo(index)}
+                          className="text-white bg-red-500 p-1 rounded-full opacity-50 group-hover:opacity-100 transition-opacity"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </button>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
+              </div>
+              <div className="md:col-span-2 mt-4">
+                <label htmlFor="virtualTourUrl" className="block text-sm font-medium text-gray-700 mb-1">
+                  Visite virtuelle (URL iframe)
+                </label>
+                <input
+                  type="url"
+                  id="virtualTourUrl"
+                  name="virtualTourUrl"
+                  value={editingHouse ? editingHouse.virtualTourUrl || '' : newHouse.virtualTourUrl || ''}
+                  onChange={handleInputChange}
+                  placeholder="https://przproduction.com/votre-visite/"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                />
+                <p className="mt-1 text-sm text-gray-500">
+                  Collez ici l'URL de la visite virtuelle fournie par le prestataire (optionnel)
+                </p>
+              </div>
               <div>
                 <label htmlFor="condition" className="block text-sm font-medium text-gray-700 mb-1">État</label>
                 <select
@@ -759,19 +782,19 @@ const handleDeleteVideo = (index: number) => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Utilisez **gras**, *italique*, [liens](https://)..."
                 ></textarea>                <p className="mt-1 text-sm text-gray-500">
-                Syntaxe supportée :
-              </p>
-              <ul className="mt-1 text-sm text-gray-500 list-disc list-inside">
-                <li><strong>Gras</strong> : <code>**texte**</code> ou <code>__texte__</code></li>
-                <li><em>Italique</em> : <code>*texte*</code> ou <code>_texte_</code></li>
-                <li><del>Barré</del> : <code>~~texte~~</code></li>
-                <li>En-têtes : <code># Titre 1</code> à <code>###### Titre 6</code></li>
-                <li>Listes non ordonnées : <code>- élément</code>, <code>* élément</code> ou <code>+ élément</code></li>
-                <li>Listes ordonnées : <code>1. élément</code>, <code>2. élément</code>, etc.</li>
-                <li>Liens : <code>[texte du lien](https://exemple.com)</code></li>
-                <li>Citations : <code> texte cité</code></li>
-                <li>Lignes horizontales : <code>---</code>, <code>***</code> ou <code>___</code></li>
-              </ul>
+                  Syntaxe supportée :
+                </p>
+                <ul className="mt-1 text-sm text-gray-500 list-disc list-inside">
+                  <li><strong>Gras</strong> : <code>**texte**</code> ou <code>__texte__</code></li>
+                  <li><em>Italique</em> : <code>*texte*</code> ou <code>_texte_</code></li>
+                  <li><del>Barré</del> : <code>~~texte~~</code></li>
+                  <li>En-têtes : <code># Titre 1</code> à <code>###### Titre 6</code></li>
+                  <li>Listes non ordonnées : <code>- élément</code>, <code>* élément</code> ou <code>+ élément</code></li>
+                  <li>Listes ordonnées : <code>1. élément</code>, <code>2. élément</code>, etc.</li>
+                  <li>Liens : <code>[texte du lien](https://exemple.com)</code></li>
+                  <li>Citations : <code> texte cité</code></li>
+                  <li>Lignes horizontales : <code>---</code>, <code>***</code> ou <code>___</code></li>
+                </ul>
               </div>
 
               <div className="md:col-span-2 flex justify-end space-x-4">
@@ -811,33 +834,32 @@ const handleDeleteVideo = (index: number) => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{house.id}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{house.title}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{(() => {
-                      const cleanPrice = house.price.replace(/[^0-9.-]+/g, ''); // Remove non-numeric characters
-                      const numericPrice = Number(cleanPrice); // Convert to a number
-                      return !isNaN(numericPrice)
-                        ? numericPrice.toLocaleString('fr-FR', {
-                            style: 'currency',
-                            currency: 'EUR',
-                            minimumFractionDigits: 0, // No centimes
-                            maximumFractionDigits: 0, // No centimes
-                          })
-                        : 'Invalid price';
-                    })()}</td>
+                    const cleanPrice = house.price.replace(/[^0-9.-]+/g, ''); // Remove non-numeric characters
+                    const numericPrice = Number(cleanPrice); // Convert to a number
+                    return !isNaN(numericPrice)
+                      ? numericPrice.toLocaleString('fr-FR', {
+                        style: 'currency',
+                        currency: 'EUR',
+                        minimumFractionDigits: 0, // No centimes
+                        maximumFractionDigits: 0, // No centimes
+                      })
+                      : 'Invalid price';
+                  })()}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{house.location}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      house.condition === 'vendu' ? 'bg-red-100 text-red-800' : 
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${house.condition === 'vendu' ? 'bg-red-100 text-red-800' :
                       house.condition === 'disponible' ? 'bg-green-100 text-green-800' :
-                      house.condition === 'sous compromis' ? 'bg-orange-100 text-orange-800' :
-                      house.condition === 'sous offre' ? 'bg-blue-100 text-blue-800' :
-                      house.condition === 'en attente' ? 'bg-purple-100 text-purple-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {house.condition === 'vendu' ? 'Vendu' : 
-                       house.condition === 'disponible' ? 'Disponible' : 
-                       house.condition === 'sous compromis' ? 'Sous compromis' :
-                       house.condition === 'sous offre' ? 'Sous offre' :
-                       house.condition === 'en attente' ? 'En attente' :
-                       house.condition}
+                        house.condition === 'sous compromis' ? 'bg-orange-100 text-orange-800' :
+                          house.condition === 'sous offre' ? 'bg-blue-100 text-blue-800' :
+                            house.condition === 'en attente' ? 'bg-purple-100 text-purple-800' :
+                              'bg-gray-100 text-gray-800'
+                      }`}>
+                      {house.condition === 'vendu' ? 'Vendu' :
+                        house.condition === 'disponible' ? 'Disponible' :
+                          house.condition === 'sous compromis' ? 'Sous compromis' :
+                            house.condition === 'sous offre' ? 'Sous offre' :
+                              house.condition === 'en attente' ? 'En attente' :
+                                house.condition}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -850,7 +872,7 @@ const handleDeleteVideo = (index: number) => {
                     </button>
                     <button
                       onClick={() => handleDelete(house.id)}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-red-600 hover:text-red-900 ml-4"
                     >
                       <TrashIcon className="h-5 w-5" />
                       <span className="sr-only">Supprimer</span>

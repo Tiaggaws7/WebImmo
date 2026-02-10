@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../firebase-config";
-import {doc, getDoc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 
 // --- Types ---
 interface Review {
@@ -15,6 +15,8 @@ const GoogleReview: React.FC = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [averageRating, setAverageRating] = useState<number>(0);
   const [reviewCount, setReviewCount] = useState<number>(0);
+  const [businessName, setBusinessName] = useState<string>("");
+  const [businessType, setBusinessType] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,6 +31,8 @@ const GoogleReview: React.FC = () => {
           setReviews((data.reviews as Review[]) || []);
           setAverageRating((data.averageRating as number) || 0);
           setReviewCount((data.reviewCount as number) || 0);
+          setBusinessName((data.businessName as string) || "");
+          setBusinessType((data.businessType as string[]) || []);
         } else {
           console.log("No review summary document found!");
           setError("Les avis ne sont pas disponibles pour le moment.");
@@ -65,6 +69,15 @@ const GoogleReview: React.FC = () => {
     }
 
     return stars;
+  };
+
+  const translateBusinessType = (type: string): string => {
+    const translations: Record<string, string> = {
+      'real_estate_agency': 'Agent immobilier',
+      'point_of_interest': 'Point d\'intérêt',
+      'establishment': 'Établissement',
+    };
+    return translations[type] || type;
   };
 
   // Structured data for SEO
@@ -132,9 +145,14 @@ const GoogleReview: React.FC = () => {
         alt="Google Reviews"
         className="h-12 w-12 mx-auto mb-3"
       />
-      <h3 className="text-xl font-bold text-gray-800 mb-2">
-        Avis de nos clients
+      <h3 className="text-xl font-bold text-gray-800 mb-1">
+        {businessName || "Avis de nos clients"}
       </h3>
+      {businessType.length > 0 && (
+        <p className="text-sm text-gray-600 mb-2">
+          {translateBusinessType(businessType[0])}
+        </p>
+      )}
       <div className="text-gray-600 mb-2">
         <span className="font-semibold text-lg">
           {averageRating.toFixed(1)}
@@ -145,7 +163,7 @@ const GoogleReview: React.FC = () => {
         {renderStars(averageRating)}
       </div>
       <a
-        href="https://www.google.com/search?q=elise+buil+immobilier+guadeloupe#lrd=0x8c134f5d3b0f5b3b:0x5e2b6c7f8b9e4a3b,1"
+        href="https://maps.app.goo.gl/aDU4gSfJta9741hV7"
         target="_blank"
         rel="noopener noreferrer"
         className="text-sm text-blue-600 hover:underline"
