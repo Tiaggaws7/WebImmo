@@ -1,142 +1,124 @@
-import React, { useState, useEffect } from "react";
-import { db } from "../firebase-config";
-import { doc, getDoc } from "firebase/firestore";
+import React, { useState, useEffect, useCallback } from "react";
+import reviewsData from "../data/reviews.json";
 
 // --- Types ---
 interface Review {
-  author_name: string;
+  author: string;
   rating: number;
+  date: string;
+  visitDate: string;
   text: string;
-  time: number; // Unix timestamp (seconds)
-  profile_photo_url?: string;
-  relative_time_description?: string;
+  ownerResponse: string | null;
+}
+
+interface ReviewsData {
+  statistics: {
+    averageRating: number;
+    totalReviews: number;
+  };
+  reviews: Review[];
 }
 
 // --- Component ---
-const GoogleReview: React.FC = () => {
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [averageRating, setAverageRating] = useState<number>(0);
-  const [reviewCount, setReviewCount] = useState<number>(0);
-  const [businessName, setBusinessName] = useState<string>("");
-  const [businessType, setBusinessType] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+const GoogleReviews: React.FC = () => {
+  const data = reviewsData as ReviewsData;
+  const { statistics, reviews } = data;
 
+  // Only show reviews that have text, sorted by card size (shortest first)
+  // Card size = text length + owner response length (no response = smallest)
+  const reviewsWithText = reviews
+    .filter((r) => r.text.trim() !== "")
+    .sort((a, b) => {
+      const sizeA = a.text.length + (a.ownerResponse?.length || 0);
+      const sizeB = b.text.length + (b.ownerResponse?.length || 0);
+      return sizeA - sizeB;
+    });
+
+  // Carousel state
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+
+  const goTo = useCallback(
+    (index: number) => {
+      if (isTransitioning) return;
+      setIsTransitioning(true);
+      setCurrentIndex(index);
+      setTimeout(() => setIsTransitioning(false), 400);
+    },
+    [isTransitioning]
+  );
+
+  const goNext = useCallback(() => {
+    goTo((currentIndex + 1) % reviewsWithText.length);
+  }, [currentIndex, reviewsWithText.length, goTo]);
+
+  const goPrev = useCallback(() => {
+    goTo(
+      (currentIndex - 1 + reviewsWithText.length) % reviewsWithText.length
+    );
+  }, [currentIndex, reviewsWithText.length, goTo]);
+
+  // Auto-play carousel
   useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        const docRef = doc(db, "google_reviews", "summary");
-        const docSnap = await getDoc(docRef);
+    if (isPaused) return;
+    const timer = setInterval(goNext, 6000);
+    return () => clearInterval(timer);
+  }, [goNext, isPaused]);
 
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setReviews((data.reviews as Review[]) || []);
-          setAverageRating((data.averageRating as number) || 0);
-          setReviewCount((data.reviewCount as number) || 0);
-          setBusinessName((data.businessName as string) || "");
-          setBusinessType((data.businessType as string[]) || []);
-        } else {
-          setError("Les avis ne sont pas disponibles pour le moment.");
-        }
-      } catch (err) {
-        console.error("Error fetching reviews from Firestore:", err);
-        setError("Impossible de charger les avis.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchReviews();
-  }, []);
-
-  const renderStars = (rating: number) => {
+  const renderStars = (rating: number, size: string = "text-lg") => {
     const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.3;
-
-    for (let i = 0; i < fullStars; i++) {
+    for (let i = 0; i < 5; i++) {
       stars.push(
-        <span key={`star-full-${i}`} className="text-yellow-400 text-xl">
+        <span
+          key={`star-${i}`}
+          className={`${size} ${i < rating ? "text-yellow-400" : "text-gray-300"}`}
+        >
           ★
         </span>
       );
     }
-
-    if (hasHalfStar && stars.length < 5) {
-      stars.push(
-        <span key="star-half" className="text-yellow-400 text-xl" style={{ position: 'relative', display: 'inline-block' }}>
-          <span style={{ color: '#d1d5db' }}>★</span>
-          <span style={{ position: 'absolute', left: 0, top: 0, overflow: 'hidden', width: '50%' }}>★</span>
-        </span>
-      );
-    }
-
-    for (let i = stars.length; i < 5; i++) {
-      stars.push(
-        <span key={`star-empty-${i}`} className="text-gray-300 text-xl">
-          ★
-        </span>
-      );
-    }
-
     return stars;
   };
 
-  const translateBusinessType = (type: string): string => {
-    const translations: Record<string, string> = {
-      'real_estate_agency': 'Agent immobilier',
-      'point_of_interest': 'Point d\'intérêt',
-      'establishment': 'Établissement',
-    };
-    return translations[type] || type;
-  };
+  const currentReview = reviewsWithText[currentIndex];
 
   // Structured data for SEO
-  // ⚠️ Mettez à jour ces informations avec celles de votre agence
   const jsonLdScript = {
     "@context": "https://schema.org",
     "@type": "RealEstateAgent",
-    name: businessName || "Elise BUIL Immobilier",
+    name: "Elise BUIL Immobilier",
     url: "https://elisebuilimmobilierguadeloupe.com/",
     aggregateRating: {
       "@type": "AggregateRating",
-      ratingValue: averageRating.toFixed(1),
-      reviewCount: reviewCount,
+      ratingValue: statistics.averageRating.toFixed(1),
+      reviewCount: statistics.totalReviews,
     },
-    review: reviews.map((review) => ({
+    review: reviewsWithText.map((review) => ({
       "@type": "Review",
-      author: { "@type": "Person", name: review.author_name },
+      author: { "@type": "Person", name: review.author },
       reviewRating: {
         "@type": "Rating",
         ratingValue: review.rating,
         bestRating: "5",
       },
-      datePublished: new Date(review.time * 1000)
-        .toISOString()
-        .split("T")[0],
       reviewBody: review.text,
     })),
   };
 
-  if (isLoading) {
-    return (
-      <div className="text-center font-[Inter] p-4">Chargement des avis...</div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center font-[Inter] p-4 text-red-500">{error}</div>
-    );
-  }
-
   return (
-    <div className="text-center font-[Inter] bg-white p-6 rounded-lg shadow-md max-w-sm mx-auto">
+    <div
+      className="font-[Inter] w-full"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
       <style
         dangerouslySetInnerHTML={{
           __html: `
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-      `,
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+            .review-card { transition: opacity 0.4s ease, transform 0.4s ease; }
+            .review-dot { transition: all 0.3s ease; }
+          `,
         }}
       />
       <script
@@ -144,51 +126,110 @@ const GoogleReview: React.FC = () => {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdScript) }}
       />
 
-      {/* Google Logo */}
-      <img
-        src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png"
-        alt="Google"
-        className="h-6 mx-auto mb-3"
-      />
-
-      {/* Nom de l'agence */}
-      <h3 className="text-lg font-bold text-gray-800 mb-1">
-        {businessName || "Avis de nos clients"}
-      </h3>
-
-      {/* Type d'établissement */}
-      {businessType.length > 0 && (
-        <p className="text-sm text-gray-500 mb-2">
-          {translateBusinessType(businessType[0])}
-        </p>
-      )}
-
-      {/* Note moyenne */}
-      <div className="text-gray-600 mb-1">
-        <span className="font-bold text-2xl text-gray-800">
-          {averageRating.toFixed(1)}
-        </span>
-        <span className="text-sm text-gray-500 ml-1">/ 5</span>
-      </div>
-
-      {/* Étoiles */}
-      <div className="inline-flex items-center justify-center space-x-0.5 leading-none mb-3">
-        {renderStars(averageRating)}
-      </div>
-
-      {/* Lien vers Google Maps */}
-      <div>
+      {/* Compact stats header */}
+      <div className="flex items-center justify-center gap-3 mb-4">
+        <img
+          src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png"
+          alt="Google"
+          className="h-5"
+        />
+        <div className="flex items-center gap-1.5">
+          <span className="font-bold text-xl text-gray-800">
+            {statistics.averageRating.toFixed(1)}
+          </span>
+          <div className="flex items-center">{renderStars(statistics.averageRating, "text-base")}</div>
+        </div>
         <a
-          href="https://maps.app.goo.gl/aDU4gSfJta9741hV7"
+          href="https://maps.app.goo.gl/UrPCLApF122Ab6Ng6"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm text-blue-600 hover:underline"
+          className="text-xs text-blue-600 hover:underline"
         >
-          Basé sur {reviewCount} avis Google
+          ({statistics.totalReviews} avis)
         </a>
+      </div>
+
+      {/* Carousel */}
+      <div className="relative">
+        {/* Review card */}
+        <div className="bg-white rounded-xl shadow-md border border-gray-100 p-5 min-h-[180px] flex flex-col">
+          {/* Author row */}
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+              {currentReview.author.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-gray-800 text-sm truncate">
+                {currentReview.author}
+              </p>
+              <div className="flex items-center gap-2">
+                <div className="flex">{renderStars(currentReview.rating, "text-sm")}</div>
+                <span className="text-xs text-gray-400">{currentReview.date}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Review text */}
+          <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line flex-1 line-clamp-4">
+            {currentReview.text}
+          </p>
+
+          {/* Owner response (compact) */}
+          {currentReview.ownerResponse && (
+            <div className="mt-3 pl-3 border-l-2 border-blue-300 bg-blue-50/60 py-2 px-3 rounded-r-lg">
+              <p className="text-xs text-blue-700 font-medium mb-0.5">
+                Réponse du propriétaire
+              </p>
+              <p className="text-gray-600 text-xs leading-relaxed whitespace-pre-line line-clamp-2">
+                {currentReview.ownerResponse}
+              </p>
+            </div>
+          )}
+
+          {/* "Read more" link */}
+          <a
+            href="https://maps.app.goo.gl/UrPCLApF122Ab6Ng6"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-blue-600 mt-3 text-right hover:underline block"
+          >
+            Lire la suite sur Google →
+          </a>
+        </div>
+
+        {/* Navigation arrows */}
+        <button
+          onClick={goPrev}
+          className="absolute -left-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-800 hover:shadow-lg transition-all z-10"
+          aria-label="Avis précédent"
+        >
+          ‹
+        </button>
+        <button
+          onClick={goNext}
+          className="absolute -right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-800 hover:shadow-lg transition-all z-10"
+          aria-label="Avis suivant"
+        >
+          ›
+        </button>
+      </div>
+
+      {/* Dots indicator */}
+      <div className="flex justify-center gap-1.5 mt-3">
+        {reviewsWithText.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => goTo(index)}
+            className={`review-dot rounded-full ${index === currentIndex
+              ? "w-5 h-2 bg-blue-500"
+              : "w-2 h-2 bg-gray-300 hover:bg-gray-400"
+              }`}
+            aria-label={`Avis ${index + 1}`}
+          />
+        ))}
       </div>
     </div>
   );
 };
 
-export default GoogleReview;
+export default GoogleReviews;

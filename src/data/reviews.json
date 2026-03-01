@@ -1,0 +1,96 @@
+{
+  "statistics": {
+    "averageRating": 5.0,
+    "totalReviews": 13
+  },
+  "reviews": [
+    {
+      "author": "Lilotop",
+      "rating": 5,
+      "date": "il y a un mois",
+      "visitDate": "janvier",
+      "text": "J'ai sollicité cette agente immobilière et j'ai été pleinement satisfaite de son accompagnement. Très professionnelle, disponible et à l'écoute, son sérieux, sa réactivité et la qualité de son travail sont à souligner.\nJe recommande vivement ses services.",
+      "ownerResponse": "Un grand merci pour votre commentaire qui me touche particulièrement. Mon métier m'offre la chance de faire de très belles rencontres, et la vôtre en fait partie. \nJe vous souhaite une belle continuation dans vos projets."
+    },
+    {
+      "author": "Jean-Philippe Dran",
+      "rating": 5,
+      "date": "il y a 2 mois",
+      "visitDate": "décembre 2025",
+      "text": "Elise s'est chargée de la vente de mon appartement au Lamentin avec un très grand professionnalisme.\nElle a été d'une aide précieuse et efficace tout au long du processus et à chacune des étapes de la prospection jusqu'à la signature finale.\nAu-delà de son professionnalisme, Elise est d'une efficacité et d'une pugnacité remarquable en plus de toujours garder le sourire !\n\nJe recommande vivement et sans réserve !\nMille mercis Elise.",
+      "ownerResponse": "Vous accompagner dans la vente de votre appartement a été un réel plaisir humainement et votre satisfaction est ma plus belle réussite. Un immense merci pour votre confiance et pour ces mots qui donnent tout le sens de mon engagement au quotidien. Belle continuation à vous dans vos projets."
+    },
+    {
+      "author": "Audrey Marcon",
+      "rating": 5,
+      "date": "il y a 2 semaines",
+      "visitDate": "février",
+      "text": "D'un professionnel exceptionnel et d'une gentillesse extrême. Je  recommande vivement Élise pour la vente de votre maison !!",
+      "ownerResponse": null
+    },
+    {
+      "author": "Pegguy FERRIER",
+      "rating": 5,
+      "date": "il y a 2 mois",
+      "visitDate": "décembre 2025",
+      "text": "EXCELLENTE expérience avec Mme Elise BUIL : merci pour son efficace collaboration pour la vente de notre bien !\n\nDommage de n'avoir pu vous connaître plus tôt !!\n\nNous recommandons chaudement!",
+      "ownerResponse": "Je vous remercie pour votre commentaire qui me va droit au coeur. Ce fut un réel plaisir de vous accompagner et je suis ravie que nos chemins se soient croisés, même tardivement. Je vous souhaite une excellente continuation."
+    },
+    {
+      "author": "Dora Raynaud",
+      "rating": 5,
+      "date": "il y a 5 mois",
+      "visitDate": "septembre 2025",
+      "text": "Agent immobilier au top, présente pour chaque étape, toujours disponiblle, on sait que c'est son métier mais elle fait plus que ce qu'elle doit faire. Vraiment je recommanderai les yeux fermés à tout mon entourage. Merci d'être plus qu'un agent immobilier. Bonne continuation.",
+      "ownerResponse": "Un sincère merci pour ce commentaire qui me touche particulièrement. Ce métier est avant tout une aventure humaine, faites de rencontres précieuses comme la vôtre. Merci pour la confiance que vous m'avez accordée pour vous accompagner dans la vente de votre maison. Je vous souhaite du fond du coeur une belle continuation dans vos nouveaux projets."
+    },
+    {
+      "author": "Sophie Machet",
+      "rating": 5,
+      "date": "il y a 5 mois",
+      "visitDate": "septembre 2025",
+      "text": "Je mets 5 étoiles 🌟🌟🌟🌟🌟 à Elise BUIL une vraie professionnelle de l'immobilier qui sait détecter et répondre aux attentes de ses clients avec beaucoup d'humanité et de gentillesse\nRéactivité et  compétence sont les qualités qui la caractérise\nJe recommande vivement",
+      "ownerResponse": "Merci Sophie pour ces mots qui résonnent bien au delà d'un simple avis. L'immobilier nous offre parfois le plus beau des cadeaux : de vraies rencontres humaines. Merci d'en faire partie."
+    },
+    {
+      "author": "nicolas chevillat",
+      "rating": 5,
+      "date": "il y a 5 mois",
+      "visitDate": "septembre 2025",
+      "text": "Professionnalisme\nRéactivité et accompagnement sans faille\nJe recommande Mme BUIL pour toutes vos futures transactions immobilières et démarches administratives et juridiques",
+      "ownerResponse": "Merci beaucoup pour votre retour positif et pour la confiance que vous m'avez accordée pour vous accompagner dans la vente de votre appartement. Je vous souhaite de tout coeur une belle continuation dans vos projets à venir."
+    },
+    {
+      "author": "Lili 95",
+      "rating": 5,
+      "date": "il y a 4 semaines",
+      "visitDate": "janvier",
+      "text": "Rapidité et efficacité en plus que sympathique. Je recommande.",
+      "ownerResponse": "Un grand merci pour votre retour positif, belle continuation à vous 🌺 …"
+    },
+    {
+      "author": "Klodin L",
+      "rating": 5,
+      "date": "il y a 6 jours",
+      "visitDate": "février",
+      "text": "Mme BUIL est une personne agréable, à l'écoute, très professionnelle et proactive. La mission a été gérée en 1 semaine..\nVraiment très efficace. Je recommande à 100 pour cent",
+      "ownerResponse": "Un grand merci pour votre avis, je suis ravie de vous savoir satisfaite. Accompagner un projet immobilier est toujours un moment important dans une vie, et je suis heureuse d'avoir pu y contribuer à vos côtés.\nBelle continuation dans vos projets 🌺 …"
+    },
+    {
+      "author": "CORMIER Johann",
+      "rating": 5,
+      "date": "il y a un mois",
+      "visitDate": "janvier",
+      "text": "",
+      "ownerResponse": "Un grand merci pour votre retour positif. Je vous souhaite une excellente continuation dans vos projets futurs."
+    },
+    {
+      "author": "Steve Gelanie",
+      "rating": 5,
+      "date": "il y a 2 mois",
+      "visitDate": "décembre 2025",
+      "text": "",
+      "ownerResponse": "Je vous remercie pour votre retour positif, ce fut un réel plaisir de vous accompagner dans votre acquisition. Je vous souhaite une bonne installation et une belle continuation."
+    }
+  ]
+}

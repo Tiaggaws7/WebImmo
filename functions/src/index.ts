@@ -2,147 +2,304 @@ import { onSchedule } from "firebase-functions/v2/scheduler";
 import { onRequest } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
-import axios from "axios";
+import chromium from "@sparticuz/chromium";
+import puppeteer from "puppeteer-core";
 import { defineSecret } from "firebase-functions/params";
 
 admin.initializeApp();
 const db = admin.firestore();
 
-// Define secrets using the modern params package
-const googleApiKey = defineSecret("GOOGLE_API_KEY");
-const googlePlaceId = defineSecret("GOOGLE_PLACE_ID");
+// Secrets
+const googleMapsUrl = defineSecret("GOOGLE_MAPS_URL");
 
-/**
- * 📌 Place ID de test : Century 21 Bastille (Paris) → ChIJy6Ot1cly5kcRuXFD2LxGLQc
- *
- * Configuration des secrets Firebase :
- *    firebase functions:secrets:set GOOGLE_API_KEY     → votre clé API Google Places
- *    firebase functions:secrets:set GOOGLE_PLACE_ID    → ChIJy6Ot1cly5kcRuXFD2LxGLQc
- *    firebase deploy --only functions
- *
- * ⚠️ Pour passer à votre vraie agence, changez simplement le GOOGLE_PLACE_ID
- */
+// --- Types ---
+interface ScrapedReview {
+  author_name: string;
+  rating: number;
+  text: string;
+  time: number;
+  relative_time_description: string;
+  profile_photo_url: string;
+}
 
-/**
- * Fonction utilitaire — récupère les avis Google et les stocke dans Firestore
- */
-async function fetchAndStoreReviews(apiKey: string, placeId: string): Promise<string> {
-  logger.log("📡 Fetching from Google Places API...");
-
-  const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,rating,reviews,user_ratings_total,types&key=${apiKey}&language=fr`;
-
-  const response = await axios.get(url);
-
-  logger.log("API Response received:", { status: response.data.status });
-
-  if (response.data.status !== "OK") {
-    const errorMsg = `Google API error: ${response.data.status} - ${response.data.error_message || "Unknown error"}`;
-    logger.error("❌ " + errorMsg);
-    throw new Error(errorMsg);
-  }
-
-  const placeData = response.data.result;
-
-  if (!placeData) {
-    throw new Error(`No place data found for Place ID: ${placeId}`);
-  }
-
-  const reviews = placeData.reviews || [];
-  const averageRating = placeData.rating || 0;
-  const reviewCount = placeData.user_ratings_total || 0;
-  const businessName = placeData.name || "";
-  const businessType = placeData.types || [];
-
-  logger.log("📊 Place data retrieved:", {
-    name: placeData.name,
-    reviewCount,
-    averageRating,
-    reviewsLength: reviews.length,
-    businessType,
-  });
-
-  const docRef = db.collection("google_reviews").doc("summary");
-
-  await docRef.set({
-    reviews,
-    averageRating,
-    reviewCount,
-    businessName,
-    businessType,
-    lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
-  });
-
-  const successMsg = `Successfully fetched and stored ${reviews.length} reviews for ${placeData.name} (${averageRating}★, ${reviewCount} total reviews).`;
-  logger.log("✅ " + successMsg);
-  return successMsg;
+interface ScrapedData {
+  reviews: ScrapedReview[];
+  averageRating: number;
+  reviewCount: number;
+  businessName: string;
+  googleMapsUrl: string;
 }
 
 /**
- * Scheduled Cloud Function — runs every 24 hours to fetch Google reviews automatically.
+ * Scrape les avis Google depuis la page Google Maps
+ * Utilise Puppeteer (Chrome headless) pour naviguer et extraire les données.
+ */
+async function scrapeGoogleMapsReviews(mapsUrl: string): Promise<ScrapedData> {
+  logger.log("🌐 Lancement du navigateur headless...");
+
+  const browser = await puppeteer.launch({
+    args: chromium.args,
+    defaultViewport: { width: 1920, height: 1080 },
+    executablePath: await chromium.executablePath(),
+    headless: true,
+  });
+
+  try {
+    const page = await browser.newPage();
+
+    // User-Agent réaliste
+    await page.setUserAgent(
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+      "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    );
+
+    // Bloquer les images et CSS pour accélérer le chargement
+    await page.setRequestInterception(true);
+    page.on("request", (req) => {
+      const type = req.resourceType();
+      if (type === "image" || type === "stylesheet" || type === "font") {
+        req.abort();
+      } else {
+        req.continue();
+      }
+    });
+
+    // Force language to French
+    const urlWithLang = mapsUrl.includes("hl=") ? mapsUrl : `${mapsUrl}&hl=fr`;
+    logger.log("📄 Navigation vers", urlWithLang);
+    await page.goto(urlWithLang, { waitUntil: "networkidle2", timeout: 30000 });
+
+    // Accepter les cookies Google si dialogue présent
+    try {
+      const consentBtn = await page.waitForSelector(
+        "button[aria-label=\"Tout accepter\"], button[aria-label=\"Accept all\"], form[action*=\"consent\"] button",
+        { timeout: 5000 }
+      );
+      if (consentBtn) {
+        await consentBtn.click();
+        logger.log("🍪 Cookies acceptés");
+        await new Promise((r) => setTimeout(r, 2000));
+      }
+    } catch {
+      // Pas de dialogue de cookies
+    }
+
+    // Attendre que la page soit chargée
+    await new Promise((r) => setTimeout(r, 3000));
+
+    // Cliquer sur l'onglet "Avis" s'il existe
+    try {
+      const reviewsTab = await page.waitForSelector(
+        "button[aria-label*=\"Avis\"], button[aria-label*=\"Reviews\"], button[data-tab-index=\"1\"]",
+        { timeout: 5000 }
+      );
+      if (reviewsTab) {
+        await reviewsTab.click();
+        logger.log("📋 Onglet Avis cliqué");
+        await new Promise((r) => setTimeout(r, 2000));
+      }
+    } catch {
+      logger.log("⚠️ Onglet Avis non trouvé via sélecteur, essai via index...");
+      // Fallback: try click the second tab button
+      await page.evaluate(() => {
+        const tabs = document.querySelectorAll("button[role=\"tab\"]");
+        if (tabs.length > 1) (tabs[1] as HTMLElement).click();
+      });
+    }
+
+    // Scroller le panel des avis pour charger tous les avis
+    const scrolled = await page.evaluate(async () => {
+      const scrollable = document.querySelector(
+        "div.m6QErb.DxyBCb.kA9KIf.dS8AEf"
+      );
+      if (!scrollable) return false;
+
+      for (let i = 0; i < 15; i++) {
+        scrollable.scrollTop += 800;
+        await new Promise((r) => setTimeout(r, 600));
+      }
+      return true;
+    });
+    logger.log(scrolled ? "📜 Panel scrollé" : "⚠️ Panel non trouvé");
+
+    // Cliquer sur les boutons "Plus" pour développer les avis tronqués
+    await page.evaluate(() => {
+      document
+        .querySelectorAll("button[aria-label*=\"Voir plus\"], button.w8nwRe.kyuRq")
+        .forEach((btn) => (btn as HTMLElement).click());
+    });
+    await new Promise((r) => setTimeout(r, 500));
+
+    // Extraire les données des avis
+    const data = await page.evaluate(() => {
+      const reviewElements = document.querySelectorAll(".jftiEf");
+      const seenAuthors = new Set<string>();
+      const reviews: {
+        author_name: string;
+        rating: number;
+        text: string;
+        relative_time_description: string;
+        profile_photo_url: string;
+      }[] = [];
+
+      reviewElements.forEach((el) => {
+        const author =
+          (el.querySelector(".d4r55") as HTMLElement)?.innerText
+            ?.split("\n")[0]
+            ?.trim() || "";
+
+        if (!author || seenAuthors.has(author)) return;
+        seenAuthors.add(author);
+
+        const ratingText =
+          el.querySelector(".kvMYyc")?.getAttribute("aria-label") || "";
+        const ratingMatch = ratingText.match(/\d+/);
+        const rating = ratingMatch ? parseInt(ratingMatch[0]) : 5;
+
+        const text =
+          (el.querySelector(".wiHb6") as HTMLElement)?.innerText?.trim() || "";
+
+        const date =
+          (el.querySelector(".rsqa6f, .DU9u6") as HTMLElement)?.innerText?.trim() || "";
+
+        const photoEl = el.querySelector("img.NBa79c") as HTMLImageElement;
+        const photo = photoEl?.src || "";
+
+        reviews.push({
+          author_name: author,
+          rating,
+          text,
+          relative_time_description: date,
+          profile_photo_url: photo,
+        });
+      });
+
+      // Infos business
+      const businessName =
+        (document.querySelector(".DUwDvf") as HTMLElement)?.innerText?.trim() || "";
+
+      // Note moyenne
+      const ratingEl = document.querySelector(".F7nice span") as HTMLElement;
+      const avgRating = ratingEl
+        ? parseFloat(ratingEl.innerText.replace(",", "."))
+        : 0;
+
+      // Nombre total d'avis (chercher dans le texte "XX avis")
+      let totalReviews = reviews.length;
+      const reviewCountText = document.querySelector(
+        "button[aria-label*=\"avis\"]"
+      )?.getAttribute("aria-label") || "";
+      const countMatch = reviewCountText.match(/(\d+)/);
+      if (countMatch) totalReviews = parseInt(countMatch[1]);
+
+      return { reviews, businessName, avgRating, totalReviews };
+    });
+
+    logger.log("📊 Données extraites:", {
+      businessName: data.businessName,
+      reviewCount: data.reviews.length,
+      avgRating: data.avgRating,
+      totalReviews: data.totalReviews,
+    });
+
+    return {
+      reviews: data.reviews.map((r) => ({
+        ...r,
+        time: Math.floor(Date.now() / 1000),
+      })),
+      averageRating: data.avgRating || 5.0,
+      reviewCount: data.totalReviews,
+      businessName: data.businessName || "Elise BUIL",
+      googleMapsUrl: mapsUrl,
+    };
+  } finally {
+    await browser.close();
+    logger.log("🔒 Navigateur fermé");
+  }
+}
+
+/**
+ * Stocker les données scrapées dans Firestore
+ */
+async function storeReviews(data: ScrapedData): Promise<string> {
+  await db.collection("google_reviews").doc("summary").set({
+    reviews: data.reviews,
+    averageRating: data.averageRating,
+    reviewCount: data.reviewCount,
+    businessName: data.businessName,
+    businessType: ["real_estate_agency"],
+    googleMapsUrl: data.googleMapsUrl,
+    lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+    source: "puppeteer_scrape",
+  });
+
+  const msg = `Scraped ${data.reviews.length} reviews for "${data.businessName}" (${data.averageRating}★, ${data.reviewCount} total).`;
+  logger.log("✅", msg);
+  return msg;
+}
+
+/**
+ * Scheduled Cloud Function — toutes les 24h
+ * Scrape les avis Google et les stocke dans Firestore.
+ * Config : 2 Go RAM, 120s timeout (Puppeteer/Chromium nécessite ça).
  */
 export const fetchGoogleReviews = onSchedule(
   {
     schedule: "every 24 hours",
-    secrets: [googleApiKey, googlePlaceId],
+    secrets: [googleMapsUrl],
+    memory: "2GiB",
+    timeoutSeconds: 120,
   },
   async () => {
-    logger.log("🔄 Starting scheduled Google Reviews fetch...");
+    logger.log("🔄 Scraping programmé des avis Google...");
+    const url = googleMapsUrl.value();
 
-    const apiKey = googleApiKey.value();
-    const placeId = googlePlaceId.value();
-
-    if (!apiKey || !placeId) {
-      logger.error("❌ API Key or Place ID is not configured.", {
-        hasApiKey: !!apiKey,
-        hasPlaceId: !!placeId,
-      });
+    if (!url) {
+      logger.error("❌ Secret GOOGLE_MAPS_URL non configuré.");
       return;
     }
 
     try {
-      await fetchAndStoreReviews(apiKey, placeId);
+      const data = await scrapeGoogleMapsReviews(url);
+      await storeReviews(data);
     } catch (error) {
-      const err = error as { response?: { data: unknown }; message: string };
-      logger.error("❌ Error fetching Google Place details:", {
-        error: err.response ? err.response.data : err.message,
-      });
+      logger.error("❌ Erreur scraping:", (error as Error).message);
+      logger.log("ℹ️ Les données existantes dans Firestore sont conservées.");
     }
   }
 );
 
 /**
- * HTTP Trigger — allows manually fetching reviews by visiting the function URL.
- * Usage: visit the function URL in your browser to trigger a fetch immediately.
- * Example: https://us-central1-YOUR_PROJECT.cloudfunctions.net/triggerFetchGoogleReviews
+ * HTTP Trigger — déclencher le scraping manuellement
+ * URL : https://us-central1-webimmo-6189a.cloudfunctions.net/triggerFetchGoogleReviews
  */
 export const triggerFetchGoogleReviews = onRequest(
   {
-    secrets: [googleApiKey, googlePlaceId],
+    secrets: [googleMapsUrl],
     cors: true,
+    memory: "2GiB",
+    timeoutSeconds: 120,
   },
-  async (req, res) => {
-    logger.log("🔄 Manual Google Reviews fetch triggered...");
+  async (_req, res) => {
+    logger.log("🔄 Scraping manuel déclenché...");
+    const url = googleMapsUrl.value();
 
-    const apiKey = googleApiKey.value();
-    const placeId = googlePlaceId.value();
-
-    if (!apiKey || !placeId) {
+    if (!url) {
       res.status(500).json({
         success: false,
-        error: "GOOGLE_API_KEY or GOOGLE_PLACE_ID secret is not configured.",
+        error: "Secret GOOGLE_MAPS_URL non configuré.",
       });
       return;
     }
 
     try {
-      const message = await fetchAndStoreReviews(apiKey, placeId);
-      res.status(200).json({ success: true, message });
+      const data = await scrapeGoogleMapsReviews(url);
+      const message = await storeReviews(data);
+      res.status(200).json({ success: true, message, data });
     } catch (error) {
-      const err = error as { response?: { data: unknown }; message: string };
       res.status(500).json({
         success: false,
-        error: err.message,
-        details: err.response ? err.response.data : undefined,
+        error: (error as Error).message,
       });
     }
   }
