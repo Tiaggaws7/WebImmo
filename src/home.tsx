@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Helmet } from "react-helmet-async";
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -13,6 +13,7 @@ function Home() {
   const [activeIndex, setActiveIndex] = useState(0)
   const [touchStart, setTouchStart] = useState(0)
   const [touchEnd, setTouchEnd] = useState(0)
+  const preloadedRef = useRef<Set<string>>(new Set())
 
   // ... (le reste de votre logique useState, useEffect, etc. reste inchangé)
   // Récupération des maisons
@@ -23,7 +24,7 @@ function Home() {
         const data = querySnapshot.docs.map(doc => ({
           ...doc.data() as House,
           id: doc.id
-        }))
+        })).filter(house => house.condition === 'disponible')
         setHouses(data)
       } catch (error) {
         console.error('Erreur lors de la récupération des données :', error)
@@ -36,11 +37,27 @@ function Home() {
   const handleNext = () => setActiveIndex(prev => (prev + 1) % houses.length)
   const handlePrev = () => setActiveIndex(prev => (prev - 1 + houses.length) % houses.length)
 
-  // Défilement automatique
+  // Preload full-res images progressively (skips already loaded)
   useEffect(() => {
-    const interval = setInterval(handleNext, 5000)
-    return () => clearInterval(interval)
-  }, [houses.length])
+    if (houses.length <= 1) return;
+    let cancelled = false;
+    const preload = async () => {
+      for (let offset = 1; offset < houses.length; offset++) {
+        if (cancelled) break;
+        const idx = (activeIndex + offset) % houses.length;
+        const url = houses[idx].principalImage;
+        if (preloadedRef.current.has(url)) continue;
+        await new Promise<void>((resolve) => {
+          const img = new Image();
+          img.onload = () => { preloadedRef.current.add(url); resolve(); };
+          img.onerror = () => resolve();
+          img.src = url;
+        });
+      }
+    };
+    preload();
+    return () => { cancelled = true; };
+  }, [houses, activeIndex])
 
   // Gestion des gestes tactiles
   const handleTouchStart = (e: React.TouchEvent) => setTouchStart(e.targetTouches[0].clientX)
@@ -137,13 +154,14 @@ function Home() {
               onTouchEnd={handleTouchEnd}
             >
               <div className="flex transition-transform duration-300 ease-out" style={{ transform: `translateX(-${activeIndex * 100}%)` }}>
-                {houses.map(house => (
+                {houses.map((house, index) => (
                   <div key={house.id} className="w-full flex-shrink-0 relative">
                     <Link to={`/house/${house.id}`} className="block">
                       <img
-                        src={house.principalImage}
+                        src={index === activeIndex ? house.principalImage : (house.thumbnailImage || house.principalImage)}
                         alt={`Maison ${house.id}`}
                         className="w-full h-64 md:h-[calc(100vh-64px)] object-cover"
+                        loading={index === 0 ? "eager" : "lazy"}
                       />
                       <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-black/10"></div>
                     </Link>
