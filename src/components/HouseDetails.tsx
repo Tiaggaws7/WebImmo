@@ -1,6 +1,6 @@
 import type React from "react"
 import ReactMarkdown from 'react-markdown';
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useParams, Link } from "react-router-dom"
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react"
 import { doc, getDoc } from "firebase/firestore"
@@ -12,6 +12,7 @@ const HouseDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const [house, setHouse] = useState<House | null>(null)
   const [activeImageIndex, setActiveImageIndex] = useState(0)
+  const preloadedRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     const fetchHouse = async () => {
@@ -32,6 +33,33 @@ const HouseDetails: React.FC = () => {
 
     fetchHouse()
   }, [id])
+
+  // Preload images progressively: next, then next+1, etc. (skips already loaded)
+  useEffect(() => {
+    if (!house || house.images.length <= 1) return;
+
+    let cancelled = false;
+
+    const preloadSequentially = async () => {
+      const total = house.images.length;
+      for (let offset = 1; offset < total; offset++) {
+        if (cancelled) break;
+        const index = (activeImageIndex + offset) % total;
+        const url = house.images[index];
+        if (preloadedRef.current.has(url)) continue; // Already loaded, skip
+        await new Promise<void>((resolve) => {
+          const img = new Image();
+          img.onload = () => { preloadedRef.current.add(url); resolve(); };
+          img.onerror = () => resolve();
+          img.src = url;
+        });
+      }
+    };
+
+    preloadSequentially();
+
+    return () => { cancelled = true; };
+  }, [house, activeImageIndex])
 
   const handleNextImage = () => {
     if (house) {
@@ -67,51 +95,73 @@ const HouseDetails: React.FC = () => {
           <h1 className="text-3xl font-bold mb-4">{house.title}</h1>
 
           {/* Début du carrousel */}
-          <div className="relative mb-6 group">
-            <div className="aspect-w-16 aspect-h-9 bg-gray-100 rounded-lg">
-              <img
-                key={activeImageIndex}
-                src={house.images[activeImageIndex] || "/placeholder.svg"}
-                alt={house.title}
-                className="w-full max-h-[500px] rounded-lg bg-gray-100 opacity-0 transition-opacity duration-500 ease-in-out"
-                style={{ objectFit: 'contain' }}
-                loading={activeImageIndex === 0 ? "eager" : "lazy"}
-                onLoad={(e) => {
-                  e.currentTarget.classList.remove('opacity-0');
-                  e.currentTarget.classList.add('opacity-100');
-                }}
-              />
+          <div className="relative mb-6 group bg-gray-100 rounded-lg min-h-[300px]">
+            {/* Loading spinner — visible while image loads, hidden behind faded-in content */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-10 h-10 border-4 border-gray-300 border-t-violet-600 rounded-full animate-spin"></div>
             </div>
+            {/* Entire carousel content fades in together */}
+            <div
+              key={activeImageIndex}
+              className="opacity-0 transition-opacity duration-500 ease-in-out bg-white rounded-lg relative z-10"
+              ref={(el) => {
+                if (!el) return;
+                const img = el.querySelector('img');
+                if (img && img.complete) {
+                  // Image already cached — show instantly, no transition
+                  el.style.transition = 'none';
+                  el.classList.remove('opacity-0');
+                  el.classList.add('opacity-100');
+                }
+              }}
+            >
+              <div className="aspect-w-16 aspect-h-9">
+                <img
+                  src={house.images[activeImageIndex] || "/placeholder.svg"}
+                  alt={house.title}
+                  className="w-full max-h-[500px] rounded-lg bg-gray-100"
+                  style={{ objectFit: 'contain' }}
+                  loading={activeImageIndex === 0 ? "eager" : "lazy"}
+                  onLoad={(e) => {
+                    const wrapper = e.currentTarget.closest('.opacity-0, .opacity-100');
+                    if (wrapper) {
+                      wrapper.classList.remove('opacity-0');
+                      wrapper.classList.add('opacity-100');
+                    }
+                  }}
+                />
+              </div>
 
-            {house.images.length > 1 && (
-              <>
-                {/* Flèches de navigation */}
-                <button
-                  onClick={handlePrevImage}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow-md hover:bg-white/100 transition-all opacity-0 group-hover:opacity-100 z-20"
-                >
-                  <ChevronLeft className="w-6 h-6" />
-                </button>
-                <button
-                  onClick={handleNextImage}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow-md hover:bg-white/100 transition-all opacity-0 group-hover:opacity-100 z-20"
-                >
-                  <ChevronRight className="w-6 h-6" />
-                </button>
+              {house.images.length > 1 && (
+                <>
+                  {/* Flèches de navigation */}
+                  <button
+                    onClick={handlePrevImage}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow-md hover:bg-white/100 transition-all opacity-0 group-hover:opacity-100 z-20"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <button
+                    onClick={handleNextImage}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow-md hover:bg-white/100 transition-all opacity-0 group-hover:opacity-100 z-20"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
 
-                {/* Points indicateurs */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-20">
-                  {house.images.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setActiveImageIndex(index)}
-                      className={`w-3 h-3 rounded-full transition-all ${index === activeImageIndex ? 'bg-violet-600' : 'bg-white/80 hover:bg-white'
-                        }`}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
+                  {/* Points indicateurs */}
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-20">
+                    {house.images.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setActiveImageIndex(index)}
+                        className={`w-3 h-3 rounded-full transition-all ${index === activeImageIndex ? 'bg-violet-600' : 'bg-white/80 hover:bg-white'
+                          }`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
           {/* Section Vidéos */}
           {house.videos && house.videos.length > 0 && (
