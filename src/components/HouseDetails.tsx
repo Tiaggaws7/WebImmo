@@ -7,7 +7,6 @@ import { doc, getDoc } from "firebase/firestore"
 import { db } from "../firebase-config"
 import type { House } from "../types"
 import { Helmet } from "react-helmet-async"
-import { useCallback } from "react"
 
 const HouseDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>()
