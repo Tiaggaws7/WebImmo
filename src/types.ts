@@ -16,8 +16,9 @@ export interface House {
   principalImage: string;
   description: string;
   condition: 'vendu' | 'disponible' | 'sous compromis' | 'sous offre' | 'en attente';
-  consomation: "A" | "B" | "C" | "D" | "E" | "F" | "G";
+  consomation: "A" | "B" | "C" | "D" | "E" | "F" | "G" | "";
   virtualTourUrl?: string;
+  thumbnailImage?: string;
 }
 
 export type Article = {

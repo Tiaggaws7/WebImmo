@@ -12,6 +12,7 @@ import {
 } from 'firebase/firestore';
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import imageCompression from 'browser-image-compression';
 import { db, auth } from '../firebase-config';
 
 
@@ -40,7 +41,7 @@ const AdminPanel: React.FC = () => {
     principalImage: '',
     description: '',
     condition: 'disponible',
-    consomation: 'A',
+    consomation: '',
     virtualTourUrl: ''
   });
   const [tempAmenitiesInput, setTempAmenitiesInput] = React.useState<string>(''); // Temporary input state
@@ -65,7 +66,7 @@ const AdminPanel: React.FC = () => {
             location: data.location || '',
             description: data.description || '',
             condition: data.condition || 'disponible',
-            consomation: data.consomation || 'A',
+            consomation: data.consomation || '',
             principalImage: data.principalImage || '',
             // On garantit que les tableaux ne sont jamais 'undefined'
             images: data.images || [],
@@ -110,19 +111,46 @@ const AdminPanel: React.FC = () => {
       const files = Array.from(e.target.files);
       const storage = getStorage();
 
+      const compressionOptions = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+      };
+
+      const thumbnailOptions = {
+        maxSizeMB: 0.1,
+        maxWidthOrHeight: 400,
+        useWebWorker: true,
+      };
+
       try {
-        const uploadedUrls = await Promise.all(
+        const results = await Promise.all(
           files.map(async (file) => {
-            const storageRef = ref(storage, `houses/${file.name}-${Date.now()}`);
-            const snapshot = await uploadBytes(storageRef, file);
-            return await getDownloadURL(snapshot.ref);
+            // Compress full-size image
+            const compressedFile = await imageCompression(file, compressionOptions);
+            const timestamp = Date.now();
+            const storageRef = ref(storage, `houses/${file.name}-${timestamp}`);
+            const snapshot = await uploadBytes(storageRef, compressedFile);
+            const fullUrl = await getDownloadURL(snapshot.ref);
+
+            // Create and upload thumbnail
+            const thumbnailFile = await imageCompression(file, thumbnailOptions);
+            const thumbRef = ref(storage, `houses/thumbnails/${file.name}-${timestamp}`);
+            const thumbSnapshot = await uploadBytes(thumbRef, thumbnailFile);
+            const thumbUrl = await getDownloadURL(thumbSnapshot.ref);
+
+            return { fullUrl, thumbUrl };
           })
         );
+
+        const uploadedUrls = results.map(r => r.fullUrl);
+        const firstThumbUrl = results[0]?.thumbUrl;
 
         const updateState = (prev: House) => ({
           ...prev,
           images: [...prev.images, ...uploadedUrls],
           principalImage: prev.principalImage || uploadedUrls[0],
+          thumbnailImage: prev.thumbnailImage || firstThumbUrl,
         });
 
         editingHouse
@@ -262,7 +290,7 @@ const AdminPanel: React.FC = () => {
         principalImage: '',
         description: '',
         condition: 'disponible',
-        consomation: 'A',
+        consomation: '',
         virtualTourUrl: ''
       });
     } catch (error) {
@@ -309,7 +337,7 @@ const AdminPanel: React.FC = () => {
       principalImage: '',
       description: '',
       condition: 'disponible',
-      consomation: 'A',
+      consomation: '',
       virtualTourUrl: ''
     });
     setIsFormVisible(false);
@@ -613,9 +641,9 @@ const AdminPanel: React.FC = () => {
                   name="consomation"
                   value={editingHouse ? editingHouse.consomation : newHouse.consomation}
                   onChange={handleInputChange}
-                  required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 >
+                  <option value="">Non renseigné</option>
                   <option value="A">A</option>
                   <option value="B">B</option>
                   <option value="C">C</option>

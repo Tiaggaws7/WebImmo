@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom'
 
 import { House } from '../types';
 
-import {collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase-config';
 
 
@@ -69,7 +69,7 @@ export default function HouseExplorer() {
         (criteria.location === '' || house.location.toLowerCase().includes(criteria.location.toLowerCase()))
       );
     });
-  
+
     setFilteredHouses(filtered);
   }, [houses, criteria]);
 
@@ -78,7 +78,7 @@ export default function HouseExplorer() {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-  
+
     setCriteria((prev) => ({
       ...prev,
       [name]: name === "maxPrice" || name === "minSize" ? parseInt(value) : value,
@@ -181,20 +181,19 @@ export default function HouseExplorer() {
         </div>
 
         <div className="flex justify-center flex-wrap gap-2 mb-6">
-            {conditions.map((condition) => (
+          {conditions.map((condition) => (
             <button
               key={condition}
               onClick={() => setCriteria(prev => ({ ...prev, condition }))}
-              className={`py-2 px-4 rounded-lg text-sm font-semibold transition-colors duration-200 ${
-                criteria.condition === condition
-                  ? 'bg-primary text-black'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300 border border-primary'
-              }`}
+              className={`py-2 px-4 rounded-lg text-sm font-semibold transition-colors duration-200 ${criteria.condition === condition
+                ? 'bg-primary text-black'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300 border border-primary'
+                }`}
             >
-              {condition === 'all' ? 'Tous' : 
-               condition === 'sous offre' ? 'Sous Offre' :
-               condition === 'sous compromis' ? 'Sous Compromis' :
-               condition.charAt(0).toUpperCase() + condition.slice(1)}
+              {condition === 'all' ? 'Tous' :
+                condition === 'sous offre' ? 'Sous Offre' :
+                  condition === 'sous compromis' ? 'Sous Compromis' :
+                    condition.charAt(0).toUpperCase() + condition.slice(1)}
             </button>
           ))}
         </div>
@@ -230,7 +229,7 @@ export default function HouseExplorer() {
             </div>
             <div>
               <label htmlFor="minSize" className="block text-sm font-medium text-gray-700 mb-1">
-              Surface Minimum (m²)
+                Surface Minimum (m²)
               </label>
               <input
                 id="minSize"
@@ -251,11 +250,10 @@ export default function HouseExplorer() {
                     key={option.value}
                     type="button"
                     onClick={() => handleMultiSelectChange('propertyTypes', option.value)}
-                    className={`py-1 px-3 rounded-full text-xs font-medium transition-colors duration-200 ${
-                      criteria.propertyTypes.includes(option.value)
-                        ? 'bg-primary text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
+                    className={`py-1 px-3 rounded-full text-xs font-medium transition-colors duration-200 ${criteria.propertyTypes.includes(option.value)
+                      ? 'bg-primary text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
                   >
                     {option.label}
                   </button>
@@ -312,7 +310,7 @@ export default function HouseExplorer() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-              Annexes
+                Annexes
               </label>
               <div className="flex flex-wrap gap-2">
                 {amenityOptions.map((option) => (
@@ -320,11 +318,10 @@ export default function HouseExplorer() {
                     key={option.value}
                     type="button"
                     onClick={() => handleMultiSelectChange('amenities', option.value)}
-                    className={`py-1 px-3 rounded-full text-xs font-medium transition-colors duration-200 ${
-                      criteria.amenities.includes(option.value)
-                        ? 'bg-primary text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
+                    className={`py-1 px-3 rounded-full text-xs font-medium transition-colors duration-200 ${criteria.amenities.includes(option.value)
+                      ? 'bg-primary text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
                   >
                     {option.label}
                   </button>
@@ -334,7 +331,7 @@ export default function HouseExplorer() {
           </div>
         )}
 
-{filteredHouses.length === 0 ? (
+        {filteredHouses.length === 0 ? (
           <p>Aucune propriété ne correspond à vos critères.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -344,12 +341,18 @@ export default function HouseExplorer() {
                 key={house.id}
                 className="bg-white rounded-lg shadow-md shadow-primary overflow-hidden hover:shadow-lg hover:shadow-black transition-shadow duration-300"
               >
-                <div className="relative">
-                <img 
-                  src={house.principalImage} 
-                  alt={house.title} 
-                  className="w-full h-48 object-cover"
-                />
+                <div className="bg-gray-100">
+                  <img
+                    src={house.thumbnailImage || house.principalImage}
+                    alt={house.title}
+                    className="w-full h-48 bg-gray-100 opacity-0 transition-opacity duration-500 ease-in-out"
+                    style={{ objectFit: 'contain' }}
+                    loading="lazy"
+                    onLoad={(e) => {
+                      e.currentTarget.classList.remove('opacity-0');
+                      e.currentTarget.classList.add('opacity-100');
+                    }}
+                  />
                 </div>
                 <div className="p-4">
                   <h3 className="text-lg font-semibold mb-2">{house.title}</h3>
@@ -367,11 +370,11 @@ export default function HouseExplorer() {
                       const numericPrice = Number(cleanPrice); // Convert to a number
                       return !isNaN(numericPrice)
                         ? numericPrice.toLocaleString('fr-FR', {
-                            style: 'currency',
-                            currency: 'EUR',
-                            minimumFractionDigits: 0, // No centimes
-                            maximumFractionDigits: 0, // No centimes
-                          })
+                          style: 'currency',
+                          currency: 'EUR',
+                          minimumFractionDigits: 0, // No centimes
+                          maximumFractionDigits: 0, // No centimes
+                        })
                         : 'Invalid price';
                     })()}
                   </p>

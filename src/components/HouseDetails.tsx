@@ -7,6 +7,7 @@ import { doc, getDoc } from "firebase/firestore"
 import { db } from "../firebase-config"
 import type { House } from "../types"
 import { Helmet } from "react-helmet-async"
+import { useCallback } from "react"
 
 const HouseDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -68,11 +69,18 @@ const HouseDetails: React.FC = () => {
 
           {/* Début du carrousel */}
           <div className="relative mb-6 group">
-            <div className="aspect-w-16 aspect-h-9">
+            <div className="aspect-w-16 aspect-h-9 bg-gray-100 rounded-lg">
               <img
+                key={activeImageIndex}
                 src={house.images[activeImageIndex] || "/placeholder.svg"}
                 alt={house.title}
-                className="w-full h-96 object-cover rounded-lg transition-opacity duration-300"
+                className="w-full max-h-[500px] rounded-lg bg-gray-100 opacity-0 transition-opacity duration-500 ease-in-out"
+                style={{ objectFit: 'contain' }}
+                loading={activeImageIndex === 0 ? "eager" : "lazy"}
+                onLoad={(e) => {
+                  e.currentTarget.classList.remove('opacity-0');
+                  e.currentTarget.classList.add('opacity-100');
+                }}
               />
             </div>
 
@@ -81,19 +89,19 @@ const HouseDetails: React.FC = () => {
                 {/* Flèches de navigation */}
                 <button
                   onClick={handlePrevImage}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow-md hover:bg-white/100 transition-all opacity-0 group-hover:opacity-100"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow-md hover:bg-white/100 transition-all opacity-0 group-hover:opacity-100 z-20"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </button>
                 <button
                   onClick={handleNextImage}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow-md hover:bg-white/100 transition-all opacity-0 group-hover:opacity-100"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow-md hover:bg-white/100 transition-all opacity-0 group-hover:opacity-100 z-20"
                 >
                   <ChevronRight className="w-6 h-6" />
                 </button>
 
                 {/* Points indicateurs */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-20">
                   {house.images.map((_, index) => (
                     <button
                       key={index}
@@ -184,9 +192,11 @@ const HouseDetails: React.FC = () => {
                 <li>
                   <strong>Condition:</strong> {house.condition}
                 </li>
-                <li>
-                  <strong>Consommation énergétique:</strong> {house.consomation}
-                </li>
+                {house.consomation && (
+                  <li>
+                    <strong>Consommation énergétique:</strong> {house.consomation}
+                  </li>
+                )}
               </ul>
             </div>
             <div>

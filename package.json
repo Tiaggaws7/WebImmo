@@ -16,6 +16,7 @@
     "@contentful/rich-text-types": "^17.0.0",
     "axios": "^1.7.9",
     "body-parser": "^1.20.3",
+    "browser-image-compression": "^2.0.2",
     "contentful": "^11.3.1",
     "cors": "^2.8.5",
     "emailjs-com": "^3.2.0",
