@@ -174,8 +174,8 @@ export default function ModernRealEstateForm() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-6">
       
       <Helmet>
-        <title>Estimation Immobilière en Guadeloupe | Obtenez votre évaluation gratuite</title>
-        <meta name="description" content="Obtenez une estimation précise et gratuite de votre bien immobilier en Guadeloupe. Remplissez notre formulaire en ligne en quelques étapes." />
+        <title>Estimation Immobilière en Guadeloupe | Obtenez votre évaluation</title>
+        <meta name="description" content="Obtenez une estimation précise de votre bien immobilier en Guadeloupe. Remplissez notre formulaire en ligne en quelques étapes." />
         <meta name="keywords" content="estimation immobilière, évaluation bien immobilier, estimation maison, estimation appartement, Guadeloupe" />
         <meta name="author" content="Elise Buil" />
         <link rel="canonical" href="https://elisebuilimmobilierguadeloupe.com/Estimation" />
