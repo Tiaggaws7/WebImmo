@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import reviewsData from "../data/reviews.json";
 
 // --- Types ---
@@ -151,12 +151,12 @@ const GoogleReviews: React.FC = () => {
           </p>
         </div>
         <div className="flex flex-col items-end">
-           <div className="flex items-center gap-4">
-             <div className="flex items-center gap-1.5 bg-gray-100 px-3 py-1.5 rounded-lg text-sm font-bold text-gray-700">
-               <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" alt="Google" className="h-4 object-contain" />
-               <span>{statistics.averageRating.toFixed(1)}/5</span>
-             </div>
-             <div className="flex items-center mt-[-2px]">{renderStars(statistics.averageRating, "text-xl", "text-yellow-400")}</div>
+           <div className="inline-flex items-center gap-2 bg-white border border-gray-100 shadow-sm px-4 py-2 rounded-full">
+             <span className="text-gray-700 text-sm font-medium flex items-center gap-2">
+               Avis <span className="inline-flex"><span className="text-[#4285F4]">G</span><span className="text-[#EA4335]">o</span><span className="text-[#FBBC05]">o</span><span className="text-[#4285F4]">g</span><span className="text-[#34A853]">l</span><span className="text-[#EA4335]">e</span></span> {Math.round(statistics.averageRating)}/5
+               <Star className="w-4 h-4 fill-yellow-400 text-yellow-400 -mt-0.5" />
+               {statistics.totalReviews} avis
+             </span>
            </div>
         </div>
       </div>

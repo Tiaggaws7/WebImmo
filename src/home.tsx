@@ -6,7 +6,8 @@ import { collection, getDocs } from 'firebase/firestore'
 import { db } from './firebase-config'
 import profilePicture from './assets/profile_picture.jpg'
 import GoogleReviews from './components/GoogleReviews';
-import { MapPin, Search, Phone, CheckCircle2, ChevronDown, ArrowRight, Home as HomeIcon } from 'lucide-react'
+import { MapPin, Search, Phone, CheckCircle2, ChevronDown, ArrowRight, Home as HomeIcon, Star } from 'lucide-react'
+import reviewsData from "./data/reviews.json";
 
 function Home() {
   const [houses, setHouses] = useState<House[]>([])
@@ -19,6 +20,7 @@ function Home() {
   const navigate = useNavigate()
   const locationRef = useRef<HTMLDivElement>(null)
   const typeRef = useRef<HTMLDivElement>(null)
+  const reviewsRef = useRef<HTMLElement>(null)
 
   const availableLocations = Array.from(new Set(houses.map(h => h.location).filter(Boolean))).sort() as string[]
 
@@ -52,6 +54,10 @@ function Home() {
     if (searchLocation) params.append('location', searchLocation)
     if (searchType) params.append('type', searchType)
     navigate(`/Acheter?${params.toString()}`)
+  }
+
+  const scrollToReviews = () => {
+    reviewsRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
   // Récupération des maisons
@@ -137,6 +143,19 @@ function Home() {
 
           <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl">
+              {/* Reviews Widget */}
+              <div 
+                onClick={scrollToReviews}
+                className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 rounded-full mb-8 cursor-pointer hover:bg-white/20 transition-all group animate-in fade-in slide-in-from-bottom-4 duration-1000"
+              >
+                <span className="text-white text-sm font-medium flex items-center gap-2">
+                  Avis <span className="inline-flex"><span className="text-[#4285F4]">G</span><span className="text-[#EA4335]">o</span><span className="text-[#FBBC05]">o</span><span className="text-[#4285F4]">g</span><span className="text-[#34A853]">l</span><span className="text-[#EA4335]">e</span></span> {Math.round(reviewsData.statistics.averageRating)}/5
+                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400 -mt-0.5" />
+                  {reviewsData.statistics.totalReviews} avis
+                </span>
+                <ChevronDown className="w-4 h-4 text-white/60 group-hover:text-white transition-colors group-hover:translate-y-0.5 transition-transform" />
+              </div>
+
               <h1 className="text-5xl md:text-6xl font-extrabold text-white leading-tight mb-6 drop-shadow-2xl">
                 L'immobilier<br />autrement en<br />
                 <span className="text-primary">Guadeloupe.</span>
@@ -347,7 +366,7 @@ function Home() {
         </section>
 
         {/* Avis Google Section */}
-        <section className="bg-[#f5f5f5] py-24">
+        <section ref={reviewsRef} className="bg-[#f5f5f5] py-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <GoogleReviews />
           </div>
@@ -375,7 +394,6 @@ function Home() {
               </div>
 
               <div className="lg:w-7/12">
-                <span className="text-primary font-bold text-sm tracking-[0.25em] uppercase mb-4 block">Fondatrice de l'agence</span>
                 <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 mb-10 tracking-tight">À propos d'Elise BUIL</h2>
 
                 <div className="text-gray-600 space-y-6 text-lg mb-12 leading-relaxed font-light">
@@ -458,6 +476,19 @@ function Home() {
 
       {/* Adding custom animations */}
       <style>{`
+        @keyframes fade-in-up {
+          from {
+            opacity: 0;
+            transform: translateY(1rem);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-in {
+          animation: fade-in-up 1s ease-out forwards;
+        }
       `}</style>
     </div>
   )
