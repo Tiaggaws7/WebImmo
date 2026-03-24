@@ -359,8 +359,8 @@ function Home() {
             <div className="flex flex-col lg:flex-row gap-20 items-center">
 
               <div className="lg:w-5/12 relative flex justify-center mt-8 lg:mt-0">
-                <div className="relative rounded-3xl overflow-hidden shadow-2xl group w-full max-w-[400px]">
-                  <img src={profilePicture} alt="Elise BUIL" className="w-full h-auto object-cover max-h-[600px] transition-transform duration-1000 group-hover:scale-105" />
+                <div className="relative rounded-3xl overflow-hidden shadow-2xl group w-full max-w-[400px] aspect-[4/5]">
+                  <img src={profilePicture} alt="Elise BUIL" className="w-full h-full object-cover object-top transition-transform duration-1000 group-hover:scale-105" />
                 </div>
 
                 <div className="absolute bottom-8 right-0 lg:-right-10 bg-white p-4 pr-6 rounded-2xl shadow-xl flex items-center gap-4 z-10">
@@ -408,7 +408,9 @@ function Home() {
                     <Phone className="w-6 h-6 text-primary" />
                     <div>
                       <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-0.5">Contact direct</p>
-                      <p className="font-extrabold text-gray-800 text-lg tracking-tight">+590 690 926 003</p>
+                      <a href="tel:+590690590565" className="font-extrabold text-gray-800 text-lg tracking-tight hover:text-primary transition-colors">
+                        +590 690 590 565
+                      </a>
                     </div>
                   </div>
                 </div>

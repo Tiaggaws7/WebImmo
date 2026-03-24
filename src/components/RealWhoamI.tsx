@@ -119,7 +119,7 @@ const RealWhoAmI: React.FC = () => {
           
           <div className="md:w-1/2 relative mt-8 md:mt-0 flex justify-center w-full">
              <div className="relative rounded-bl-[5rem] rounded-tr-[5rem] rounded-tl-2xl rounded-br-2xl overflow-hidden shadow-2xl group w-full max-w-lg aspect-[4/5]">
-                <img src={profilePicture} alt="Elise BUIL" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+                <img src={profilePicture} alt="Elise BUIL" className="w-full h-full object-cover object-top transition-transform duration-1000 group-hover:scale-105" />
              </div>
              
              {/* Badge Overlapping */}

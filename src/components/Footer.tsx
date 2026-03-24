@@ -7,8 +7,8 @@ function Footer() {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
-            <h3 className="text-lg font-semibold mb-4">investimmo</h3>
-            <p className="text-sm">Votre partenaire de confiance en immobilier</p>
+            <h3 className="text-lg font-semibold mb-4 text-primary italic">Elise Buil Immobilier</h3>
+            <p className="text-sm">Votre partenaire de confiance en immobilier en Guadeloupe</p>
           </div>
           <div>
             <h3 className="text-lg font-semibold mb-4">Navigation</h3>
@@ -23,7 +23,7 @@ function Footer() {
             <h3 className="text-lg font-semibold mb-4">Contactez-nous</h3>
             <div className="flex items-center">
               <Phone className="h-4 w-4 mr-2" />
-              <a href="tel:+33789985632" className="text-sm hover:underline">+33 7 89 98 56 32</a>
+              <a href="tel:+590690590565" className="text-sm hover:underline hover:text-primary transition-colors">+590 690 590 565</a>
             </div>
             <Link
               to="/Estimation"
@@ -34,7 +34,7 @@ function Footer() {
           </div>
         </div>
         <div className="mt-8 pt-4 border-t border-gray-700 text-center text-sm">
-          &copy; {new Date().getFullYear()} investimmo. Tous droits réservés.
+          &copy; {new Date().getFullYear()} Elise Buil Immobilier. Tous droits réservés.
         </div>
       </div>
     </footer>
