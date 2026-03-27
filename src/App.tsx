@@ -8,7 +8,6 @@ import Navbar from './components/Navbar';
 //import Footer from './components/Footer.tsx';
 import HouseDetails from './components/HouseDetails.tsx';
 import HouseExplorer from './components/HouseExplorer.tsx';
-import Blog from './components/Blog.tsx';
 import RealWhoAmI from './components/RealWhoamI.tsx';
 import EstimationForm from './components/EstimationForm.tsx';
 import AdminPanel from './components/adminPanel.tsx';
@@ -29,7 +28,6 @@ const AppContent = () => {
         <Route path="/Acheter" element={<HouseExplorer />} />
         <Route path="/house/:id" element={<HouseDetails />} />
         <Route path="/EliseBUIL" element={<RealWhoAmI />} />
-        <Route path="/Blog" element={<Blog />} />
         <Route path="/Estimation" element={<EstimationForm />} />
         <Route path="/Gestion" element={<AdminPanel />} />
         <Route path="*" element={<NotFound />} />

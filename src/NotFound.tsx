@@ -7,7 +7,7 @@ const NavigationPage = () => {
     { to: "/", label: "Retour à l'accueil", icon: "🏡" },
     { to: "/Vendre", label: "Vendre votre bien", icon: "🏠" },
     { to: "/Acheter", label: "Acheter un bien", icon: "🔑" },
-    { to: "/Blog", label: "Découvrir nos actualités", icon: "📰" },
+    // { to: "/Blog", label: "Découvrir nos actualités", icon: "📰" },
     { to: "/EliseBUIL", label: "Rencontrer Elise BUIL", icon: "👋" },
     { to: "/Estimation", label: "Estimer votre bien", icon: "📊" },
   ]
@@ -26,7 +26,7 @@ const NavigationPage = () => {
         <br/>
         <br/>
         <h1 className="text-3xl font-bold text-center mb-8">Où souhaitez-vous aller ?</h1>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-4xl mx-auto">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
           {navigationLinks.map((link) => (
             <Link
               key={link.to}

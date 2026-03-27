@@ -52,18 +52,18 @@ const Navbar = () => {
             </Link>
 
             {/* Desktop Navigation Links */}
-            <div className="hidden lg:flex items-center lg:space-x-4 xl:space-x-8">
+            <div className="hidden lg:flex items-center lg:space-x-8 xl:space-x-12">
               <DesktopNavLink to="/Acheter">Acheter</DesktopNavLink>
               <DesktopNavLink to="/Vendre">Vendre</DesktopNavLink>
               <DesktopNavLink to="/EliseBUIL">Élise BUIL</DesktopNavLink>
-              <a 
+              {/* <a 
                 href="https://blog.elisebuilimmobilierguadeloupe.com/" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-black/80 font-medium hover:text-black transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-black after:transition-all after:duration-300 hover:after:w-full py-1"
               >
                 Actualités
-              </a>
+              </a> */}
             </div>
 
             {/* Desktop CTA & Phone */}
@@ -125,11 +125,11 @@ const Navbar = () => {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto py-6 px-4 flex flex-col gap-2">
+        <div className="flex-1 overflow-y-auto py-6 px-4 flex flex-col gap-6">
           <MobileNavLink to="/Acheter" onClick={() => setIsOpen(false)}>Acheter</MobileNavLink>
           <MobileNavLink to="/Vendre" onClick={() => setIsOpen(false)}>Vendre</MobileNavLink>
           <MobileNavLink to="/EliseBUIL" onClick={() => setIsOpen(false)}>Élise BUIL</MobileNavLink>
-          <a
+          {/* <a
             href="https://blog.elisebuilimmobilierguadeloupe.com/"
             target="_blank"
             rel="noopener noreferrer"
@@ -137,7 +137,7 @@ const Navbar = () => {
           >
             Actualités
             <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-primary transition-colors transform group-hover:translate-x-1" />
-          </a>
+          </a> */}
         </div>
 
         <div className="p-6 border-t border-gray-100 bg-gray-50/50 space-y-4">

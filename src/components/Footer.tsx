@@ -12,10 +12,10 @@ function Footer() {
           </div>
           <div>
             <h3 className="text-lg font-semibold mb-4">Navigation</h3>
-            <ul className="space-y-2">
+            <ul className="space-y-4">
               <li><Link to="/Vendre" className="text-sm hover:underline">Vendre</Link></li>
               <li><Link to="/Acheter" className="text-sm hover:underline">Acheter</Link></li>
-              <li><Link to="/Blog" className="text-sm hover:underline">Nos guides</Link></li>
+              {/* <li><Link to="/Blog" className="text-sm hover:underline">Nos guides</Link></li> */}
               <li><Link to="/NomPrenom" className="text-sm hover:underline">Nom Prenom</Link></li>
             </ul>
           </div>
