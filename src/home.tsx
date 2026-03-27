@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from 'react-router-dom'
 import { House } from './types'
-import { collection, getDocs } from 'firebase/firestore'
+import { collection, getDocs, doc, getDoc } from 'firebase/firestore'
 import { db } from './firebase-config'
 import profilePicture from './assets/profile_picture.jpg'
 import GoogleReviews from './components/GoogleReviews';
@@ -94,10 +94,23 @@ function Home() {
           .sort((a, b) => (a.exclusivePosition || 99) - (b.exclusivePosition || 99))
         setExclusiveHouses(adminExclusive.length > 0 ? adminExclusive.slice(0, 3) : data.slice(0, 3))
 
-        // Update hero image and cache it
-        if (data.length > 0 && data[0].principalImage) {
-          setHeroImage(data[0].principalImage);
-          localStorage.setItem('home_hero_bg', data[0].principalImage);
+        // Fetch hero image from settings, fallback to first house
+        try {
+          const settingsDoc = await getDoc(doc(db, 'settings', 'homepage'));
+          if (settingsDoc.exists() && settingsDoc.data().heroImage) {
+            const heroUrl = settingsDoc.data().heroImage;
+            setHeroImage(heroUrl);
+            localStorage.setItem('home_hero_bg', heroUrl);
+          } else if (data.length > 0 && data[0].principalImage) {
+            setHeroImage(data[0].principalImage);
+            localStorage.setItem('home_hero_bg', data[0].principalImage);
+          }
+        } catch {
+          // Fallback to first house image
+          if (data.length > 0 && data[0].principalImage) {
+            setHeroImage(data[0].principalImage);
+            localStorage.setItem('home_hero_bg', data[0].principalImage);
+          }
         }
       } catch (error) {
         console.error('Erreur lors de la récupération des données :', error)
@@ -141,9 +154,9 @@ function Home() {
         <section className="relative h-[80vh] min-h-[600px] flex items-center pt-20">
           {/* Background Image */}
           <div className="absolute inset-0 z-0">
-            {(houses.length > 0 || heroImage) ? (
+            {heroImage ? (
               <img
-                src={houses.length > 0 ? houses[0].principalImage : heroImage}
+                src={heroImage}
                 alt="Hero Background"
                 className="w-full h-full object-cover"
               />

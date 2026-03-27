@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PlusIcon, PencilIcon, TrashIcon, LogOutIcon, ArrowRight } from 'lucide-react';
+import { PlusIcon, PencilIcon, TrashIcon, LogOutIcon, ArrowRight, ImageIcon, Upload, Loader2 } from 'lucide-react';
 import { Link } from "react-router-dom"
 import { House } from '../types';
 import {
@@ -10,6 +10,8 @@ import {
   deleteDoc,
   doc,
   deleteField,
+  getDoc,
+  setDoc,
 } from 'firebase/firestore';
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -47,6 +49,9 @@ const AdminPanel: React.FC = () => {
     isExclusive: false
   });
   const [tempAmenitiesInput, setTempAmenitiesInput] = React.useState<string>(''); // Temporary input state
+  const [heroImageUrl, setHeroImageUrl] = useState<string>('');
+  const [isUploadingHero, setIsUploadingHero] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Fetch houses from Firestore
   useEffect(() => {
@@ -86,7 +91,22 @@ const AdminPanel: React.FC = () => {
       }
     };
 
+    const fetchHeroImage = async () => {
+      try {
+        const settingsDoc = await getDoc(doc(db, 'settings', 'homepage'));
+        if (settingsDoc.exists()) {
+          const data = settingsDoc.data();
+          if (data.heroImage) {
+            setHeroImageUrl(data.heroImage);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching hero image setting:', error);
+      }
+    };
+
     fetchHouses();
+    fetchHeroImage();
   }, []);
 
   useEffect(() => {
@@ -425,6 +445,34 @@ const AdminPanel: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
+  const handleHeroImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.[0]) return;
+    const file = e.target.files[0];
+    setIsUploadingHero(true);
+    try {
+      const storage = getStorage();
+      const compressionOptions = {
+        maxSizeMB: 1.5,
+        maxWidthOrHeight: 2560,
+        useWebWorker: true,
+      };
+      const compressedFile = await imageCompression(file, compressionOptions);
+      const storageRef = ref(storage, `settings/hero-image-${Date.now()}`);
+      const snapshot = await uploadBytes(storageRef, compressedFile);
+      const downloadUrl = await getDownloadURL(snapshot.ref);
+
+      // Save to Firestore settings
+      await setDoc(doc(db, 'settings', 'homepage'), { heroImage: downloadUrl }, { merge: true });
+      setHeroImageUrl(downloadUrl);
+      alert('Image d\'accueil mise à jour avec succès !');
+    } catch (error) {
+      console.error('Error uploading hero image:', error);
+      alert('Erreur lors du téléchargement de l\'image.');
+    } finally {
+      setIsUploadingHero(false);
+    }
+  };
+
   interface PropertyTypeSelectorProps {
     selectedTypes: string[]
     onChange: (types: string[]) => void
@@ -526,14 +574,75 @@ const AdminPanel: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Interface d'administration - Management des biens</h1>
-          <button
-            onClick={handleLogout}
-            className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 flex items-center"
-          >
-            <LogOutIcon className="w-5 h-5 mr-2" />
-            Se déconnecter
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+              className={`p-2 rounded-md transition-colors flex items-center gap-2 border ${
+                isSettingsOpen 
+                ? 'bg-gray-200 border-gray-300 text-gray-900' 
+                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+              }`}
+              title="Paramètres du site"
+            >
+              <ImageIcon className="w-5 h-5" />
+              <span className="text-sm font-medium">Réglages</span>
+            </button>
+            <button
+              onClick={handleLogout}
+              className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 flex items-center"
+            >
+              <LogOutIcon className="w-5 h-5 mr-2" />
+              Se déconnecter
+            </button>
+          </div>
         </div>
+
+        {/* Hero Image Management Section (Discrete/Collapsible) */}
+        {isSettingsOpen && (
+          <div className="bg-white border border-gray-200 shadow-sm rounded-lg p-4 mb-8 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <ImageIcon className="w-4 h-4 text-indigo-600" />
+                <h2 className="text-sm font-semibold text-gray-900">Image de fond (Accueil)</h2>
+              </div>
+              <button 
+                onClick={() => setIsSettingsOpen(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <PlusIcon className="w-4 h-4 rotate-45" />
+              </button>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-4 items-center">
+              {heroImageUrl && (
+                <div className="relative w-32 h-20 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0">
+                  <img src={heroImageUrl} alt="Hero Preview" className="w-full h-full object-cover" />
+                </div>
+              )}
+              
+              <div className="flex-1 flex flex-col sm:flex-row gap-3 items-center">
+                <label className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg cursor-pointer hover:bg-gray-50 transition-colors shadow-sm">
+                  {isUploadingHero ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Upload className="w-4 h-4" />
+                  )}
+                  {isUploadingHero ? 'Envoi...' : 'Remplacer l\'image'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleHeroImageUpload}
+                    className="hidden"
+                    disabled={isUploadingHero}
+                  />
+                </label>
+                <p className="text-[10px] text-gray-400 italic">
+                  Changement global de l'arrière-plan de la page d'accueil.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="mb-6 flex justify-end">
           <button
