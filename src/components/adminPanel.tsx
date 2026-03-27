@@ -9,6 +9,7 @@ import {
   updateDoc,
   deleteDoc,
   doc,
+  deleteField,
 } from 'firebase/firestore';
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -42,7 +43,8 @@ const AdminPanel: React.FC = () => {
     description: '',
     condition: 'disponible',
     consomation: '',
-    virtualTourUrl: ''
+    virtualTourUrl: '',
+    isExclusive: false
   });
   const [tempAmenitiesInput, setTempAmenitiesInput] = React.useState<string>(''); // Temporary input state
 
@@ -74,6 +76,8 @@ const AdminPanel: React.FC = () => {
             types: data.types || [],
             amenities: data.amenities || [],
             virtualTourUrl: data.virtualTourUrl || '',
+            isExclusive: data.isExclusive || false,
+            exclusivePosition: data.exclusivePosition || undefined,
           } as House;
         });
         setHouses(houseList);
@@ -239,25 +243,35 @@ const AdminPanel: React.FC = () => {
     e.preventDefault();
 
     try {
+      // Validate exclusive position
+      const currentHouseData = editingHouse || newHouse;
+      if (currentHouseData.isExclusive && !currentHouseData.exclusivePosition) {
+        alert('Veuillez choisir une position (1, 2 ou 3) pour la sélection exclusive.');
+        return;
+      }
+
       // Validate images
-      if (
-        (editingHouse
-          ? !editingHouse.images.length || !editingHouse.principalImage
-          : !newHouse.images.length || !newHouse.principalImage)
-      ) {
-        alert('Please upload at least one image and select a principal image.');
+      if (!currentHouseData.images?.length || !currentHouseData.principalImage) {
+        alert('Veuillez télécharger au moins une image et sélectionner une image principale.');
         return;
       }
 
       if (editingHouse) {
         const houseDoc = doc(db, 'houses', editingHouse.id);
-        await updateDoc(houseDoc, {
+        // Build update data, replacing undefined with deleteField()
+        const updateData: Record<string, any> = {
           ...editingHouse,
-          // Explicitly include all fields to avoid missing data
           images: editingHouse.images,
-          videos: editingHouse.videos || '', // Include video URL
+          videos: editingHouse.videos || '',
           principalImage: editingHouse.principalImage,
+        };
+        // Firebase does not accept undefined — use deleteField() instead
+        Object.keys(updateData).forEach(key => {
+          if (updateData[key] === undefined) {
+            updateData[key] = deleteField();
+          }
         });
+        await updateDoc(houseDoc, updateData);
         setHouses(houses.map(h => h.id === editingHouse.id ? editingHouse : h));
         setEditingHouse(null);
       } else {
@@ -291,7 +305,8 @@ const AdminPanel: React.FC = () => {
         description: '',
         condition: 'disponible',
         consomation: '',
-        virtualTourUrl: ''
+        virtualTourUrl: '',
+        isExclusive: false
       });
     } catch (error) {
       console.error('Error submitting house:', error);
@@ -338,7 +353,8 @@ const AdminPanel: React.FC = () => {
       description: '',
       condition: 'disponible',
       consomation: '',
-      virtualTourUrl: ''
+      virtualTourUrl: '',
+      isExclusive: false
     });
     setIsFormVisible(false);
   };
@@ -797,6 +813,93 @@ const AdminPanel: React.FC = () => {
 
                 </select>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Sélection Exclusive (Page d'accueil)</label>
+                {(() => {
+                  const currentHouse = editingHouse || newHouse;
+                  const otherExclusiveHouses = houses.filter(h => h.isExclusive && h.id !== currentHouse.id);
+                  const exclusiveCount = otherExclusiveHouses.length;
+                  const isCurrentExclusive = currentHouse.isExclusive || false;
+                  const canToggleOn = exclusiveCount < 3;
+                  const takenPositions = otherExclusiveHouses.map(h => h.exclusivePosition).filter(Boolean);
+
+                  return (
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!isCurrentExclusive && !canToggleOn) {
+                            alert('Vous avez déjà 3 biens en sélection exclusive. Veuillez en retirer un avant d\'en ajouter un autre.');
+                            return;
+                          }
+                          const update = (prev: House) => ({
+                            ...prev,
+                            isExclusive: !prev.isExclusive,
+                            exclusivePosition: !prev.isExclusive ? undefined : undefined
+                          });
+                          editingHouse
+                            ? setEditingHouse(prev => prev ? update(prev) : null)
+                            : setNewHouse(update);
+                        }}
+                        className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 ${
+                          isCurrentExclusive ? 'bg-purple-600' : 'bg-gray-300'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-300 ${
+                            isCurrentExclusive ? 'translate-x-8' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+
+                      {isCurrentExclusive && (
+                        <div className="mt-3">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Position sur la page d'accueil</label>
+                          <div className="flex gap-2">
+                            {[1, 2, 3].map(pos => {
+                              const isTaken = takenPositions.includes(pos);
+                              const isSelected = currentHouse.exclusivePosition === pos;
+                              return (
+                                <button
+                                  key={pos}
+                                  type="button"
+                                  disabled={isTaken}
+                                  onClick={() => {
+                                    const update = (prev: House) => ({ ...prev, exclusivePosition: pos });
+                                    editingHouse
+                                      ? setEditingHouse(prev => prev ? update(prev) : null)
+                                      : setNewHouse(update);
+                                  }}
+                                  className={`flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-all border-2 ${
+                                    isSelected
+                                      ? 'bg-purple-600 text-white border-purple-600 shadow-md'
+                                      : isTaken
+                                        ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                                        : 'bg-white text-gray-700 border-gray-300 hover:border-purple-400 hover:bg-purple-50'
+                                  }`}
+                                  title={isTaken ? `Position prise par : ${otherExclusiveHouses.find(h => h.exclusivePosition === pos)?.title}` : ''}
+                                >
+                                  {pos === 1 ? '1ère (Grande)' : pos === 2 ? '2ème' : '3ème'}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          {!currentHouse.exclusivePosition && (
+                            <p className="mt-1 text-xs text-orange-500 font-medium">⚠️ Veuillez choisir une position</p>
+                          )}
+                        </div>
+                      )}
+
+                      <p className="mt-2 text-sm text-gray-500">
+                        {isCurrentExclusive
+                          ? '✅ Ce bien apparaîtra dans la sélection exclusive de la page d\'accueil'
+                          : `${exclusiveCount}/3 bien(s) en sélection exclusive`
+                        }
+                      </p>
+                    </div>
+                  );
+                })()}
+              </div>
               <div className="md:col-span-2">
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
                   Description (Markdown supporté)
@@ -845,66 +948,74 @@ const AdminPanel: React.FC = () => {
         )}
 
         <div className="bg-white shadow-md rounded-lg overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 table-fixed">
+          <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Titre</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prix</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Localisation</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">État</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">ID</th>
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Titre</th>
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prix</th>
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Localisation</th>
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">État</th>
+                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Exclusive</th>
+                <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {houses.map(house => (
-                <tr key={house.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{house.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{house.title}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{(() => {
-                    const cleanPrice = house.price.replace(/[^0-9.-]+/g, ''); // Remove non-numeric characters
-                    const numericPrice = Number(cleanPrice); // Convert to a number
-                    return !isNaN(numericPrice)
-                      ? numericPrice.toLocaleString('fr-FR', {
-                        style: 'currency',
-                        currency: 'EUR',
-                        minimumFractionDigits: 0, // No centimes
-                        maximumFractionDigits: 0, // No centimes
-                      })
-                      : 'Invalid price';
-                  })()}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{house.location}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${house.condition === 'vendu' ? 'bg-red-100 text-red-800' :
+                <tr key={house.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-4 whitespace-nowrap text-xs font-mono text-gray-400">{house.id.slice(0, 8)}...</td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 truncate max-w-[180px]">{house.title}</td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {(() => {
+                      const cleanPrice = house.price.replace(/[^0-9.-]+/g, '');
+                      const numericPrice = Number(cleanPrice);
+                      return !isNaN(numericPrice)
+                        ? numericPrice.toLocaleString('fr-FR', {
+                          style: 'currency',
+                          currency: 'EUR',
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 0,
+                        })
+                        : 'Prix invalide';
+                    })()}
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{house.location}</td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <span className={`px-2 inline-flex text-[10px] leading-4 font-semibold rounded-full ${
+                      house.condition === 'vendu' ? 'bg-red-100 text-red-800' :
                       house.condition === 'disponible' ? 'bg-green-100 text-green-800' :
-                        house.condition === 'sous compromis' ? 'bg-orange-100 text-orange-800' :
-                          house.condition === 'sous offre' ? 'bg-blue-100 text-blue-800' :
-                            house.condition === 'en attente' ? 'bg-purple-100 text-purple-800' :
-                              'bg-gray-100 text-gray-800'
-                      }`}>
-                      {house.condition === 'vendu' ? 'Vendu' :
-                        house.condition === 'disponible' ? 'Disponible' :
-                          house.condition === 'sous compromis' ? 'Sous compromis' :
-                            house.condition === 'sous offre' ? 'Sous offre' :
-                              house.condition === 'en attente' ? 'En attente' :
-                                house.condition}
+                      house.condition === 'sous compromis' ? 'bg-orange-100 text-orange-800' :
+                      house.condition === 'sous offre' ? 'bg-blue-100 text-blue-800' :
+                      house.condition === 'en attente' ? 'bg-purple-100 text-purple-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {house.condition.charAt(0).toUpperCase() + house.condition.slice(1)}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <button
-                      onClick={() => handleEdit(house)}
-                      className="text-blue-600 hover:text-blue-900 mr-3"
-                    >
-                      <PencilIcon className="h-5 w-5" />
-                      <span className="sr-only">Modifier</span>
-                    </button>
-                    <button
-                      onClick={() => handleDelete(house.id)}
-                      className="text-red-600 hover:text-red-900 ml-4"
-                    >
-                      <TrashIcon className="h-5 w-5" />
-                      <span className="sr-only">Supprimer</span>
-                    </button>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                    {house.isExclusive ? (
+                      <span className="px-2 inline-flex text-[10px] leading-4 font-semibold rounded-full bg-purple-100 text-purple-800">⭐ Oui</span>
+                    ) : (
+                      <span className="text-gray-400">—</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div className="flex justify-end space-x-3">
+                      <button
+                        onClick={() => handleEdit(house)}
+                        className="text-blue-600 hover:text-blue-900 flex items-center"
+                        title="Modifier"
+                      >
+                        <PencilIcon className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(house.id)}
+                        className="text-red-600 hover:text-red-900 flex items-center"
+                        title="Supprimer"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -60,27 +60,39 @@ function Home() {
     reviewsRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
+  const [exclusiveHouses, setExclusiveHouses] = useState<House[]>([])
+
   // Récupération des maisons
   useEffect(() => {
     const fetchHouses = async () => {
       try {
         // Optimization: Limit to 24 items for faster initial load
         const querySnapshot = await getDocs(collection(db, 'houses'))
-        const data = querySnapshot.docs.slice(0, 24).map(doc => ({
+        const allHouses = querySnapshot.docs.map(doc => ({
           ...doc.data() as House,
           id: doc.id
-        })).filter(house => house.condition === 'disponible')
+        }))
 
-        // Sorting by price descending to put the most expensive first
-        data.sort((a, b) => {
-          const getPrice = (h: any) => {
-            const priceStr = h.price?.toString().replace(/[^0-9.]/g, '') || h.prix?.toString().replace(/[^0-9.]/g, '') || "0";
-            return parseFloat(priceStr) || 0;
-          };
-          return getPrice(b) - getPrice(a);
-        });
+        // Houses available for general display
+        const data = allHouses
+          .filter(house => house.condition === 'disponible')
+          .sort((a, b) => {
+            const getPrice = (h: any) => {
+              const priceStr = h.price?.toString().replace(/[^0-9.]/g, '') || h.prix?.toString().replace(/[^0-9.]/g, '') || "0";
+              return parseFloat(priceStr) || 0;
+            };
+            return getPrice(b) - getPrice(a);
+          })
+          .slice(0, 24)
 
         setHouses(data)
+
+        // Determine exclusive houses from ALL houses (not just 'disponible')
+        // Only exclude sold houses from the exclusive selection
+        const adminExclusive = allHouses
+          .filter(h => h.isExclusive && h.condition !== 'vendu')
+          .sort((a, b) => (a.exclusivePosition || 99) - (b.exclusivePosition || 99))
+        setExclusiveHouses(adminExclusive.length > 0 ? adminExclusive.slice(0, 3) : data.slice(0, 3))
 
         // Update hero image and cache it
         if (data.length > 0 && data[0].principalImage) {
@@ -288,25 +300,25 @@ function Home() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {houses.length > 0 && (
+            {exclusiveHouses.length > 0 && (
               <div
                 className="lg:col-span-2 group rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer"
                 onMouseEnter={() => setIsHovered(0)}
                 onMouseLeave={() => setIsHovered(null)}
               >
-                <Link to={`/house/${houses[0].id}`} className="block relative h-full min-h-[450px]">
-                  <img src={houses[0].principalImage} alt={houses[0].title || "Maison principale"} className={`w-full h-full object-cover transition-transform duration-1000 ${isHovered === 0 ? 'scale-110' : 'scale-100'}`} />
+                <Link to={`/house/${exclusiveHouses[0].id}`} className="block relative h-full min-h-[450px]">
+                  <img src={exclusiveHouses[0].principalImage} alt={exclusiveHouses[0].title || "Maison principale"} className={`w-full h-full object-cover transition-transform duration-1000 ${isHovered === 0 ? 'scale-110' : 'scale-100'}`} />
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-gray-900 via-gray-900/80 to-transparent pt-32 pb-8 px-8">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
                       <div>
-                        <h3 className="text-white text-3xl font-extrabold mb-3 group-hover:text-primary transition-colors duration-300">{houses[0].title || `Maison ${houses[0].id}`}</h3>
+                        <h3 className="text-white text-3xl font-extrabold mb-3 group-hover:text-primary transition-colors duration-300">{exclusiveHouses[0].title || `Maison ${exclusiveHouses[0].id}`}</h3>
                         <p className="text-gray-300 flex items-center gap-2 text-base font-medium">
-                          <MapPin className="w-5 h-5 text-gray-400" /> {houses[0].location || "Guadeloupe"}
+                          <MapPin className="w-5 h-5 text-gray-400" /> {exclusiveHouses[0].location || "Guadeloupe"}
                         </p>
                       </div>
                       <span className="text-primary text-3xl font-extrabold bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl border border-white/20 whitespace-nowrap">
                         {(() => {
-                          const cleanPrice = (houses[0] as any).price?.replace(/[^0-9.-]+/g, '') || (houses[0] as any).prix?.toString().replace(/[^0-9.-]+/g, '');
+                          const cleanPrice = (exclusiveHouses[0] as any).price?.replace(/[^0-9.-]+/g, '') || (exclusiveHouses[0] as any).prix?.toString().replace(/[^0-9.-]+/g, '');
                           const numericPrice = Number(cleanPrice);
                           return !isNaN(numericPrice) && numericPrice > 0
                             ? numericPrice.toLocaleString('fr-FR') + ' €'
@@ -316,8 +328,8 @@ function Home() {
                     </div>
                     {/* Tags */}
                     <div className="flex gap-6 mt-6 pt-6 border-t border-white/20 text-white/90 text-sm font-semibold tracking-wide">
-                      {houses[0].size && <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-primary"></div>{houses[0].size} m²</span>}
-                      {houses[0].rooms && <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-primary"></div>{houses[0].rooms} pièces</span>}
+                      {exclusiveHouses[0].size && <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-primary"></div>{exclusiveHouses[0].size} m²</span>}
+                      {exclusiveHouses[0].rooms && <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-primary"></div>{exclusiveHouses[0].rooms} pièces</span>}
                     </div>
                   </div>
                 </Link>
@@ -325,10 +337,10 @@ function Home() {
             )}
 
             <div className="flex flex-col gap-8">
-              {houses.slice(1, 3).map((house, idx) => (
+              {exclusiveHouses.slice(1, 3).map((house, idx) => (
                 <div
                   key={house.id}
-                  className="rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 cursor-pointer group bg-white border border-gray-100 h-1/2 flex flex-col"
+                  className="rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 cursor-pointer group bg-white border border-gray-100 flex flex-col"
                   onMouseEnter={() => setIsHovered(idx + 1)}
                   onMouseLeave={() => setIsHovered(null)}
                 >
@@ -336,7 +348,7 @@ function Home() {
                     <div className="relative h-48 overflow-hidden flex-shrink-0">
                       <img src={house.thumbnailImage || house.principalImage} alt={house.title || `Maison ${house.id}`} className={`w-full h-full object-cover transition-transform duration-1000 ${isHovered === idx + 1 ? 'scale-110' : 'scale-100'}`} />
                     </div>
-                    <div className="p-6 flex flex-col flex-grow justify-between">
+                    <div className="p-6 flex flex-col gap-4">
                       <div>
                         <h3 className="text-gray-900 text-xl font-extrabold mb-2 group-hover:text-primary transition-colors duration-300 line-clamp-1">{house.title || `Propriété ${house.id}`}</h3>
                         <p className="text-gray-500 flex items-center gap-2 text-sm font-medium mb-4">

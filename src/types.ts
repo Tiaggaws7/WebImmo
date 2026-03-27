@@ -19,6 +19,8 @@ export interface House {
   consomation: "A" | "B" | "C" | "D" | "E" | "F" | "G" | "";
   virtualTourUrl?: string;
   thumbnailImage?: string;
+  isExclusive?: boolean;
+  exclusivePosition?: number;
 }
 
 export type Article = {
