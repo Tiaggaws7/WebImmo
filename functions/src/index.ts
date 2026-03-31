@@ -304,3 +304,91 @@ export const triggerFetchGoogleReviews = onRequest(
     }
   }
 );
+
+/**
+ * SSR / Prerender endpoint pour les pages de détails de maisons (/house/:id)
+ * Intercepte les requêtes (surtout des robots WhatsApp/FB pour l'Open Graph),
+ * va chercher les vraies infos dans Firestore, injecte les balises <meta> 
+ * dans le HTML brut, et renvoie la page pour un "Rich Link Preview" parfait.
+ */
+export const renderHouseMeta = onRequest(
+  {
+    memory: "256MiB",
+    timeoutSeconds: 30,
+  },
+  async (req, res) => {
+    logger.log(`📱 Demande d'aperçu de lien pour: ${req.path}`);
+    
+    // Extrait l'ID de la maison depuis le path (ex: /house/ID123)
+    const pathSegments = req.path.split("/").filter(Boolean);
+    const houseId = pathSegments[1];
+
+    if (!houseId) {
+      res.status(404).send("Maison non trouvée");
+      return;
+    }
+
+    try {
+      // 1. Lire la maison dans Firestore
+      const houseDoc = await db.collection("houses").doc(houseId).get();
+      
+      // 2. Récupérer le HTML "coquille vide" de base (index.html) depuis le site en ligne
+      // Cela évite de devoir copier le dossier dist/ dans la Cloud Function.
+      const siteUrl = "https://elisebuilimmobilierguadeloupe.com";
+      const response = await fetch(`${siteUrl}/index.html`);
+      let html = await response.text();
+
+      if (houseDoc.exists) {
+        const houseData = houseDoc.data();
+        
+        // Sécuriser les champs et préparer les variables
+        const title = houseData?.title ? `${houseData.title} | Immobilier Guadeloupe` : "Propriété | Immobilier Guadeloupe";
+        const price = houseData?.price || "";
+        const size = houseData?.size || "";
+        const location = houseData?.location || "";
+        const description = `À vendre ${location} : ${size}m², ${price}. Découvrez tous les détails et photos !`;
+        const imageUrl = houseData?.images?.[0] || `${siteUrl}/assets/profile_picture.jpg`;
+        const urlObj = `${siteUrl}${req.path}`;
+        
+        // 3. Injecter ou Remplacer la balise <title>
+        html = html.replace(/<title>.*?<\/title>/, `<title>${title}</title>`);
+        
+        // 4. Forcer la balise og:image par défaut à être remplacée
+        html = html.replace(/<meta property="?og:image"?.*?>/, `<meta property="og:image" content="${imageUrl}" />`);
+        
+        // 5. Ajouter les autres balises Open Graph essentielles juste avant la fermeture </head>
+        const ogTags = `
+    <!-- Balises Open Graph dynamiques injectées par Cloud Function -->
+    <meta property="og:title" content="${title}" />
+    <meta property="og:description" content="${description}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="${urlObj}" />
+    
+    <!-- Carte Twitter (X) -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${title}" />
+    <meta name="twitter:description" content="${description}" />
+    <meta name="twitter:image" content="${imageUrl}" />
+  `;
+        html = html.replace("</head>", `${ogTags}\n  </head>`);
+      }
+
+      // Envoi du HTML au robot/navigateur
+      // Cache-control pour éviter de lancer la fonction à chaque fois : cache CDN 1h.
+      res.set("Cache-Control", "public, max-age=3600, s-maxage=86400");
+      res.status(200).send(html);
+
+    } catch (error) {
+      logger.error("❌ Erreur pendant le rendu meta:", error);
+      
+      // Fallback de sécurité : on essaie quand même d'afficher l'index.html vierge
+      try {
+        const response = await fetch("https://elisebuilimmobilierguadeloupe.com/index.html");
+        res.status(200).send(await response.text());
+      } catch (fallbackError) {
+        logger.error(fallbackError);
+        res.status(500).send("Erreur serveur");
+      }
+    }
+  }
+);

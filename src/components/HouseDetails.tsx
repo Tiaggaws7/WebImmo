@@ -5,7 +5,9 @@ import { useParams, Link } from "react-router-dom"
 import {
   ChevronLeft, ChevronRight, MapPin,
   Ruler, Bed, Bath, DoorOpen, Mail, X, Grid,
+  Share2, Facebook, Twitter, Linkedin, Instagram, MessageCircle, Download, Link as LinkIcon
 } from "lucide-react"
+import { QRCodeCanvas } from 'qrcode.react';
 import { doc, getDoc, collection, getDocs } from "firebase/firestore"
 import { db } from "../firebase-config"
 import type { House } from "../types"
@@ -20,6 +22,10 @@ const HouseDetails: React.FC = () => {
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const [isGalleryOpen, setIsGalleryOpen] = useState(false)
   const preloadedRef = useRef<Set<string>>(new Set())
+
+  // Share states
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false)
+  const [copySuccessMessage, setCopySuccessMessage] = useState("")
 
   useEffect(() => {
     const fetchHouse = async () => {
@@ -115,6 +121,67 @@ const HouseDetails: React.FC = () => {
     document.body.style.overflow = 'auto'
   }
 
+  const generateShareText = () => {
+    if (!house) return window.location.href;
+    const priceText = (() => {
+      const cleanPrice = house.price.replace(/[^0-9.-]+/g, "")
+      const numericPrice = Number(cleanPrice)
+      return !isNaN(numericPrice) ? numericPrice.toLocaleString("fr-FR", { style: "currency", currency: "EUR", minimumFractionDigits: 0, maximumFractionDigits: 0 }) : house.price
+    })();
+    return `🏡 À Vendre : ${house.title}\n📍 ${house.location}\n📏 ${house.size}m² - 🛏️ ${house.bedrooms} ch\n💰 ${priceText}\n\nDécouvrez tous les détails et photos ici 👇\n${window.location.href}`;
+  }
+
+  const handleShare = async () => {
+    const shareUrl = window.location.href;
+    const shareTitle = house ? `${house.title} | Immobilier Guadeloupe` : 'Découvrez ce bien';
+    const shareTextRaw = generateShareText();
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: shareTitle,
+          text: shareTextRaw,
+          url: shareUrl
+        });
+        return;
+      } catch (err) {
+        console.log("Erreur lors du partage (ou partage annulé):", err);
+      }
+    }
+    
+    // Fallback: Open modal
+    setIsShareModalOpen(true);
+    document.body.style.overflow = 'hidden';
+  }
+
+  const closeShareModal = () => {
+    setIsShareModalOpen(false);
+    setCopySuccessMessage("");
+    document.body.style.overflow = 'auto';
+  }
+
+  const copyToClipboard = (text: string, platform: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopySuccessMessage(`Lien copié pour ${platform} !`);
+      setTimeout(() => setCopySuccessMessage(""), 3000);
+    }).catch(err => {
+      console.error('Failed to copy: ', err);
+    });
+  }
+
+  const handleDownloadQR = () => {
+    const canvas = document.getElementById("qr-code-canvas") as HTMLCanvasElement;
+    if (canvas) {
+      const pngUrl = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+      const downloadLink = document.createElement("a");
+      downloadLink.href = pngUrl;
+      downloadLink.download = `QR_${house?.title.replace(/\s+/g, '_') || 'Propriété'}.png`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+    }
+  };
+
   if (!house) {
     return <div className="min-h-screen flex items-center justify-center">Chargement...</div>
   }
@@ -185,6 +252,115 @@ const HouseDetails: React.FC = () => {
         </div>
       )}
 
+      {/* Share Modal */}
+      {isShareModalOpen && house && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
+            <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <Share2 className="w-5 h-5 text-primary" />
+                Partager ce bien
+              </h3>
+              <button onClick={closeShareModal} className="p-2 text-gray-400 hover:text-red-500 hover:bg-gray-100 rounded-full transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              {copySuccessMessage && (
+                <div className="mb-4 p-3 bg-green-50 text-green-700 text-sm font-semibold rounded-lg flex items-center justify-center animate-in fade-in slide-in-from-top-2">
+                  {copySuccessMessage}
+                </div>
+              )}
+
+              <div className="grid grid-cols-4 gap-4 mb-6">
+                <a 
+                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="flex flex-col items-center gap-2 text-blue-600 hover:text-blue-700 hover:scale-105 transition-all group"
+                  title="Partager sur Facebook"
+                >
+                  <div className="p-3 bg-blue-50 rounded-full group-hover:bg-blue-100 transition-colors"><Facebook className="w-6 h-6" /></div>
+                  <span className="text-xs font-medium text-gray-600">Facebook</span>
+                </a>
+                <a 
+                  href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent('Découvrez ce bien exceptionnel : ' + house.title)}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="flex flex-col items-center gap-2 text-sky-500 hover:text-sky-600 hover:scale-105 transition-all group"
+                  title="Partager sur Twitter"
+                >
+                  <div className="p-3 bg-sky-50 rounded-full group-hover:bg-sky-100 transition-colors"><Twitter className="w-6 h-6" /></div>
+                  <span className="text-xs font-medium text-gray-600">X</span>
+                </a>
+                <a 
+                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(generateShareText())}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="flex flex-col items-center gap-2 text-green-500 hover:text-green-600 hover:scale-105 transition-all group"
+                  title="Partager sur WhatsApp"
+                >
+                  <div className="p-3 bg-green-50 rounded-full group-hover:bg-green-100 transition-colors"><MessageCircle className="w-6 h-6" /></div>
+                  <span className="text-xs font-medium text-gray-600">WhatsApp</span>
+                </a>
+                <a 
+                  href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(window.location.href)}&title=${encodeURIComponent(house.title)}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="flex flex-col items-center gap-2 text-blue-700 hover:text-blue-800 hover:scale-105 transition-all group"
+                  title="Partager sur LinkedIn"
+                >
+                  <div className="p-3 bg-blue-50 rounded-full group-hover:bg-blue-100 transition-colors"><Linkedin className="w-6 h-6" /></div>
+                  <span className="text-xs font-medium text-gray-600">LinkedIn</span>
+                </a>
+
+                <button 
+                  onClick={() => copyToClipboard(generateShareText(), 'Instagram')}
+                  className="flex flex-col items-center gap-2 text-pink-600 hover:text-pink-700 hover:scale-105 transition-all group"
+                  title="Copier le texte complet pour Instagram"
+                >
+                  <div className="p-3 bg-pink-50 rounded-full group-hover:bg-pink-100 transition-colors"><Instagram className="w-6 h-6" /></div>
+                  <span className="text-xs font-medium text-gray-600">Instagram</span>
+                </button>
+                <a 
+                  href={`mailto:?subject=${encodeURIComponent('Propriété intéressante : ' + house.title)}&body=${encodeURIComponent(generateShareText())}`}
+                  className="flex flex-col items-center gap-2 text-gray-600 hover:text-gray-800 hover:scale-105 transition-all group"
+                  title="Partager par Email"
+                >
+                  <div className="p-3 bg-gray-100 rounded-full group-hover:bg-gray-200 transition-colors"><Mail className="w-6 h-6" /></div>
+                  <span className="text-xs font-medium text-gray-600">Email</span>
+                </a>
+                <button 
+                  onClick={() => copyToClipboard(generateShareText(), 'votre presse-papiers')}
+                  className="flex flex-col items-center gap-2 text-gray-500 hover:text-gray-700 hover:scale-105 transition-all group col-span-2 place-self-center"
+                  title="Copier le texte et le lien"
+                >
+                  <div className="p-3 bg-gray-100 rounded-full group-hover:bg-gray-200 transition-colors flex items-center justify-center w-full"><LinkIcon className="w-6 h-6 mx-4" /></div>
+                  <span className="text-xs font-medium text-gray-600">Copier le texte & le lien</span>
+                </button>
+              </div>
+
+              <div className="pt-6 border-t border-gray-100 flex flex-col items-center">
+                <span className="text-sm font-semibold text-gray-700 mb-3 text-center">Partager via QR Code</span>
+                <div className="p-3 bg-white border border-gray-200 rounded-xl shadow-sm mb-4">
+                  <QRCodeCanvas 
+                    id="qr-code-canvas"
+                    value={window.location.href} 
+                    size={160}
+                    level={"H"}
+                    includeMargin={true}
+                  />
+                </div>
+                <button
+                  onClick={handleDownloadQR}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-black text-white rounded-lg text-sm font-semibold transition-colors shadow-sm"
+                >
+                  <Download className="w-4 h-4" />
+                  Télécharger le QR Code
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Start of New Layout */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb & Header */}
@@ -205,8 +381,8 @@ const HouseDetails: React.FC = () => {
                 <span className="text-lg">{house.location}</span>
               </div>
             </div>
-            <div className="text-left md:text-right">
-              <div className="text-3xl md:text-4xl font-bold text-primary">
+            <div className="text-left md:text-right flex flex-col items-start md:items-end gap-3">
+              <div className="text-3xl md:text-4xl font-bold text-primary inline-flex shrink-0">
                 {(() => {
                   const cleanPrice = house.price.replace(/[^0-9.-]+/g, "")
                   const numericPrice = Number(cleanPrice)
@@ -220,6 +396,13 @@ const HouseDetails: React.FC = () => {
                     : "Invalid price"
                 })()}
               </div>
+              <button
+                onClick={handleShare}
+                className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 rounded-lg text-sm font-semibold transition-all shadow-sm hover:shadow"
+              >
+                <Share2 className="w-4 h-4" />
+                Partager
+              </button>
             </div>
           </div>
         </div>
