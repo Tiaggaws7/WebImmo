@@ -128,25 +128,27 @@ const HouseDetails: React.FC = () => {
       const numericPrice = Number(cleanPrice)
       return !isNaN(numericPrice) ? numericPrice.toLocaleString("fr-FR", { style: "currency", currency: "EUR", minimumFractionDigits: 0, maximumFractionDigits: 0 }) : house.price
     })();
-    return `🏡 À Vendre : ${house.title}\n📍 ${house.location}\n📏 ${house.size}m² - 🛏️ ${house.bedrooms} ch\n💰 ${priceText}\n\nDécouvrez tous les détails et photos ici 👇\n${window.location.href}`;
+    // On enlève l'URL du texte généré car le système l'ajoute automatiquement après, ce qui causait le doublon.
+    return `🏡 À Vendre : ${house.title}\n📍 ${house.location}\n📏 ${house.size}m² - 🛏️ ${house.bedrooms} ch\n💰 ${priceText}`;
   }
 
   const handleShare = async () => {
     const shareUrl = window.location.href;
     const shareTitle = house ? `${house.title} | Immobilier Guadeloupe` : 'Découvrez ce bien';
-    const shareTextRaw = generateShareText();
     
     if (navigator.share) {
       try {
         await navigator.share({
           title: shareTitle,
-          text: shareTextRaw,
+          // Un texte très court permet au téléphone (WhatsApp/iMessage) de générer la vraie "Rich Card" visuelle !
+          text: `Découvrez cette propriété à ${house?.location} 👇`,
           url: shareUrl
         });
-        return;
       } catch (err) {
         console.log("Erreur lors du partage (ou partage annulé):", err);
       }
+      // Sur mobile, on ne montre jamais le modal custom (le système natif suffit)
+      return;
     }
     
     // Fallback: Open modal
@@ -293,7 +295,7 @@ const HouseDetails: React.FC = () => {
                   <span className="text-xs font-medium text-gray-600">X</span>
                 </a>
                 <a 
-                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(generateShareText())}`}
+                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent('Découvrez cette propriété 👇\n' + window.location.href)}`}
                   target="_blank" rel="noopener noreferrer"
                   className="flex flex-col items-center gap-2 text-green-500 hover:text-green-600 hover:scale-105 transition-all group"
                   title="Partager sur WhatsApp"
@@ -328,7 +330,7 @@ const HouseDetails: React.FC = () => {
                   <span className="text-xs font-medium text-gray-600">Email</span>
                 </a>
                 <button 
-                  onClick={() => copyToClipboard(generateShareText(), 'votre presse-papiers')}
+                  onClick={() => copyToClipboard(generateShareText() + '\n\n' + window.location.href, 'votre presse-papiers')}
                   className="flex flex-col items-center gap-2 text-gray-500 hover:text-gray-700 hover:scale-105 transition-all group col-span-2 place-self-center"
                   title="Copier le texte et le lien"
                 >

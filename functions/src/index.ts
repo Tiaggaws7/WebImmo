@@ -318,7 +318,7 @@ export const renderHouseMeta = onRequest(
   },
   async (req, res) => {
     logger.log(`📱 Demande d'aperçu de lien pour: ${req.path}`);
-    
+
     // Extrait l'ID de la maison depuis le path (ex: /house/ID123)
     const pathSegments = req.path.split("/").filter(Boolean);
     const houseId = pathSegments[1];
@@ -331,7 +331,7 @@ export const renderHouseMeta = onRequest(
     try {
       // 1. Lire la maison dans Firestore
       const houseDoc = await db.collection("houses").doc(houseId).get();
-      
+
       // 2. Récupérer le HTML "coquille vide" de base (index.html) depuis le site en ligne
       // Cela évite de devoir copier le dossier dist/ dans la Cloud Function.
       const siteUrl = "https://elisebuilimmobilierguadeloupe.com";
@@ -340,27 +340,38 @@ export const renderHouseMeta = onRequest(
 
       if (houseDoc.exists) {
         const houseData = houseDoc.data();
-        
+
         // Sécuriser les champs et préparer les variables
         const title = houseData?.title ? `${houseData.title} | Immobilier Guadeloupe` : "Propriété | Immobilier Guadeloupe";
         const price = houseData?.price || "";
         const size = houseData?.size || "";
         const location = houseData?.location || "";
         const description = `À vendre ${location} : ${size}m², ${price}. Découvrez tous les détails et photos !`;
-        const imageUrl = houseData?.images?.[0] || `${siteUrl}/assets/profile_picture.jpg`;
+        // SÉCURITÉ WHATSAPP: on cible d'abord la miniature <280Ko, sinon fallback sur la grosse image.
+        const rawImageUrl = houseData?.thumbnailImage || houseData?.principalImage || houseData?.images?.[0] || `${siteUrl}/assets/profile_picture.jpg`;
+
+        // L'URL de Firebase Storage est DÉJÀ encodée (avec des %2F et des tokens).
+        // Il ne faut surtout pas faire de encodeURI() sinon ça va double-encoder les % en %25 et casser le lien !
+        const isAbsolute = rawImageUrl.startsWith("http");
+        const safeImageUrl = isAbsolute ? rawImageUrl : `${siteUrl}${rawImageUrl}`;
+
         const urlObj = `${siteUrl}${req.path}`;
-        
+
         // 3. Injecter ou Remplacer la balise <title>
         html = html.replace(/<title>.*?<\/title>/, `<title>${title}</title>`);
-        
+
         // 4. Forcer la balise og:image par défaut à être remplacée
-        html = html.replace(/<meta property="?og:image"?.*?>/, `<meta property="og:image" content="${imageUrl}" />`);
-        
+        html = html.replace(/<meta property="?og:image"?.*?>/, `<meta property="og:image" content="${safeImageUrl}" />`);
+
         // 5. Ajouter les autres balises Open Graph essentielles juste avant la fermeture </head>
         const ogTags = `
     <!-- Balises Open Graph dynamiques injectées par Cloud Function -->
     <meta property="og:title" content="${title}" />
     <meta property="og:description" content="${description}" />
+    <meta property="og:image" content="${safeImageUrl}" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="${urlObj}" />
     
@@ -368,7 +379,7 @@ export const renderHouseMeta = onRequest(
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${title}" />
     <meta name="twitter:description" content="${description}" />
-    <meta name="twitter:image" content="${imageUrl}" />
+    <meta name="twitter:image" content="${safeImageUrl}" />
   `;
         html = html.replace("</head>", `${ogTags}\n  </head>`);
       }
@@ -380,7 +391,7 @@ export const renderHouseMeta = onRequest(
 
     } catch (error) {
       logger.error("❌ Erreur pendant le rendu meta:", error);
-      
+
       // Fallback de sécurité : on essaie quand même d'afficher l'index.html vierge
       try {
         const response = await fetch("https://elisebuilimmobilierguadeloupe.com/index.html");

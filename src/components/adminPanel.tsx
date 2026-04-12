@@ -53,6 +53,7 @@ const AdminPanel: React.FC = () => {
   const [isUploadingHero, setIsUploadingHero] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
+
   // Fetch houses from Firestore
   useEffect(() => {
     const fetchHouses = async () => {
@@ -75,6 +76,7 @@ const AdminPanel: React.FC = () => {
             condition: data.condition || 'disponible',
             consomation: data.consomation || '',
             principalImage: data.principalImage || '',
+            thumbnailImage: data.thumbnailImage || undefined,
             // On garantit que les tableaux ne sont jamais 'undefined'
             images: data.images || [],
             videos: data.videos || [],
@@ -136,15 +138,17 @@ const AdminPanel: React.FC = () => {
       const storage = getStorage();
 
       const compressionOptions = {
-        maxSizeMB: 1,
+        maxSizeMB: 1.5,
         maxWidthOrHeight: 1920,
         useWebWorker: true,
+        fileType: "image/webp"
       };
 
       const thumbnailOptions = {
-        maxSizeMB: 0.1,
-        maxWidthOrHeight: 400,
+        maxSizeMB: 0.28,
+        maxWidthOrHeight: 1200,
         useWebWorker: true,
+        fileType: "image/jpeg"
       };
 
       try {
@@ -153,14 +157,19 @@ const AdminPanel: React.FC = () => {
             // Compress full-size image
             const compressedFile = await imageCompression(file, compressionOptions);
             const timestamp = Date.now();
-            const storageRef = ref(storage, `houses/${file.name}-${timestamp}`);
-            const snapshot = await uploadBytes(storageRef, compressedFile);
+            let baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+            
+            // SÉCURITÉ: WhatsApp casse sur les espaces et les accents dans les URLs OpenGraph
+            baseName = baseName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9_\-]/g, "_");
+            
+            const storageRef = ref(storage, `houses/${baseName}-${timestamp}.webp`);
+            const snapshot = await uploadBytes(storageRef, compressedFile, { contentType: 'image/webp' });
             const fullUrl = await getDownloadURL(snapshot.ref);
 
             // Create and upload thumbnail
             const thumbnailFile = await imageCompression(file, thumbnailOptions);
-            const thumbRef = ref(storage, `houses/thumbnails/${file.name}-${timestamp}`);
-            const thumbSnapshot = await uploadBytes(thumbRef, thumbnailFile);
+            const thumbRef = ref(storage, `houses/thumbnails/${baseName}-${timestamp}.jpeg`);
+            const thumbSnapshot = await uploadBytes(thumbRef, thumbnailFile, { contentType: 'image/jpeg' });
             const thumbUrl = await getDownloadURL(thumbSnapshot.ref);
 
             return { fullUrl, thumbUrl };
@@ -213,6 +222,8 @@ const AdminPanel: React.FC = () => {
       }
     }
   };
+
+
 
   const handleDeleteVideo = (index: number) => {
     const currentVideos = editingHouse ? [...editingHouse.videos] : [...newHouse.videos];
@@ -1124,6 +1135,7 @@ const AdminPanel: React.FC = () => {
                       >
                         <TrashIcon className="h-4 w-4" />
                       </button>
+
                     </div>
                   </td>
                 </tr>
