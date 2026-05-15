@@ -13,6 +13,7 @@
   "dependencies": {
     "@contentful/rich-text-react-renderer": "^16.0.0",
     "@contentful/rich-text-types": "^17.0.0",
+    "@sparticuz/chromium": "^148.0.0",
     "axios": "^1.7.9",
     "body-parser": "^1.20.3",
     "browser-image-compression": "^2.0.2",
@@ -22,7 +23,10 @@
     "embla-carousel-react": "^8.3.1",
     "express": "^4.21.2",
     "firebase": "^11.10.0",
+    "firebase-admin": "^13.10.0",
+    "firebase-functions": "^7.2.5",
     "lucide-react": "^0.460.0",
+    "puppeteer-core": "^25.0.2",
     "qrcode.react": "^4.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
