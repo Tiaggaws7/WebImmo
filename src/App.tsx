@@ -11,6 +11,7 @@ import HouseExplorer from './components/HouseExplorer.tsx';
 import RealWhoAmI from './components/RealWhoamI.tsx';
 import EstimationForm from './components/EstimationForm.tsx';
 import AdminPanel from './components/adminPanel.tsx';
+import ScrollToTop from './components/ScrollToTop.tsx';
 
 const AppContent = () => {
   // Hook pour obtenir la route actuelle
@@ -21,6 +22,7 @@ const AppContent = () => {
 
   return (
     <>
+      <ScrollToTop />
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />

@@ -107,6 +107,33 @@ const GoogleReviews: React.FC = () => {
   const [isPaused, setIsPaused] = useState(false);
   const [itemsPerView, setItemsPerView] = useState(3);
 
+  // Swipe states
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setIsPaused(true);
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => setTouchEnd(e.targetTouches[0].clientX);
+
+  const onTouchEnd = () => {
+    setIsPaused(false);
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    if (isLeftSwipe) {
+      goNext();
+    }
+    if (isRightSwipe) {
+      goPrev();
+    }
+  };
+
   useEffect(() => {
     const updateSize = () => {
       setItemsPerView(window.innerWidth < 768 ? 1 : 3);
@@ -140,8 +167,9 @@ const GoogleReviews: React.FC = () => {
       className="w-full relative group"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
-      onTouchStart={() => setIsPaused(true)}
-      onTouchEnd={() => setIsPaused(false)}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
     >
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
         <div>

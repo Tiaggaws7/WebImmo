@@ -507,7 +507,7 @@ export default function HouseExplorer() {
                 {/* Image Section */}
                 <div className="relative h-64 overflow-hidden bg-gray-100 w-full">
                   <img
-                    src={house.thumbnailImage || house.principalImage}
+                    src={house.principalImage || house.thumbnailImage}
                     alt={house.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out opacity-0"
                     loading="lazy"

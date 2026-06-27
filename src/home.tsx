@@ -198,7 +198,7 @@ function Home() {
               </div>
 
               {/* Search Bar - Functional */}
-              <div className="bg-white rounded-[1.5rem] shadow-2xl p-3 flex flex-col md:flex-row gap-2 items-center transform translate-y-16 max-w-4xl border border-gray-100">
+              <div className="relative z-50 bg-white rounded-[1.5rem] shadow-xl md:shadow-2xl p-3 flex flex-col md:flex-row gap-2 items-center transform translate-y-16 max-w-4xl border border-gray-100">
 
                 {/* Location Dropdown */}
                 <div
