@@ -507,14 +507,11 @@ export default function HouseExplorer() {
                 {/* Image Section */}
                 <div className="relative h-64 overflow-hidden bg-gray-100 w-full">
                   <img
-                    src={house.principalImage || house.thumbnailImage}
+                    src={house.thumbnailImage || house.principalImage}
                     alt={house.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out opacity-0"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                     loading="lazy"
-                    onLoad={(e) => {
-                      e.currentTarget.classList.remove('opacity-0');
-                      e.currentTarget.classList.add('opacity-100');
-                    }}
+                    decoding="async"
                   />
 
                   {/* Badges */}

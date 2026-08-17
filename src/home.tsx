@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from 'react-router-dom'
 import { House } from './types'
-import { collection, getDocs, doc, getDoc } from 'firebase/firestore'
+import { collection, getDocs, doc, getDoc, query, where, limit } from 'firebase/firestore'
 import { db } from './firebase-config'
 import profilePicture from './assets/profile_picture.jpg'
 import GoogleReviews from './components/GoogleReviews';
@@ -62,6 +62,52 @@ function Home() {
 
   const [exclusiveHouses, setExclusiveHouses] = useState<House[]>([])
 
+  // Récupération précoce de l'image hero, indépendante du chargement lourd des biens
+  // pour ne pas retarder le LCP (large image) du hero banner.
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadHero = async () => {
+      // 1) Cache local : URL connue instantanément → affichage immédiat
+      const cached = localStorage.getItem('home_hero_bg');
+      if (cached) setHeroImage(cached);
+
+      // 2) Récupération réseau en arrière-plan (settings, sinon première maison)
+      try {
+        const settingsDoc = await getDoc(doc(db, 'settings', 'homepage'));
+        if (cancelled) return;
+        const settingsHero = settingsDoc.exists() && settingsDoc.data().heroImage
+          ? settingsDoc.data().heroImage
+          : '';
+        if (settingsHero) {
+          setHeroImage(settingsHero);
+          localStorage.setItem('home_hero_bg', settingsHero);
+          return;
+        }
+      } catch {
+        // silencieux : on garde le cache local s'il existe
+      }
+
+      // Fallback : première maison disponible
+      try {
+        if (cancelled) return;
+        const q = query(collection(db, 'houses'), where('condition', '==', 'disponible'), limit(1));
+        const snap = await getDocs(q);
+        if (cancelled) return;
+        const fallback = snap.docs[0]?.data().principalImage;
+        if (fallback) {
+          setHeroImage(fallback);
+          localStorage.setItem('home_hero_bg', fallback);
+        }
+      } catch {
+        // silencieux
+      }
+    };
+
+    loadHero();
+    return () => { cancelled = true; };
+  }, [])
+
   // Récupération des maisons
   useEffect(() => {
     const fetchHouses = async () => {
@@ -93,25 +139,6 @@ function Home() {
           .filter(h => h.isExclusive && h.condition !== 'vendu')
           .sort((a, b) => (a.exclusivePosition || 99) - (b.exclusivePosition || 99))
         setExclusiveHouses(adminExclusive.length > 0 ? adminExclusive.slice(0, 3) : data.slice(0, 3))
-
-        // Fetch hero image from settings, fallback to first house
-        try {
-          const settingsDoc = await getDoc(doc(db, 'settings', 'homepage'));
-          if (settingsDoc.exists() && settingsDoc.data().heroImage) {
-            const heroUrl = settingsDoc.data().heroImage;
-            setHeroImage(heroUrl);
-            localStorage.setItem('home_hero_bg', heroUrl);
-          } else if (data.length > 0 && data[0].principalImage) {
-            setHeroImage(data[0].principalImage);
-            localStorage.setItem('home_hero_bg', data[0].principalImage);
-          }
-        } catch {
-          // Fallback to first house image
-          if (data.length > 0 && data[0].principalImage) {
-            setHeroImage(data[0].principalImage);
-            localStorage.setItem('home_hero_bg', data[0].principalImage);
-          }
-        }
       } catch (error) {
         console.error('Erreur lors de la récupération des données :', error)
       }
@@ -159,6 +186,8 @@ function Home() {
                 src={heroImage}
                 alt="Hero Background"
                 className="w-full h-full object-cover"
+                fetchPriority="high"
+                decoding="async"
               />
             ) : (
               <div className="w-full h-full bg-gray-200" />
@@ -320,7 +349,7 @@ function Home() {
                 onMouseLeave={() => setIsHovered(null)}
               >
                 <Link to={`/house/${exclusiveHouses[0].id}`} className="block relative h-full min-h-[450px]">
-                  <img src={exclusiveHouses[0].principalImage} alt={exclusiveHouses[0].title || "Maison principale"} className={`w-full h-full object-cover transition-transform duration-1000 ${isHovered === 0 ? 'scale-110' : 'scale-100'}`} />
+                  <img src={exclusiveHouses[0].thumbnailImage || exclusiveHouses[0].principalImage} alt={exclusiveHouses[0].title || "Maison principale"} className={`w-full h-full object-cover transition-transform duration-1000 ${isHovered === 0 ? 'scale-110' : 'scale-100'}`} />
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-gray-900 via-gray-900/80 to-transparent pt-32 pb-8 px-8">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
                       <div>
