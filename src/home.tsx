@@ -151,7 +151,7 @@ function Home() {
 
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="relative h-[80vh] min-h-[600px] flex items-center pt-20">
+        <section className="relative min-h-[100dvh] md:min-h-[600px] md:h-[80vh] flex items-center pt-32 pb-16 md:pt-20 md:pb-0">
           {/* Background Image */}
           <div className="absolute inset-0 z-0">
             {heroImage ? (
@@ -169,7 +169,7 @@ function Home() {
           <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl">
               {/* Reviews Widget */}
-              <div 
+              <div
                 onClick={scrollToReviews}
                 className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 rounded-full mb-8 cursor-pointer hover:bg-white/20 transition-all group animate-in fade-in slide-in-from-bottom-4 duration-1000"
               >
@@ -198,7 +198,7 @@ function Home() {
               </div>
 
               {/* Search Bar - Functional */}
-              <div className="relative z-50 bg-white rounded-[1.5rem] shadow-xl md:shadow-2xl p-3 flex flex-col md:flex-row gap-2 items-center transform translate-y-16 max-w-4xl border border-gray-100">
+              <div className="relative z-50 bg-white rounded-[1.5rem] shadow-xl md:shadow-2xl p-3 flex flex-col md:flex-row gap-2 items-center md:transform md:translate-y-16 max-w-4xl border border-gray-100 mt-8 md:mt-0">
 
                 {/* Location Dropdown */}
                 <div
@@ -288,7 +288,7 @@ function Home() {
                 {/* Submmit Button */}
                 <button
                   onClick={handleSearch}
-                  className="bg-primary text-white font-bold py-4 px-8 rounded-xl w-full md:w-auto flex items-center justify-center gap-3 hover:bg-red-700 transition duration-300 shadow-[0_8px_30px_rgb(217,1,21,0.3)] hover:shadow-[0_8px_30px_rgb(217,1,21,0.5)] transform hover:-translate-y-0.5 m-1"
+                  className="bg-primary text-white font-bold py-4 px-8 rounded-xl w-full md:w-auto flex items-center justify-center gap-3 hover:bg-red-700 transition duration-300 shadow-[0_8px_30px_rgb(217,1,21,0.3)] hover:shadow-[0_8px_30px_rgb(217,1,21,0.5)] md:transform md:hover:-translate-y-0.5 md:m-1 mt-2 md:mt-0"
                 >
                   <Search className="w-5 h-5" />
                   <span>Rechercher</span>
@@ -299,7 +299,7 @@ function Home() {
         </section>
 
         {/* Sélection Exclusive Section */}
-        <section className="pt-40 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="pt-16 md:pt-40 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-end mb-12">
             <div>
               <h2 className="text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">Sélection Exclusive</h2>

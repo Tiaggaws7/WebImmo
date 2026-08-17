@@ -12,6 +12,7 @@ import RealWhoAmI from './components/RealWhoamI.tsx';
 import EstimationForm from './components/EstimationForm.tsx';
 import AdminPanel from './components/adminPanel.tsx';
 import ScrollToTop from './components/ScrollToTop.tsx';
+import WhatsAppBubble from './components/WhatsAppBubble';
 
 const AppContent = () => {
   // Hook pour obtenir la route actuelle
@@ -24,6 +25,7 @@ const AppContent = () => {
     <>
       <ScrollToTop />
       <Navbar />
+      <WhatsAppBubble />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/Vendre" element={<Selling_form />} />

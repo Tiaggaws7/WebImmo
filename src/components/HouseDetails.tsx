@@ -160,7 +160,7 @@ const HouseDetails: React.FC = () => {
   const handleShare = async () => {
     const shareUrl = window.location.href;
     const shareTitle = house ? `${house.title} | Immobilier Guadeloupe` : 'Découvrez ce bien';
-    
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -175,7 +175,7 @@ const HouseDetails: React.FC = () => {
       // Sur mobile, on ne montre jamais le modal custom (le système natif suffit)
       return;
     }
-    
+
     // Fallback: Open modal
     setIsShareModalOpen(true);
     document.body.style.overflow = 'hidden';
@@ -295,7 +295,7 @@ const HouseDetails: React.FC = () => {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             <div className="p-6">
               {copySuccessMessage && (
                 <div className="mb-4 p-3 bg-green-50 text-green-700 text-sm font-semibold rounded-lg flex items-center justify-center animate-in fade-in slide-in-from-top-2">
@@ -304,7 +304,7 @@ const HouseDetails: React.FC = () => {
               )}
 
               <div className="grid grid-cols-4 gap-4 mb-6">
-                <a 
+                <a
                   href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
                   target="_blank" rel="noopener noreferrer"
                   className="flex flex-col items-center gap-2 text-blue-600 hover:text-blue-700 hover:scale-105 transition-all group"
@@ -313,7 +313,7 @@ const HouseDetails: React.FC = () => {
                   <div className="p-3 bg-blue-50 rounded-full group-hover:bg-blue-100 transition-colors"><Facebook className="w-6 h-6" /></div>
                   <span className="text-xs font-medium text-gray-600">Facebook</span>
                 </a>
-                <a 
+                <a
                   href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent('Découvrez ce bien exceptionnel : ' + house.title)}`}
                   target="_blank" rel="noopener noreferrer"
                   className="flex flex-col items-center gap-2 text-sky-500 hover:text-sky-600 hover:scale-105 transition-all group"
@@ -322,7 +322,7 @@ const HouseDetails: React.FC = () => {
                   <div className="p-3 bg-sky-50 rounded-full group-hover:bg-sky-100 transition-colors"><Twitter className="w-6 h-6" /></div>
                   <span className="text-xs font-medium text-gray-600">X</span>
                 </a>
-                <a 
+                <a
                   href={`https://api.whatsapp.com/send?text=${encodeURIComponent('Découvrez cette propriété 👇\n' + window.location.href)}`}
                   target="_blank" rel="noopener noreferrer"
                   className="flex flex-col items-center gap-2 text-green-500 hover:text-green-600 hover:scale-105 transition-all group"
@@ -331,7 +331,7 @@ const HouseDetails: React.FC = () => {
                   <div className="p-3 bg-green-50 rounded-full group-hover:bg-green-100 transition-colors"><MessageCircle className="w-6 h-6" /></div>
                   <span className="text-xs font-medium text-gray-600">WhatsApp</span>
                 </a>
-                <a 
+                <a
                   href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(window.location.href)}&title=${encodeURIComponent(house.title)}`}
                   target="_blank" rel="noopener noreferrer"
                   className="flex flex-col items-center gap-2 text-blue-700 hover:text-blue-800 hover:scale-105 transition-all group"
@@ -341,7 +341,7 @@ const HouseDetails: React.FC = () => {
                   <span className="text-xs font-medium text-gray-600">LinkedIn</span>
                 </a>
 
-                <button 
+                <button
                   onClick={() => copyToClipboard(generateShareText(), 'Instagram')}
                   className="flex flex-col items-center gap-2 text-pink-600 hover:text-pink-700 hover:scale-105 transition-all group"
                   title="Copier le texte complet pour Instagram"
@@ -349,7 +349,7 @@ const HouseDetails: React.FC = () => {
                   <div className="p-3 bg-pink-50 rounded-full group-hover:bg-pink-100 transition-colors"><Instagram className="w-6 h-6" /></div>
                   <span className="text-xs font-medium text-gray-600">Instagram</span>
                 </button>
-                <a 
+                <a
                   href={`mailto:?subject=${encodeURIComponent('Propriété intéressante : ' + house.title)}&body=${encodeURIComponent(generateShareText())}`}
                   className="flex flex-col items-center gap-2 text-gray-600 hover:text-gray-800 hover:scale-105 transition-all group"
                   title="Partager par Email"
@@ -357,7 +357,7 @@ const HouseDetails: React.FC = () => {
                   <div className="p-3 bg-gray-100 rounded-full group-hover:bg-gray-200 transition-colors"><Mail className="w-6 h-6" /></div>
                   <span className="text-xs font-medium text-gray-600">Email</span>
                 </a>
-                <button 
+                <button
                   onClick={() => copyToClipboard(generateShareText() + '\n\n' + window.location.href, 'votre presse-papiers')}
                   className="flex flex-col items-center gap-2 text-gray-500 hover:text-gray-700 hover:scale-105 transition-all group col-span-2 place-self-center"
                   title="Copier le texte et le lien"
@@ -370,9 +370,9 @@ const HouseDetails: React.FC = () => {
               <div className="pt-6 border-t border-gray-100 flex flex-col items-center">
                 <span className="text-sm font-semibold text-gray-700 mb-3 text-center">Partager via QR Code</span>
                 <div className="p-3 bg-white border border-gray-200 rounded-xl shadow-sm mb-4">
-                  <QRCodeCanvas 
+                  <QRCodeCanvas
                     id="qr-code-canvas"
-                    value={window.location.href} 
+                    value={window.location.href}
                     size={160}
                     level={"H"}
                     includeMargin={true}
