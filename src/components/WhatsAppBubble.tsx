@@ -9,7 +9,7 @@ const WhatsAppBubble = () => {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Contacter sur WhatsApp"
-      className="lg:hidden fixed bottom-5 right-5 z-50 group"
+      className="fixed bottom-5 right-5 z-50 group"
     >
       <div className="flex items-center justify-center w-16 h-16 rounded-full bg-green-500 shadow-[0_8px_30px_rgba(37,211,102,0.4)] hover:bg-green-600 hover:scale-105 active:scale-95 transition-all duration-300">
           {/* WhatsApp SVG icon */}
