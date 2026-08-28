@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Helmet } from 'react-helmet-async';
-import { Search, Heart, MapPin, Bed, Bath, Maximize, SlidersHorizontal, ChevronDown } from 'lucide-react'
+import { Search, Heart, MapPin, Bed, Bath, Maximize, SlidersHorizontal, ChevronDown, Home as HomeIcon } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
 
 import { House } from '../types';
@@ -62,6 +62,7 @@ console.log("Current user:", auth.currentUser);
 export default function HouseExplorer() {
   const [houses, setHouses] = useState<House[]>([])
   const [filteredHouses, setFilteredHouses] = useState<House[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [searchParams] = useSearchParams()
   const initialLocation = searchParams.get('location') || ""
   const initialType = searchParams.get('type')
@@ -83,69 +84,125 @@ export default function HouseExplorer() {
   useEffect(() => {
     // Fetch data from Firestore
     const fetchHouses = async () => {
-      const houseCollection = collection(db, 'houses');
-      const houseSnapshot = await getDocs(houseCollection);
-      const houseList = houseSnapshot.docs.map((doc) => {
-        const data = doc.data() as House;
-        return {
-          ...data,
-          id: doc.id,
-        };
-      });
+      try {
+        setIsLoading(true);
+        const houseCollection = collection(db, 'houses');
+        const houseSnapshot = await getDocs(houseCollection);
+        const houseList = houseSnapshot.docs.map((doc) => {
+          const data = doc.data() as House;
+          return {
+            ...data,
+            id: doc.id,
+          };
+        });
 
-      setHouses(houseList);
+        setHouses(houseList);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     fetchHouses();
   }, []);
 
   useEffect(() => {
+    const parsePrice = (priceVal: any): number => {
+      if (!priceVal) return 0;
+      const cleaned = priceVal.toString().replace(/[^0-9]/g, '');
+      return parseInt(cleaned, 10) || 0;
+    };
+
+    const parseSize = (sizeVal: any): number => {
+      if (!sizeVal) return 0;
+      const cleaned = sizeVal.toString().replace(/[^0-9]/g, '');
+      return parseInt(cleaned, 10) || 0;
+    };
+
     const filtered = houses.filter((house) => {
+      const condition = (house.condition || 'disponible').trim().toLowerCase();
+
       // Exclure les biens "en attente" de tous les affichages, sauf si explicitement sélectionné
-      if (house.condition === 'en attente' && criteria.condition !== 'en attente') {
+      if (condition === 'en attente' && criteria.condition !== 'en attente') {
         return false;
       }
 
+      // Condition match
+      const conditionMatch =
+        criteria.condition === 'all' || condition === criteria.condition.toLowerCase();
+
+      // Price match
+      const housePrice = parsePrice(house.price || (house as any).prix);
+      const priceMatch = criteria.maxPrice >= 100000000 || housePrice === 0 || housePrice <= criteria.maxPrice;
+
+      // Size match
+      const houseSize = parseSize(house.size || (house as any).surface);
+      const sizeMatch = criteria.minSize === 0 || houseSize >= criteria.minSize;
+
+      // Types match (case-insensitive)
+      const houseTypes: string[] = Array.isArray(house.types)
+        ? house.types
+        : (typeof house.types === 'string' ? [house.types] : ((house as any).type ? [(house as any).type] : []));
+
+      const typeMatch =
+        criteria.propertyTypes.length === 0 ||
+        houseTypes.some((t) =>
+          criteria.propertyTypes.some((critT) => critT.trim().toLowerCase() === t.trim().toLowerCase())
+        );
+
+      // Rooms / Bedrooms / Bathrooms match
+      const roomsMatch = parseInt(criteria.rooms || '0', 10) === 0 || parseInt(house.rooms || '0', 10) >= parseInt(criteria.rooms, 10);
+      const bedroomsMatch = parseInt(criteria.bedrooms || '0', 10) === 0 || parseInt(house.bedrooms || '0', 10) >= parseInt(criteria.bedrooms, 10);
+      const bathroomsMatch = parseInt(criteria.bathrooms || '0', 10) === 0 || parseInt(house.bathrooms || '0', 10) >= parseInt(criteria.bathrooms, 10);
+
+      // Amenities match
+      const houseAmenities = house.amenities || [];
+      const amenitiesMatch =
+        criteria.amenities.length === 0 ||
+        criteria.amenities.every((amenity) => houseAmenities.includes(amenity));
+
+      // Location match
+      const locationMatch =
+        !criteria.location ||
+        (house.location || '')
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .includes(
+            criteria.location
+              .toLowerCase()
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+          );
+
       return (
-        (criteria.condition === 'all' || house.condition === criteria.condition) &&
-        parseInt(house.price || '0') <= criteria.maxPrice &&
-        parseInt(house.size || '0') >= criteria.minSize &&
-        (criteria.propertyTypes.length === 0 ||
-          (Array.isArray(house.types) &&
-            house.types.some((type) => criteria.propertyTypes.includes(type)))) &&
-        parseInt(house.rooms || '0') >= parseInt(criteria.rooms) &&
-        parseInt(house.bedrooms || '0') >= parseInt(criteria.bedrooms) &&
-        parseInt(house.bathrooms || '0') >= parseInt(criteria.bathrooms) &&
-        (criteria.amenities.length === 0 || criteria.amenities.every((amenity) => (house.amenities || []).includes(amenity))) &&
-        (criteria.location === '' || (house.location || '').toLowerCase().includes(criteria.location.toLowerCase()))
+        conditionMatch &&
+        priceMatch &&
+        sizeMatch &&
+        typeMatch &&
+        roomsMatch &&
+        bedroomsMatch &&
+        bathroomsMatch &&
+        amenitiesMatch &&
+        locationMatch
       );
     });
 
     // Application du tri
-    let sorted = [...filtered];
+    const sorted = [...filtered];
     switch (sortBy) {
       case 'price-asc':
-        sorted.sort((a, b) => {
-          const priceA = parseInt(a.price?.replace(/[^0-9.-]+/g, '') || '0');
-          const priceB = parseInt(b.price?.replace(/[^0-9.-]+/g, '') || '0');
-          return priceA - priceB;
-        });
+        sorted.sort((a, b) => parsePrice(a.price || (a as any).prix) - parsePrice(b.price || (b as any).prix));
         break;
       case 'price-desc':
-        sorted.sort((a, b) => {
-          const priceA = parseInt(a.price?.replace(/[^0-9.-]+/g, '') || '0');
-          const priceB = parseInt(b.price?.replace(/[^0-9.-]+/g, '') || '0');
-          return priceB - priceA;
-        });
+        sorted.sort((a, b) => parsePrice(b.price || (b as any).prix) - parsePrice(a.price || (a as any).prix));
         break;
       case 'size-asc':
-        sorted.sort((a, b) => parseInt(a.size || '0') - parseInt(b.size || '0'));
+        sorted.sort((a, b) => parseSize(a.size || (a as any).surface) - parseSize(b.size || (b as any).surface));
         break;
       case 'size-desc':
-        sorted.sort((a, b) => parseInt(b.size || '0') - parseInt(a.size || '0'));
+        sorted.sort((a, b) => parseSize(b.size || (b as any).surface) - parseSize(a.size || (a as any).surface));
         break;
       default:
-        // 'newest' ou par défaut: garder l'ordre Firestore (ou l'inverser si on veut les derniers créés en premier)
         break;
     }
 
@@ -188,39 +245,6 @@ export default function HouseExplorer() {
           : [...(prev[name] as string[]), value]
         : prev[name],
     }));
-  };
-
-  const getConditionStyle = (condition: House['condition']) => {
-    switch (condition) {
-      case 'vendu':
-        return 'bg-red-600 text-white';
-      case 'sous compromis':
-        return 'bg-yellow-500 text-black';
-      case 'sous offre':
-        return 'bg-orange-500 text-white';
-      case 'en attente':
-        return 'bg-gray-500 text-white';
-      default:
-        // Use EXCLUSIVITÉ styling or fallback to green
-        return 'bg-primary text-white';
-    }
-  };
-
-  const getConditionText = (condition: House['condition']) => {
-    switch (condition) {
-      case 'vendu':
-        return 'VENDU';
-      case 'sous compromis':
-        return 'SOUS COMPROMIS';
-      case 'sous offre':
-        return 'SOUS OFFRE';
-      case 'en attente':
-        return 'EN ATTENTE';
-      case 'disponible':
-        return 'DISPONIBLE';
-      default:
-        return '';
-    }
   };
 
   const housesByCondition = houses.filter((house) => {
@@ -292,7 +316,7 @@ export default function HouseExplorer() {
 
 
   return (
-    <div className="min-h-screen bg-neutral-50 p-4 md:p-8">
+    <div className="min-h-screen bg-neutral-50 p-4 md:p-8 pb-32">
       <Helmet>
         <title>Biens Disponibles à la Vente - Votre Agence Immobilière</title>
         <meta name="description" content="Découvrez tous nos biens immobiliers disponibles à la vente. Trouvez la maison ou l'appartement idéal selon vos critères de recherche." />
@@ -482,7 +506,34 @@ export default function HouseExplorer() {
           </div>
         </div>
 
-        {filteredHouses.length === 0 ? (
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="bg-white rounded-2xl overflow-hidden border border-gray-100 flex flex-col h-[420px] shadow-sm animate-pulse">
+                <div className="h-64 bg-slate-200/80 w-full relative flex items-center justify-center">
+                  <div className="absolute top-4 left-4 flex gap-2">
+                    <div className="h-6 w-20 bg-slate-300 rounded-full" />
+                    <div className="h-6 w-16 bg-slate-300 rounded-full" />
+                  </div>
+                </div>
+                <div className="p-6 flex-1 flex flex-col justify-between">
+                  <div>
+                    <div className="flex justify-between items-start mb-3 gap-4">
+                      <div className="h-6 bg-slate-200 rounded-lg w-2/3" />
+                      <div className="h-6 bg-slate-200 rounded-lg w-1/4" />
+                    </div>
+                    <div className="h-4 bg-slate-200 rounded-lg w-1/2" />
+                  </div>
+                  <div className="border-t border-gray-100 pt-4 flex gap-4">
+                    <div className="h-5 bg-slate-200 rounded w-16" />
+                    <div className="h-5 bg-slate-200 rounded w-16" />
+                    <div className="h-5 bg-slate-200 rounded w-16" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filteredHouses.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm">
             <Search className="mx-auto h-12 w-12 text-gray-300 mb-4" />
             <h3 className="text-lg font-bold text-gray-900 mb-1">Aucun bien trouvé</h3>
@@ -499,99 +550,7 @@ export default function HouseExplorer() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredHouses.map((house) => (
-              <Link
-                to={`/house/${house.id}`}
-                key={house.id}
-                className="group relative bg-white rounded-2xl overflow-hidden hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] transition-all duration-500 flex flex-col border border-transparent hover:border-gray-100"
-              >
-                {/* Image Section */}
-                <div className="relative h-64 overflow-hidden bg-gray-100 w-full">
-                  <img
-                    src={house.thumbnailImage || house.principalImage}
-                    alt={house.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                    loading="lazy"
-                    decoding="async"
-                  />
-
-                  {/* Badges */}
-                  <div className="absolute top-4 left-4 flex gap-2">
-                    {getConditionText(house.condition) && (
-                      <span className={`text-[10px] font-black px-3 py-1.5 rounded-full shadow-lg tracking-wider ${getConditionStyle(house.condition)}`}>
-                        {getConditionText(house.condition)}
-                      </span>
-                    )}
-                    {house.types?.[0] && (
-                      <span className="bg-white text-gray-900 text-[10px] font-black px-3 py-1.5 rounded-full shadow-lg uppercase tracking-wider">
-                        {house.types[0]}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Heart Icon */}
-                  <button onClick={(e) => e.preventDefault()} className="absolute top-4 right-4 p-2.5 bg-black/20 hover:bg-black/50 rounded-full text-white backdrop-blur-md transition-all duration-300 group-hover:scale-110">
-                    <Heart size={18} className="fill-transparent hover:fill-current" />
-                  </button>
-                </div>
-
-                {/* Content Section */}
-                <div className="p-6 flex-1 flex flex-col">
-                  {/* Title and Price */}
-                  <div className="flex justify-between items-start mb-2 gap-4">
-                    <h3 className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors line-clamp-2 leading-tight flex-1">
-                      {house.title}
-                    </h3>
-                    <div className="text-right">
-                      <p className="text-xl font-black text-primary whitespace-nowrap">
-                        {(() => {
-                          const cleanPrice = house.price.replace(/[^0-9.-]+/g, '');
-                          const numericPrice = Number(cleanPrice);
-                          return !isNaN(numericPrice)
-                            ? numericPrice.toLocaleString('fr-FR', {
-                              style: 'currency',
-                              currency: 'EUR',
-                              minimumFractionDigits: 0,
-                              maximumFractionDigits: 0,
-                            })
-                            : 'Sur demande';
-                        })()}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Location */}
-                  <div className="flex justify-between items-center mb-5">
-                    <div className="flex items-center text-gray-500 text-sm font-medium">
-                      <MapPin size={16} className="mr-1.5 text-primary flex-shrink-0" />
-                      <span className="line-clamp-1">{house.location}</span>
-                    </div>
-                  </div>
-
-                  {/* Features */}
-                  <div className="mt-auto border-t border-gray-100 pt-5 flex items-center gap-5 text-gray-700">
-                    {house.bedrooms && parseInt(house.bedrooms) > 0 && (
-                      <div className="flex items-center gap-2" title={`${house.bedrooms} chambres`}>
-                        <Bed size={18} className="text-gray-400" />
-                        <span className="font-bold text-sm">{house.bedrooms} <span className="text-gray-500 font-medium">Ch.</span></span>
-                      </div>
-                    )}
-
-                    {house.bathrooms && parseInt(house.bathrooms) > 0 && (
-                      <div className="flex items-center gap-2" title={`${house.bathrooms} salles de bain`}>
-                        <Bath size={18} className="text-gray-400" />
-                        <span className="font-bold text-sm">{house.bathrooms} <span className="text-gray-500 font-medium">Sdb.</span></span>
-                      </div>
-                    )}
-
-                    {house.size && (
-                      <div className="flex items-center gap-2 ml-auto" title={`Surface: ${house.size} m²`}>
-                        <Maximize size={18} className="text-gray-400" />
-                        <span className="font-bold text-sm">{house.size} <span className="text-gray-500 font-medium">m²</span></span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </Link>
+              <HouseCard key={house.id} house={house} />
             ))}
           </div>
         )}
@@ -600,3 +559,160 @@ export default function HouseExplorer() {
     </div>
   );
 }
+
+const HouseCard = ({ house }: { house: House }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
+
+  const getConditionStyle = (condition: House['condition']) => {
+    switch (condition) {
+      case 'vendu':
+        return 'bg-red-600 text-white';
+      case 'sous compromis':
+        return 'bg-yellow-500 text-black';
+      case 'sous offre':
+        return 'bg-orange-500 text-white';
+      case 'en attente':
+        return 'bg-gray-500 text-white';
+      default:
+        return 'bg-primary text-white';
+    }
+  };
+
+  const getConditionText = (condition: House['condition']) => {
+    switch (condition) {
+      case 'vendu':
+        return 'VENDU';
+      case 'sous compromis':
+        return 'SOUS COMPROMIS';
+      case 'sous offre':
+        return 'SOUS OFFRE';
+      case 'en attente':
+        return 'EN ATTENTE';
+      case 'disponible':
+        return 'DISPONIBLE';
+      default:
+        return '';
+    }
+  };
+
+  const imageUrl = house.thumbnailImage || house.principalImage;
+
+  return (
+    <Link
+      to={`/house/${house.id}`}
+      className="group relative bg-white rounded-2xl overflow-hidden hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] transition-all duration-500 flex flex-col border border-gray-100 hover:border-gray-200"
+    >
+      {/* Image Section */}
+      <div className="relative h-64 overflow-hidden bg-slate-100 w-full">
+        {/* Placeholder / Shimmer while loading */}
+        {!isLoaded && (
+          <div className="absolute inset-0 bg-gradient-to-tr from-slate-100 via-slate-200/70 to-slate-100 animate-pulse flex items-center justify-center">
+            <HomeIcon className="w-10 h-10 text-slate-300/80" />
+          </div>
+        )}
+
+        {imageUrl && !hasError ? (
+          <img
+            src={imageUrl}
+            alt={house.title}
+            className={`w-full h-full object-cover group-hover:scale-105 transition-all duration-700 ease-out ${
+              isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
+            }`}
+            loading="lazy"
+            decoding="async"
+            onLoad={() => setIsLoaded(true)}
+            onError={() => {
+              setHasError(true);
+              setIsLoaded(true);
+            }}
+          />
+        ) : (
+          <div className="w-full h-full bg-slate-100 flex items-center justify-center text-slate-400">
+            <HomeIcon className="w-10 h-10" />
+          </div>
+        )}
+
+        {/* Badges */}
+        <div className="absolute top-4 left-4 flex gap-2 z-10">
+          {getConditionText(house.condition) && (
+            <span className={`text-[10px] font-black px-3 py-1.5 rounded-full shadow-md tracking-wider ${getConditionStyle(house.condition)}`}>
+              {getConditionText(house.condition)}
+            </span>
+          )}
+          {house.types?.[0] && (
+            <span className="bg-white/95 backdrop-blur-sm text-gray-900 text-[10px] font-black px-3 py-1.5 rounded-full shadow-md uppercase tracking-wider">
+              {house.types[0]}
+            </span>
+          )}
+        </div>
+
+        {/* Heart Icon */}
+        <button
+          onClick={(e) => e.preventDefault()}
+          className="absolute top-4 right-4 p-2.5 bg-black/20 hover:bg-black/50 rounded-full text-white backdrop-blur-md transition-all duration-300 group-hover:scale-110 z-10"
+        >
+          <Heart size={18} className="fill-transparent hover:fill-current" />
+        </button>
+      </div>
+
+      {/* Content Section */}
+      <div className="p-6 flex-1 flex flex-col">
+        {/* Title and Price */}
+        <div className="flex justify-between items-start mb-2 gap-4">
+          <h3 className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors line-clamp-2 leading-tight flex-1">
+            {house.title}
+          </h3>
+          <div className="text-right">
+            <p className="text-xl font-black text-primary whitespace-nowrap">
+              {(() => {
+                const cleanPrice = (house.price || (house as any).prix || '').toString().replace(/[^0-9.-]+/g, '');
+                const numericPrice = Number(cleanPrice);
+                return !isNaN(numericPrice) && numericPrice > 0
+                  ? numericPrice.toLocaleString('fr-FR', {
+                      style: 'currency',
+                      currency: 'EUR',
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0,
+                    })
+                  : 'Sur demande';
+              })()}
+            </p>
+          </div>
+        </div>
+
+        {/* Location */}
+        <div className="flex justify-between items-center mb-5">
+          <div className="flex items-center text-gray-500 text-sm font-medium">
+            <MapPin size={16} className="mr-1.5 text-primary flex-shrink-0" />
+            <span className="line-clamp-1">{house.location || "Guadeloupe"}</span>
+          </div>
+        </div>
+
+        {/* Features */}
+        <div className="mt-auto border-t border-gray-100 pt-5 flex items-center gap-5 text-gray-700">
+          {house.bedrooms && parseInt(house.bedrooms) > 0 && (
+            <div className="flex items-center gap-2" title={`${house.bedrooms} chambres`}>
+              <Bed size={18} className="text-gray-400" />
+              <span className="font-bold text-sm">{house.bedrooms} <span className="text-gray-500 font-medium">Ch.</span></span>
+            </div>
+          )}
+
+          {house.bathrooms && parseInt(house.bathrooms) > 0 && (
+            <div className="flex items-center gap-2" title={`${house.bathrooms} salles de bain`}>
+              <Bath size={18} className="text-gray-400" />
+              <span className="font-bold text-sm">{house.bathrooms} <span className="text-gray-500 font-medium">Sdb.</span></span>
+            </div>
+          )}
+
+          {house.size && (
+            <div className="flex items-center gap-2 ml-auto" title={`Surface: ${house.size} m²`}>
+              <Maximize size={18} className="text-gray-400" />
+              <span className="font-bold text-sm">{house.size} <span className="text-gray-500 font-medium">m²</span></span>
+            </div>
+          )}
+        </div>
+      </div>
+    </Link>
+  );
+};

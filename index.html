@@ -1,12 +1,126 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta property="og:image" content="/src/assets/profile_picture.jpg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512x512.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#dc2626" />
+
+    <meta name="description" content="Elise Buil, votre conseillère et agente immobilière en Guadeloupe. Achat, vente et estimation de villas et appartements. Avis clients vérifiés 5/5." />
+    <meta property="og:site_name" content="Elise Buil Immobilier Guadeloupe" />
+    <meta property="og:title" content="Elise Buil Immobilier Guadeloupe - Achat, Vente, Estimation" />
+    <meta property="og:description" content="Découvrez nos biens immobiliers d'exception en Guadeloupe avec Elise Buil. Accompagnement personnalisé et estimation offerte." />
+    <meta property="og:image" content="https://elisebuilimmobilierguadeloupe.com/og-image.jpg" />
+    <meta property="og:url" content="https://elisebuilimmobilierguadeloupe.com/" />
+    <meta property="og:type" content="website" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://firebasestorage.googleapis.com" />
     <link rel="preconnect" href="https://webimmo-6189a.firebasestorage.app" crossorigin />
+
+    <!-- Schema.org Structured Data for Google Search (Rich Snippets & Google Reviews Stars) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "RealEstateAgent",
+        "@id": "https://elisebuilimmobilierguadeloupe.com/#agency",
+        "name": "Elise Buil Immobilier Guadeloupe",
+        "alternateName": "Elise BUIL Conseillère Immobilier",
+        "url": "https://elisebuilimmobilierguadeloupe.com/",
+        "logo": "https://elisebuilimmobilierguadeloupe.com/favicon-512x512.png",
+        "image": "https://elisebuilimmobilierguadeloupe.com/og-image.jpg",
+        "description": "Conseillère et agente immobilière en Guadeloupe. Achat, vente, estimation de propriétés, villas et appartements.",
+        "priceRange": "€€€",
+        "telephone": "+590690000000",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Saint-François",
+          "addressRegion": "Guadeloupe",
+          "postalCode": "97118",
+          "addressCountry": "FR"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 16.2522,
+          "longitude": -61.2741
+        },
+        "areaServed": [
+          {
+            "@type": "AdministrativeArea",
+            "name": "Guadeloupe"
+          },
+          {
+            "@type": "City",
+            "name": "Saint-François"
+          },
+          {
+            "@type": "City",
+            "name": "Sainte-Anne"
+          },
+          {
+            "@type": "City",
+            "name": "Le Gosier"
+          }
+        ],
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "5.0",
+          "bestRating": "5",
+          "worstRating": "1",
+          "ratingCount": "16",
+          "reviewCount": "16"
+        },
+        "review": [
+          {
+            "@type": "Review",
+            "author": {
+              "@type": "Person",
+              "name": "diamante marchaux"
+            },
+            "datePublished": "2024-03-15",
+            "reviewRating": {
+              "@type": "Rating",
+              "ratingValue": "5",
+              "bestRating": "5"
+            },
+            "reviewBody": "Conseillé par une amie, je ne regrette ABSOLUMENT pas d'avoir fait appel à l'agence. Elise est patiente, très efficace et surtout TRÈS PROFESSIONNELLE !!! Ses conseils et son estimation nous ont beaucoup aidé ! Encore merci!!! Je recommande à 100%!!!!"
+          },
+          {
+            "@type": "Review",
+            "author": {
+              "@type": "Person",
+              "name": "Klodin L"
+            },
+            "datePublished": "2024-02-20",
+            "reviewRating": {
+              "@type": "Rating",
+              "ratingValue": "5",
+              "bestRating": "5"
+            },
+            "reviewBody": "Mme BUIL est une personne agréable, à l'écoute, très professionnelle et proactive. La mission a été gérée en 1 semaine.. Vraiment très efficace. Je recommande à 100 pour cent"
+          },
+          {
+            "@type": "Review",
+            "author": {
+              "@type": "Person",
+              "name": "Audrey Marcon"
+            },
+            "datePublished": "2024-02-10",
+            "reviewRating": {
+              "@type": "Rating",
+              "ratingValue": "5",
+              "bestRating": "5"
+            },
+            "reviewBody": "D'un professionnel exceptionnel et d'une gentillesse extrême. Je recommande vivement Élise pour la vente de votre maison !!"
+          }
+        ]
+      }
+    </script>
+
     <script type="text/javascript">
       (function(l) {
         if (l.search[1] === '/' ) {
@@ -19,7 +133,7 @@
         }
       }(window.location))
     </script>
-    <title>Elise BUIL</title>
+    <title>Elise Buil Immobilier Guadeloupe</title>
   </head>
   <body>
     <div id="root"></div>

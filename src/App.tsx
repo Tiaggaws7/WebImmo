@@ -1,43 +1,76 @@
+import { lazy, Suspense, useEffect } from 'react';
 import './App.css';
 import { HelmetProvider } from "react-helmet-async";
-import { BrowserRouter, Route, Routes, /*useLocation*/ } from 'react-router-dom';
-import Home from './home.tsx';
-import NotFound from './NotFound.tsx';
-import Selling_form from './components/Selling_form';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Navbar from './components/Navbar';
-//import Footer from './components/Footer.tsx';
-import HouseDetails from './components/HouseDetails.tsx';
-import HouseExplorer from './components/HouseExplorer.tsx';
-import RealWhoAmI from './components/RealWhoamI.tsx';
-import EstimationForm from './components/EstimationForm.tsx';
-import AdminPanel from './components/adminPanel.tsx';
 import ScrollToTop from './components/ScrollToTop.tsx';
 import WhatsAppBubble from './components/WhatsAppBubble';
 
-const AppContent = () => {
-  // Hook pour obtenir la route actuelle
-  //const location = useLocation();
+// Lazy-loaded routes for optimal initial bundle size
+const Home = lazy(() => import('./home.tsx'));
+const Selling_form = lazy(() => import('./components/Selling_form'));
+const HouseExplorer = lazy(() => import('./components/HouseExplorer.tsx'));
+const HouseDetails = lazy(() => import('./components/HouseDetails.tsx'));
+const RealWhoAmI = lazy(() => import('./components/RealWhoamI.tsx'));
+const EstimationForm = lazy(() => import('./components/EstimationForm.tsx'));
+const AdminPanel = lazy(() => import('./components/adminPanel.tsx'));
+const NotFound = lazy(() => import('./NotFound.tsx'));
 
-  // Liste des routes où le footer ne doit pas être affiché
-  //const noFooterRoutes = ['/Gestion', '/']; // Ajouter ici toutes les routes sans footer
+// Idle prefetcher for frequent subsequent pages once homepage is loaded
+const useIdlePrefetch = () => {
+  useEffect(() => {
+    const prefetchRoutes = () => {
+      // Prefetch primary pages in the background after initial render
+      import('./components/HouseExplorer.tsx');
+      import('./components/EstimationForm.tsx');
+      import('./components/RealWhoamI.tsx');
+    };
+
+    const win = window as Window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+
+    if (typeof win.requestIdleCallback === 'function') {
+      const handle = win.requestIdleCallback(prefetchRoutes, { timeout: 3000 });
+      return () => {
+        if (typeof win.cancelIdleCallback === 'function') {
+          win.cancelIdleCallback(handle);
+        }
+      };
+    } else {
+      const timer = setTimeout(prefetchRoutes, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+};
+
+const PageLoader = () => (
+  <div className="min-h-screen bg-[#fafafa] flex items-center justify-center" aria-label="Chargement...">
+    <div className="w-8 h-8 border-3 border-primary/20 border-t-primary rounded-full animate-spin" />
+  </div>
+);
+
+const AppContent = () => {
+  useIdlePrefetch();
 
   return (
     <>
       <ScrollToTop />
       <Navbar />
       <WhatsAppBubble />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/Vendre" element={<Selling_form />} />
-        <Route path="/Acheter" element={<HouseExplorer />} />
-        <Route path="/house/:id" element={<HouseDetails />} />
-        <Route path="/EliseBUIL" element={<RealWhoAmI />} />
-        <Route path="/Estimation" element={<EstimationForm />} />
-        <Route path="/Gestion" element={<AdminPanel />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      {/* Affichage conditionnel du footer */}
-      {/*!noFooterRoutes.includes(location.pathname) && <Footer />*/}
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/Vendre" element={<Selling_form />} />
+          <Route path="/Acheter" element={<HouseExplorer />} />
+          <Route path="/house/:id" element={<HouseDetails />} />
+          <Route path="/EliseBUIL" element={<RealWhoAmI />} />
+          <Route path="/Estimation" element={<EstimationForm />} />
+          <Route path="/Gestion" element={<AdminPanel />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
     </>
   );
 };

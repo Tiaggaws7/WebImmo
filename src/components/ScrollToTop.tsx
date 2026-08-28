@@ -5,6 +5,8 @@ export default function ScrollToTop() {
   const { pathname } = useLocation();
 
   useEffect(() => {
+    document.body.style.overflow = 'unset';
+    document.documentElement.style.overflow = 'unset';
     window.scrollTo(0, 0);
   }, [pathname]);
 

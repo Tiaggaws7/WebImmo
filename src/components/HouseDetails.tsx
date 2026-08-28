@@ -5,13 +5,14 @@ import { useParams, Link } from "react-router-dom"
 import {
   ChevronLeft, ChevronRight, MapPin,
   Ruler, Bed, Bath, DoorOpen, Mail, X, Grid,
-  Share2, Facebook, Twitter, Linkedin, Instagram, MessageCircle, Download, Link as LinkIcon
+  Share2, Facebook, Twitter, Linkedin, Instagram, MessageCircle, Download, Link as LinkIcon, Home as HomeIcon
 } from "lucide-react"
 import { QRCodeCanvas } from 'qrcode.react';
 import { doc, getDoc, collection, getDocs } from "firebase/firestore"
 import { db } from "../firebase-config"
 import type { House } from "../types"
 import { Helmet } from "react-helmet-async"
+import profilePicture from "../assets/profile_picture.jpg"
 
 const HouseDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -210,7 +211,46 @@ const HouseDetails: React.FC = () => {
   };
 
   if (!house) {
-    return <div className="min-h-screen flex items-center justify-center">Chargement...</div>
+    return (
+      <div className="min-h-screen bg-slate-50 p-4 md:p-8">
+        <div className="max-w-7xl mx-auto animate-pulse">
+          {/* Top Bar Skeleton */}
+          <div className="flex justify-between items-center mb-6">
+            <div className="h-6 bg-slate-200 rounded-lg w-32" />
+            <div className="h-10 bg-slate-200 rounded-xl w-40" />
+          </div>
+
+          {/* Hero Gallery Image Skeleton */}
+          <div className="w-full h-[350px] md:h-[550px] bg-slate-900/90 rounded-2xl mb-8 flex items-center justify-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-tr from-slate-900 via-slate-800 to-slate-900" />
+            <HomeIcon className="w-16 h-16 text-slate-700/50 relative z-10" />
+          </div>
+
+          {/* Details Skeleton */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              <div className="h-10 bg-slate-200 rounded-xl w-3/4" />
+              <div className="h-6 bg-slate-200 rounded-lg w-1/2" />
+              <div className="grid grid-cols-3 gap-4 pt-4">
+                <div className="h-20 bg-slate-200 rounded-xl" />
+                <div className="h-20 bg-slate-200 rounded-xl" />
+                <div className="h-20 bg-slate-200 rounded-xl" />
+              </div>
+              <div className="space-y-3 pt-6">
+                <div className="h-4 bg-slate-200 rounded w-full" />
+                <div className="h-4 bg-slate-200 rounded w-5/6" />
+                <div className="h-4 bg-slate-200 rounded w-4/6" />
+              </div>
+            </div>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-96 space-y-4">
+              <div className="h-8 bg-slate-200 rounded-lg w-2/3" />
+              <div className="h-12 bg-slate-200 rounded-xl w-full" />
+              <div className="h-12 bg-slate-200 rounded-xl w-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -438,18 +478,17 @@ const HouseDetails: React.FC = () => {
         </div>
 
         {/* New Image Grid */}
-        <div className="relative group rounded-xl overflow-hidden bg-gray-100 mb-8 max-h-[600px] flex">
+        <div className="relative group rounded-2xl overflow-hidden bg-slate-900 mb-8 max-h-[600px] flex shadow-lg">
           {house.images.length === 0 ? (
             <div className="w-full h-[400px] flex items-center justify-center text-gray-400">Aucune photo</div>
           ) : house.images.length === 1 || house.images.length === 2 ? (
             // Fallback for 1 or 2 images
             <div className={`grid gap-2 w-full h-full ${house.images.length === 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
               {house.images.slice(0, 2).map((img, idx) => (
-                <img
+                <DetailGalleryImage
                   key={idx}
                   src={img}
                   alt={house.title}
-                  className="w-full h-full object-cover cursor-pointer hover:opacity-95 transition-opacity"
                   onClick={() => openGallery(idx)}
                 />
               ))}
@@ -458,25 +497,26 @@ const HouseDetails: React.FC = () => {
             // Desktop Grid: 1 large on left, 2 stacked on right
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 w-full h-[400px] md:h-[600px]">
               <div className="md:col-span-2 h-full">
-                <img
+                <DetailGalleryImage
                   src={house.images[0]}
                   alt={house.title}
-                  className="w-full h-full object-cover cursor-pointer hover:opacity-95 transition-opacity"
                   onClick={() => openGallery(0)}
+                  className="h-full"
                 />
               </div>
               <div className="hidden md:grid grid-rows-2 gap-2 h-full">
-                <img
+                <DetailGalleryImage
                   src={house.images[1]}
                   alt={`${house.title} 2`}
-                  className="w-full h-full object-cover cursor-pointer hover:opacity-95 transition-opacity"
                   onClick={() => openGallery(1)}
+                  className="h-full"
                 />
                 <div className="relative w-full h-full">
-                  <img
+                  <DetailGalleryImage
                     src={house.images[2]}
                     alt={`${house.title} 3`}
-                    className="w-full h-full object-cover"
+                    onClick={() => openGallery(2)}
+                    className="h-full"
                   />
                   <div
                     className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-colors cursor-pointer"
@@ -625,8 +665,8 @@ const HouseDetails: React.FC = () => {
             <div className="sticky top-24">
               {/* Agent Card */}
               <div className="bg-white border border-gray-100 rounded-2xl shadow-lg p-6 flex flex-col items-center text-center">
-                <div className="w-24 h-24 rounded-full overflow-hidden mb-4 ring-4 ring-gray-50">
-                  <img src="/assets/Affiche_Elise_Buil (8).png" alt="Elise Buil" className="w-full h-full object-cover bg-gray-200" onError={(e) => { e.currentTarget.src = 'https://ui-avatars.com/api/?name=Elise+Buil&background=random' }} />
+                <div className="w-24 h-24 rounded-full overflow-hidden mb-4 ring-4 ring-gray-50 shadow-inner bg-slate-100 flex items-center justify-center">
+                  <img src={profilePicture} alt="Elise Buil" className="w-full h-full object-cover" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900">Elise BUIL</h3>
                 <p className="text-[11px] text-gray-500 uppercase tracking-widest font-semibold mb-6">Accompagnement Commercial, Administratif et Juridique</p>
@@ -649,28 +689,7 @@ const HouseDetails: React.FC = () => {
             <h2 className="text-3xl font-bold text-gray-900 mb-8">Découvrir nos autres propriétés</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {similarHouses.map(similar => (
-                <Link to={`/house/${similar.id}`} key={similar.id} className="group flex flex-col bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100">
-                  <div className="aspect-w-16 aspect-h-10 relative overflow-hidden bg-gray-100 h-64">
-                    {similar.images && similar.images.length > 0 ? (
-                      <img src={similar.images[0]} alt={similar.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">Aucune photo</div>
-                    )}
-                  </div>
-                  <div className="p-6 flex flex-col flex-grow">
-                    <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{similar.location}</div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-4 line-clamp-2 leading-tight">{similar.title}</h3>
-                    <div className="mt-auto text-primary font-bold text-xl">
-                      {(() => {
-                        const cleanPrice = similar.price.replace(/[^0-9.-]+/g, "")
-                        const numericPrice = Number(cleanPrice)
-                        return !isNaN(numericPrice)
-                          ? numericPrice.toLocaleString("fr-FR", { style: "currency", currency: "EUR", minimumFractionDigits: 0, maximumFractionDigits: 0 })
-                          : similar.price
-                      })()}
-                    </div>
-                  </div>
-                </Link>
+                <SimilarHouseCard key={similar.id} house={similar} />
               ))}
             </div>
           </div>
@@ -679,6 +698,93 @@ const HouseDetails: React.FC = () => {
     </div>
   )
 }
+
+const DetailGalleryImage = ({
+  src,
+  alt,
+  onClick,
+  className = ""
+}: {
+  src: string;
+  alt: string;
+  onClick?: () => void;
+  className?: string;
+}) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  return (
+    <div className={`relative overflow-hidden bg-slate-900 w-full ${className}`} onClick={onClick}>
+      {!isLoaded && (
+        <div className="absolute inset-0 bg-gradient-to-tr from-slate-900 via-slate-800 to-slate-900 animate-pulse flex items-center justify-center">
+          <HomeIcon className="w-12 h-12 text-slate-700/50" />
+        </div>
+      )}
+      <img
+        src={src}
+        alt={alt}
+        className={`w-full h-full object-cover cursor-pointer hover:opacity-95 transition-all duration-700 ease-out ${
+          isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
+        }`}
+        loading="lazy"
+        decoding="async"
+        onLoad={() => setIsLoaded(true)}
+      />
+    </div>
+  );
+};
+
+const SimilarHouseCard = ({ house }: { house: House }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const imageUrl = house.images && house.images.length > 0 ? house.images[0] : (house.thumbnailImage || house.principalImage);
+
+  return (
+    <Link
+      to={`/house/${house.id}`}
+      className="group flex flex-col bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-gray-200"
+    >
+      <div className="aspect-w-16 aspect-h-10 relative overflow-hidden bg-slate-100 h-64">
+        {!isLoaded && (
+          <div className="absolute inset-0 bg-gradient-to-tr from-slate-100 via-slate-200/70 to-slate-100 animate-pulse flex items-center justify-center">
+            <HomeIcon className="w-8 h-8 text-slate-300" />
+          </div>
+        )}
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={house.title}
+            className={`w-full h-full object-cover group-hover:scale-105 transition-all duration-700 ease-out ${
+              isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
+            }`}
+            loading="lazy"
+            decoding="async"
+            onLoad={() => setIsLoaded(true)}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+            Aucune photo
+          </div>
+        )}
+      </div>
+      <div className="p-6 flex flex-col flex-grow">
+        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+          {house.location || "Guadeloupe"}
+        </div>
+        <h3 className="text-lg font-bold text-gray-900 mb-4 line-clamp-2 leading-tight group-hover:text-primary transition-colors">
+          {house.title}
+        </h3>
+        <div className="mt-auto text-primary font-bold text-xl">
+          {(() => {
+            const cleanPrice = (house.price || (house as any).prix || '').toString().replace(/[^0-9.-]+/g, "");
+            const numericPrice = Number(cleanPrice);
+            return !isNaN(numericPrice) && numericPrice > 0
+              ? numericPrice.toLocaleString("fr-FR", { style: "currency", currency: "EUR", minimumFractionDigits: 0, maximumFractionDigits: 0 })
+              : (house.price || "Sur demande");
+          })()}
+        </div>
+      </div>
+    </Link>
+  );
+};
 
 export default HouseDetails
 
