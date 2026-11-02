@@ -1,5 +1,10 @@
 # 🚀 Guide Rapide - Configuration Google Reviews
 
+> ⚠️ **OBSOLÈTE — ne pas suivre.** Le scraper d'avis Google a été **supprimé** du
+> projet. Les avis affichés viennent de [`src/data/reviews.json`](src/data/reviews.json).
+> Créer ces secrets avec `firebase functions:secrets:set` est ce qui a fait grimper
+> la facture Secret Manager : ne les relancez pas.
+
 ## ⚡ Commandes à Exécuter
 
 ### 1. Configurer les Secrets Firebase

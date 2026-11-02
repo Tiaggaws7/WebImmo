@@ -1,5 +1,11 @@
 # Configuration des Avis Google - Guide Moderne (2026)
 
+> ⚠️ **OBSOLÈTE — ne pas suivre.** Le scraper d'avis Google (`fetchGoogleReviews`,
+> `triggerFetchGoogleReviews`) et ses secrets ont été **supprimés** du projet.
+> Les avis affichés sur le site viennent de [`src/data/reviews.json`](src/data/reviews.json).
+> Les commandes `firebase functions:secrets:set` de ce guide sont la cause de la
+> facture Secret Manager : ne les relancez pas.
+
 ## 🎯 Vue d'ensemble
 
 Le composant d'avis Google a été activé sur votre page d'accueil. Ce guide utilise la **méthode moderne** recommandée par Firebase (params/secrets) au lieu de l'ancienne méthode `functions.config()` qui sera supprimée en mars 2026.
