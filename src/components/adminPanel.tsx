@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PlusIcon, PencilIcon, TrashIcon, LogOutIcon, ArrowRight, ImageIcon, Upload, Loader2 } from 'lucide-react';
 import { Link } from "react-router-dom"
 import { House } from '../types';
@@ -17,6 +17,7 @@ import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebas
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import imageCompression from 'browser-image-compression';
 import { db, auth } from '../firebase-config';
+import { isThumbnailOf } from '../lib/coverImage';
 
 
 const AdminPanel: React.FC = () => {
@@ -49,6 +50,9 @@ const AdminPanel: React.FC = () => {
     isExclusive: false
   });
   const [tempAmenitiesInput, setTempAmenitiesInput] = React.useState<string>(''); // Temporary input state
+  // Miniatures connues pendant la session d'édition : image principale -> thumbnailImage.
+  // Évite de conserver une ancienne miniature quand la photo d'accroche change.
+  const thumbnailsRef = useRef<Record<string, string>>({});
   const [heroImageUrl, setHeroImageUrl] = useState<string>('');
   const [isUploadingHero, setIsUploadingHero] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -177,14 +181,23 @@ const AdminPanel: React.FC = () => {
         );
 
         const uploadedUrls = results.map(r => r.fullUrl);
-        const firstThumbUrl = results[0]?.thumbUrl;
 
-        const updateState = (prev: House) => ({
-          ...prev,
-          images: [...prev.images, ...uploadedUrls],
-          principalImage: prev.principalImage || uploadedUrls[0],
-          thumbnailImage: prev.thumbnailImage || firstThumbUrl,
+        // On mémorise la miniature de chaque image pour pouvoir la réutiliser
+        // lorsque l'utilisateur change la photo principale.
+        results.forEach(({ fullUrl, thumbUrl }) => {
+          thumbnailsRef.current[fullUrl] = thumbUrl;
         });
+
+        const updateState = (prev: House) => {
+          const principalImage = prev.principalImage || uploadedUrls[0];
+          return {
+            ...prev,
+            images: [...prev.images, ...uploadedUrls],
+            principalImage,
+            // La miniature doit rester celle de l'image principale affichée.
+            thumbnailImage: thumbnailsRef.current[principalImage] || prev.thumbnailImage,
+          };
+        };
 
         editingHouse
           ? setEditingHouse(prev => prev ? updateState(prev) : null)
@@ -289,12 +302,21 @@ const AdminPanel: React.FC = () => {
 
       if (editingHouse) {
         const houseDoc = doc(db, 'houses', editingHouse.id);
+        const principalImage = editingHouse.principalImage;
+        // La miniature n'est conservée que si elle correspond à la photo principale
+        // (sinon les cartes des annonces afficheraient une ancienne photo).
+        const thumbnailImage =
+          thumbnailsRef.current[principalImage] ||
+          (isThumbnailOf(editingHouse.thumbnailImage || '', principalImage)
+            ? editingHouse.thumbnailImage
+            : undefined);
         // Build update data, replacing undefined with deleteField()
         const updateData: Record<string, any> = {
           ...editingHouse,
           images: editingHouse.images,
           videos: editingHouse.videos || '',
-          principalImage: editingHouse.principalImage,
+          principalImage,
+          thumbnailImage,
         };
         // Firebase does not accept undefined — use deleteField() instead
         Object.keys(updateData).forEach(key => {
@@ -318,6 +340,7 @@ const AdminPanel: React.FC = () => {
 
       // Reset state
       setIsFormVisible(false);
+      thumbnailsRef.current = {};
       setNewHouse({
         id: '',
         title: '',
@@ -346,6 +369,12 @@ const AdminPanel: React.FC = () => {
 
   // Edit house
   const handleEdit = (house: House) => {
+    // On repart des miniatures réellement rattachées à ce bien : seule une
+    // miniature cohérente avec la photo principale est réutilisée.
+    thumbnailsRef.current = {};
+    if (house.thumbnailImage && isThumbnailOf(house.thumbnailImage, house.principalImage)) {
+      thumbnailsRef.current[house.principalImage] = house.thumbnailImage;
+    }
     setEditingHouse(house);
     setIsFormVisible(true);
   };
@@ -366,6 +395,7 @@ const AdminPanel: React.FC = () => {
 
   const handleCancel = () => {
     setEditingHouse(null);
+    thumbnailsRef.current = {};
     setNewHouse({
       id: '',
       title: '',
@@ -403,6 +433,8 @@ const AdminPanel: React.FC = () => {
         ...prev,
         images: currentImages,
         principalImage: newPrincipal,
+        // Supprime la miniature si l'on ne connaît pas celle de la nouvelle photo principale.
+        thumbnailImage: thumbnailsRef.current[newPrincipal],
       };
     };
 
@@ -415,6 +447,8 @@ const AdminPanel: React.FC = () => {
     const update = (prev: House) => ({
       ...prev,
       principalImage: url,
+      // La miniature suit la photo principale (et disparaît si elle est inconnue).
+      thumbnailImage: thumbnailsRef.current[url],
     });
 
     editingHouse

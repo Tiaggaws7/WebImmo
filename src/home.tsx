@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from 'react-router-dom'
 import { House } from './types'
+import { getListingCoverImage } from './lib/coverImage'
 import { collection, getDocs, doc, getDoc, query, where, limit } from 'firebase/firestore'
 import { db } from './firebase-config'
 import profilePicture from './assets/profile_picture.jpg'
@@ -534,7 +535,7 @@ const ExclusiveMainCard = ({
   onMouseLeave: () => void;
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const imageUrl = house.thumbnailImage || house.principalImage;
+  const imageUrl = getListingCoverImage(house);
 
   return (
     <div
@@ -614,7 +615,7 @@ const ExclusiveSideCard = ({
   onMouseLeave: () => void;
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const imageUrl = house.thumbnailImage || house.principalImage;
+  const imageUrl = getListingCoverImage(house);
 
   return (
     <div

@@ -240,4 +240,4 @@ const GoogleReviews: React.FC = () => {
   );
 };
 
-export default GoogleReviews;;
+export default GoogleReviews;

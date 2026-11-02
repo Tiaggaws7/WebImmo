@@ -11,6 +11,7 @@ import { QRCodeCanvas } from 'qrcode.react';
 import { doc, getDoc, collection, getDocs } from "firebase/firestore"
 import { db } from "../firebase-config"
 import type { House } from "../types"
+import { getListingCoverImage } from "../lib/coverImage"
 import { Helmet } from "react-helmet-async"
 import profilePicture from "../assets/profile_picture.jpg"
 
@@ -735,7 +736,7 @@ const DetailGalleryImage = ({
 
 const SimilarHouseCard = ({ house }: { house: House }) => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const imageUrl = house.images && house.images.length > 0 ? house.images[0] : (house.thumbnailImage || house.principalImage);
+  const imageUrl = house.images && house.images.length > 0 ? house.images[0] : getListingCoverImage(house);
 
   return (
     <Link

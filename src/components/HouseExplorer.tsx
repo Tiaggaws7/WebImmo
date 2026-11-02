@@ -4,6 +4,7 @@ import { Search, Heart, MapPin, Bed, Bath, Maximize, SlidersHorizontal, ChevronD
 import { Link, useSearchParams } from 'react-router-dom'
 
 import { House } from '../types';
+import { getListingCoverImage } from '../lib/coverImage';
 
 const CustomSelect = ({ value, onChange, options, placeholder = "Sélectionner...", triggerClassName }: { value: string, onChange: (v: string) => void, options: { label: string, value: string }[], placeholder?: string, triggerClassName?: string }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -596,7 +597,7 @@ const HouseCard = ({ house }: { house: House }) => {
     }
   };
 
-  const imageUrl = house.thumbnailImage || house.principalImage;
+  const imageUrl = getListingCoverImage(house);
 
   return (
     <Link
