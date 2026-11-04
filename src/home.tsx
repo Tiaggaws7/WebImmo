@@ -183,7 +183,7 @@ function Home() {
 
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="relative min-h-[100dvh] md:min-h-[600px] md:h-[80vh] flex items-center pt-32 pb-16 md:pt-20 md:pb-0 overflow-hidden bg-slate-900">
+        <section className="relative min-h-[100dvh] md:min-h-[max(600px,80vh)] flex items-center pt-32 pb-16 md:pt-20 md:pb-10 bg-slate-900">
           {/* Background Image Container */}
           <div className="absolute inset-0 z-0 bg-slate-900">
             {heroImage && (
@@ -232,18 +232,18 @@ function Home() {
               </div>
 
               {/* Search Bar - Functional */}
-              <div className="relative z-50 bg-white rounded-[1.5rem] shadow-xl md:shadow-2xl p-3 flex flex-col md:flex-row gap-2 items-center md:transform md:translate-y-16 max-w-4xl border border-gray-100 mt-8 md:mt-0">
+              <div className="relative z-30 bg-white rounded-[1.5rem] shadow-xl md:shadow-2xl p-3 flex flex-col lg:flex-row gap-2 items-center max-w-4xl border border-gray-100 mt-8 lg:mt-0">
 
                 {/* Location Dropdown */}
                 <div
                   ref={locationRef}
-                  className="flex-1 flex items-center gap-4 px-6 py-4 border-b md:border-b-0 md:border-r border-gray-100 w-full hover:bg-gray-50 rounded-xl transition duration-200 relative cursor-pointer"
+                  className="flex-1 lg:flex-[1.6] min-w-0 flex items-center gap-4 lg:gap-3 px-6 lg:px-4 py-4 border-b lg:border-b-0 lg:border-r border-gray-100 w-full hover:bg-gray-50 rounded-xl transition duration-200 relative cursor-pointer"
                   onClick={() => setIsLocationOpen(!isLocationOpen)}
                 >
                   <div className="bg-red-50 p-2 rounded-full hidden sm:block">
                     <MapPin className="text-primary w-5 h-5" />
                   </div>
-                  <div className="flex-1 w-full flex justify-between items-center text-gray-700 font-medium">
+                  <div className="flex-1 min-w-0 w-full flex justify-between items-center text-gray-700 font-medium">
                     <span className={`truncate ${!searchLocation ? 'text-gray-400' : 'text-gray-700'}`}>
                       {searchLocation || "Localisation en Guadeloupe..."}
                     </span>
@@ -275,13 +275,13 @@ function Home() {
                 {/* Type Dropdown */}
                 <div
                   ref={typeRef}
-                  className="flex-1 flex items-center gap-4 px-6 py-4 w-full hover:bg-gray-50 rounded-xl transition duration-200 relative cursor-pointer"
+                  className="flex-1 min-w-0 flex items-center gap-4 lg:gap-3 px-6 lg:px-4 py-4 w-full hover:bg-gray-50 rounded-xl transition duration-200 relative cursor-pointer"
                   onClick={() => setIsTypeOpen(!isTypeOpen)}
                 >
                   <div className="bg-red-50 p-2 rounded-full hidden sm:block">
                     <HomeIcon className="text-primary w-5 h-5" />
                   </div>
-                  <div className="flex-1 w-full flex justify-between items-center text-gray-700 font-medium">
+                  <div className="flex-1 min-w-0 w-full flex justify-between items-center text-gray-700 font-medium">
                     <span className={`truncate ${!searchType ? 'text-gray-400' : 'text-gray-700'}`}>
                       {searchType === "appartement" ? "Appartement" :
                         searchType === "maison" ? "Maison" :
@@ -322,7 +322,7 @@ function Home() {
                 {/* Submmit Button */}
                 <button
                   onClick={handleSearch}
-                  className="bg-primary text-white font-bold py-4 px-8 rounded-xl w-full md:w-auto flex items-center justify-center gap-3 hover:bg-red-700 transition duration-300 shadow-[0_8px_30px_rgb(217,1,21,0.3)] hover:shadow-[0_8px_30px_rgb(217,1,21,0.5)] md:transform md:hover:-translate-y-0.5 md:m-1 mt-2 md:mt-0"
+                  className="bg-primary text-white font-bold py-4 px-8 rounded-xl w-full lg:w-auto flex items-center justify-center gap-3 hover:bg-red-700 transition duration-300 shadow-[0_8px_30px_rgb(217,1,21,0.3)] hover:shadow-[0_8px_30px_rgb(217,1,21,0.5)] lg:transform lg:hover:-translate-y-0.5 lg:m-1 mt-2 lg:mt-0"
                 >
                   <Search className="w-5 h-5" />
                   <span>Rechercher</span>
@@ -333,7 +333,7 @@ function Home() {
         </section>
 
         {/* Sélection Exclusive Section */}
-        <section className="pt-16 md:pt-40 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="pt-16 md:pt-24 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-end mb-12">
             <div>
               <h2 className="text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">Sélection Exclusive</h2>
