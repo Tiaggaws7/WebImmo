@@ -20,10 +20,57 @@
     "public": "dist",
     "ignore": [
       "firebase.json",
-      "**/.*",
       "**/node_modules/**"
     ],
     "headers": [
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "Link",
+            "value": "</.well-known/ai-catalog.json>; rel=\"ai-catalog\", </.well-known/ard.json>; rel=\"ard\", </llms.txt>; rel=\"describedby\""
+          }
+        ]
+      },
+      {
+        "source": "/.well-known/**",
+        "headers": [
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          },
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=3600"
+          }
+        ]
+      },
+      {
+        "source": "ai-catalog.json",
+        "headers": [
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          },
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=3600"
+          }
+        ]
+      },
+      {
+        "source": "llms.txt",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "text/markdown; charset=utf-8"
+          },
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=3600"
+          }
+        ]
+      },
       {
         "source": "/assets/**",
         "headers": [

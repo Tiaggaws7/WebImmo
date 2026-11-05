@@ -1,0 +1,72 @@
+{
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "Elise Buil Immobilier Guadeloupe",
+    "identifier": "did:web:elisebuilimmobilierguadeloupe.com",
+    "documentationUrl": "https://elisebuilimmobilierguadeloupe.com/llms.txt",
+    "logoUrl": "https://elisebuilimmobilierguadeloupe.com/favicon-512x512.png"
+  },
+  "entries": [
+    {
+      "identifier": "urn:air:elisebuilimmobilierguadeloupe.com:web:property-search",
+      "displayName": "Recherche de biens immobiliers",
+      "type": "text/html",
+      "url": "https://elisebuilimmobilierguadeloupe.com/Acheter",
+      "description": "Catalogue des biens immobiliers à la vente en Guadeloupe : villas, appartements, terrains et locaux commerciaux, avec filtres par commune, type, prix, surface et nombre de pièces.",
+      "tags": ["immobilier", "guadeloupe", "annonces", "achat"],
+      "capabilities": ["PropertySearch", "ListingsBrowse"],
+      "representativeQueries": [
+        "maison à vendre en Guadeloupe",
+        "appartement à acheter à Saint-François",
+        "terrains disponibles en Guadeloupe"
+      ],
+      "version": "1.0",
+      "updatedAt": "2026-11-05T00:00:00Z"
+    },
+    {
+      "identifier": "urn:air:elisebuilimmobilierguadeloupe.com:api:listings",
+      "displayName": "Catalogue immobilier JSON",
+      "type": "application/json",
+      "url": "https://firestore.googleapis.com/v1/projects/webimmo-6189a/databases/(default)/documents/houses?key=AIzaSyC69Z9yIw8aGdRt9k4CQp8SuRpH6oJGSGI",
+      "description": "Annonces immobilières en lecture seule au format JSON Firestore : identifiant, titre, prix, surface, localisation, photos, description et statut.",
+      "tags": ["immobilier", "guadeloupe", "api", "json", "annonces"],
+      "capabilities": ["ListingsRead"],
+      "representativeQueries": [
+        "lister tous les biens immobiliers disponibles en Guadeloupe",
+        "récupérer les annonces immobilières au format JSON"
+      ],
+      "version": "1.0",
+      "updatedAt": "2026-11-05T00:00:00Z"
+    },
+    {
+      "identifier": "urn:air:elisebuilimmobilierguadeloupe.com:web:estimation",
+      "displayName": "Estimation immobilière gratuite",
+      "type": "text/html",
+      "url": "https://elisebuilimmobilierguadeloupe.com/Estimation",
+      "description": "Formulaire de demande d'estimation d'un bien immobilier en Guadeloupe, avec accompagnement personnalisé.",
+      "tags": ["immobilier", "estimation", "guadeloupe"],
+      "capabilities": ["PropertyValuationRequest"],
+      "representativeQueries": [
+        "estimer la valeur de ma maison en Guadeloupe",
+        "obtenir une estimation immobilière gratuite"
+      ],
+      "version": "1.0",
+      "updatedAt": "2026-11-05T00:00:00Z"
+    },
+    {
+      "identifier": "urn:air:elisebuilimmobilierguadeloupe.com:web:contact",
+      "displayName": "Contact et accompagnement à la vente",
+      "type": "text/html",
+      "url": "https://elisebuilimmobilierguadeloupe.com/EliseBUIL",
+      "description": "Présentation d'Elise Buil, de son expertise juridique et immobilière, et formulaire de contact pour un projet de vente ou d'acquisition.",
+      "tags": ["immobilier", "contact", "vente", "guadeloupe"],
+      "capabilities": ["ContactRequest", "SellerSupport"],
+      "representativeQueries": [
+        "contacter un agent immobilier en Guadeloupe",
+        "vendre ma maison avec un accompagnement juridique"
+      ],
+      "version": "1.0",
+      "updatedAt": "2026-11-05T00:00:00Z"
+    }
+  ]
+}

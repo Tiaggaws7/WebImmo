@@ -1,0 +1,21 @@
+# Elise Buil Immobilier Guadeloupe
+
+> Elise Buil, conseillère et agente immobilière indépendante en Guadeloupe. Achat, vente et estimation de villas, appartements, terrains et locaux commerciaux.
+
+Ce site présente les biens immobiliers disponibles en Guadeloupe et permet de demander une estimation gratuite. Les annonces sont également disponibles en JSON via l'API publique référencée dans le catalogue ARD.
+
+## Pages principales
+
+- [Accueil](https://elisebuilimmobilierguadeloupe.com/): présentation de l'agence, sélection de biens et avis clients.
+- [Acheter](https://elisebuilimmobilierguadeloupe.com/Acheter): catalogue des biens à la vente avec filtres par type, commune, prix, surface et nombre de pièces.
+- [Vendre](https://elisebuilimmobilierguadeloupe.com/Vendre): accompagnement pour la vente d'un bien immobilier.
+- [Estimation](https://elisebuilimmobilierguadeloupe.com/Estimation): demande d'estimation immobilière gratuite.
+- [Élise BUIL](https://elisebuilimmobilierguadeloupe.com/EliseBUIL): parcours, expertise juridique et contact.
+- [Gestion](https://elisebuilimmobilierguadeloupe.com/Gestion): espace d'administration réservé à l'agence.
+
+## Ressources
+
+- [Catalogue ARD](https://elisebuilimmobilierguadeloupe.com/.well-known/ai-catalog.json): manifeste des ressources agentiques du site.
+- [Catalogue ARD (nouveau schéma)](https://elisebuilimmobilierguadeloupe.com/.well-known/ard.json): même catalogue au format ARD v0.91.
+- [Sitemap](https://elisebuilimmobilierguadeloupe.com/sitemap.xml): plan du site.
+- [Catalogue JSON des biens](https://firestore.googleapis.com/v1/projects/webimmo-6189a/databases/(default)/documents/houses?key=AIzaSyC69Z9yIw8aGdRt9k4CQp8SuRpH6oJGSGI): annonces en lecture seule au format JSON Firestore.
