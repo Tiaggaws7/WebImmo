@@ -46,7 +46,7 @@ const Navbar = () => {
           <div className="flex justify-between items-center">
             {/* Brand / Logo */}
             <Link to="/" className="group flex items-center gap-1">
-              <span className="font-semibold text-lg sm:text-xl lg:text-lg xl:text-xl tracking-tight text-black transition-opacity duration-300 hover:opacity-75">
+              <span className="font-bold text-[19px] sm:text-xl lg:text-[19px] xl:text-xl tracking-tight text-black transition-opacity duration-300 hover:opacity-75">
                 Votre solution clé en main !
               </span>
             </Link>

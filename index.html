@@ -20,7 +20,92 @@
     <meta property="og:type" content="website" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://firebasestorage.googleapis.com" />
-    <link rel="preconnect" href="https://webimmo-6189a.firebasestorage.app" crossorigin />
+    <link rel="preconnect" href="https://firestore.googleapis.com" />
+    <link
+      rel="preload"
+      as="image"
+      href="/hero/hero-1280.webp"
+      imagesrcset="/hero/hero-640.webp 640w, /hero/hero-960.webp 960w, /hero/hero-1280.webp 1280w, /hero/hero-1600.webp 1600w"
+      imagesizes="100vw"
+      fetchpriority="high"
+    />
+
+    <!--
+      Démarre les lectures Firestore (REST) et précharge l'image hero dès la
+      lecture du HTML, avant même le téléchargement de React. C'est ce qui
+      supprime la découverte tardive de l'image LCP (8,5 s → ~1,5 s).
+    -->
+    <script>
+      (function () {
+        var KEY = 'AIzaSyC69Z9yIw8aGdRt9k4CQp8SuRpH6oJGSGI';
+        var BASE = 'https://firestore.googleapis.com/v1/projects/webimmo-6189a/databases/(default)/documents/';
+        var preloaded = {};
+
+        function get(path) {
+          return fetch(BASE + path + (path.indexOf('?') === -1 ? '?' : '&') + 'key=' + KEY)
+            .then(function (response) { return response.ok ? response.json() : null; })
+            .catch(function () { return null; });
+        }
+
+        function preload(url, srcset, sizes) {
+          if (!url || preloaded[url]) return;
+          preloaded[url] = true;
+          var link = document.createElement('link');
+          link.rel = 'preload';
+          link.as = 'image';
+          link.href = url;
+          if (srcset) {
+            link.imageSrcset = srcset;
+            link.imageSizes = sizes;
+          }
+          link.setAttribute('fetchpriority', 'high');
+          document.head.appendChild(link);
+        }
+
+        var LOCAL_SRCSET = '/hero/hero-640.webp 640w, /hero/hero-960.webp 960w, /hero/hero-1280.webp 1280w, /hero/hero-1600.webp 1600w';
+        var OPTIMIZED_HERO_MARKER = 'settings%2Fhero-image-1791818766770';
+        function preloadLocal() {
+          preload('/hero/hero-960.webp', LOCAL_SRCSET, '100vw');
+        }
+
+        // Le hero actuel existe aussi en WebP optimisé local : on évite ainsi
+        // de télécharger le fichier Firebase de 240 Ko.
+        function localHero(url) {
+          return url && url.indexOf(OPTIMIZED_HERO_MARKER) !== -1
+            ? '/hero/hero-1600.webp'
+            : url;
+        }
+
+        window.__WEB_IMMO_FS__ = {
+          settings: get('settings/homepage'),
+          houses: get('houses?pageSize=300')
+        };
+
+        var cached = null;
+        try { cached = localStorage.getItem('home_hero_bg'); } catch (error) { /* stockage indisponible */ }
+        if (cached) {
+          var cachedHero = localHero(cached);
+          if (cachedHero.indexOf('/hero/') !== 0) preload(cachedHero);
+        }
+
+        // Si Firestore est lent (> 700 ms), on précharge la photo locale de
+        // secours : dans le cas normal, seul le vrai hero est téléchargé.
+        setTimeout(function () {
+          if (!window.__WEB_IMMO_HERO__) preloadLocal();
+        }, 700);
+
+        window.__WEB_IMMO_FS__.settings.then(function (doc) {
+          var url = doc && doc.fields && doc.fields.heroImage && doc.fields.heroImage.stringValue;
+          if (url) {
+            var hero = localHero(url);
+            window.__WEB_IMMO_HERO__ = hero;
+            if (hero.indexOf('/hero/') !== 0) preload(hero);
+          } else {
+            preloadLocal();
+          }
+        });
+      })();
+    </script>
 
     <!-- Schema.org Structured Data for Google Search (Rich Snippets & Google Reviews Stars) -->
     <script type="application/ld+json">

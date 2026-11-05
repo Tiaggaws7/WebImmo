@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import emailjs from "emailjs-com";
-import profilePicture from "../assets/profile_picture.jpg";
+import ProfilePicture from './ProfilePicture';
 import GoogleReviews from './GoogleReviews';
 import { Handshake, Award, Mail, Star, Quote, ArrowRight, CheckCircle2 } from 'lucide-react';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../firebase-config';
-import { House } from '../types';
+import { fetchHouses } from '../lib/firestoreRest';
 
 const RealWhoAmI: React.FC = () => {
 
@@ -24,8 +22,7 @@ const RealWhoAmI: React.FC = () => {
   useEffect(() => {
     const fetchExpensiveHouse = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, 'houses'));
-        const housesData = querySnapshot.docs.map(doc => doc.data() as House);
+        const housesData = await fetchHouses();
 
         if (housesData.length > 0) {
           const mostExpensive = housesData.reduce((prev, current) => {
@@ -119,7 +116,7 @@ const RealWhoAmI: React.FC = () => {
 
           <div className="md:w-1/2 relative mt-8 md:mt-0 flex justify-center w-full">
             <div className="relative rounded-bl-[5rem] rounded-tr-[5rem] rounded-tl-2xl rounded-br-2xl overflow-hidden shadow-2xl group w-full max-w-lg aspect-[4/5]">
-              <img src={profilePicture} alt="Elise BUIL" className="w-full h-full object-cover object-top transition-transform duration-1000 group-hover:scale-105" />
+              <ProfilePicture className="w-full h-full object-cover object-top transition-transform duration-1000 group-hover:scale-105" sizes="(min-width: 768px) 512px, 90vw" />
             </div>
 
             {/* Badge Overlapping */}
@@ -177,7 +174,7 @@ const RealWhoAmI: React.FC = () => {
             {/* Large Image Block */}
             <div className="lg:col-span-7 rounded-[2rem] overflow-hidden shadow-xl relative min-h-[400px] lg:min-h-[500px] group bg-gray-200">
               {expensiveHouseImage && (
-                <img src={expensiveHouseImage} alt="L'immobilier d'exception" className="w-full h-full object-cover absolute inset-0 transition-transform duration-1000 group-hover:scale-105" />
+                <img src={expensiveHouseImage} alt="L'immobilier d'exception" width={1200} height={800} loading="lazy" decoding="async" className="w-full h-full object-cover absolute inset-0 transition-transform duration-1000 group-hover:scale-105" />
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
               <div className="absolute bottom-10 left-10 right-10">
@@ -195,7 +192,7 @@ const RealWhoAmI: React.FC = () => {
                 <h3 className="text-3xl md:text-4xl font-extrabold mb-6 leading-tight tracking-tight italic relative z-10">
                   "Une approche unique"
                 </h3>
-                <p className="text-white/90 text-lg leading-relaxed font-light relative z-10">
+                <p className="text-white text-lg leading-relaxed font-light relative z-10">
                   Mon service de vente immobilière se distingue par une approche unique alliant expertise juridique et authentique relation d’échanges.
                 </p>
               </div>
@@ -209,7 +206,7 @@ const RealWhoAmI: React.FC = () => {
                     {[1, 2, 3, 4, 5].map((i) => <Star key={i} className="w-7 h-7 md:w-8 md:h-8 fill-current" />)}
                   </div>
                   <div className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-2 tracking-tighter">5.0</div>
-                  <div className="text-xs font-bold text-gray-500 uppercase tracking-widest mt-2">Avis Google</div>
+                  <div className="text-xs font-bold text-gray-600 uppercase tracking-widest mt-2">Avis Google</div>
                 </div>
 
                 {/* Contact Call to action Box */}
@@ -222,7 +219,7 @@ const RealWhoAmI: React.FC = () => {
                     <Mail className="w-8 h-8 text-primary" />
                   </div>
                   <h4 className="text-white font-extrabold text-xl md:text-2xl mb-3 relative z-10">Prêt à échanger ?</h4>
-                  <p className="text-primary text-base font-bold flex items-center gap-2 group-hover:gap-4 transition-all relative z-10">
+                  <p className="text-red-400 text-base font-bold flex items-center gap-2 group-hover:gap-4 transition-all relative z-10">
                     Me contacter <ArrowRight className="w-5 h-5" />
                   </p>
                 </div>
@@ -243,7 +240,7 @@ const RealWhoAmI: React.FC = () => {
             <span className="text-primary font-extrabold tracking-[0.3em] uppercase text-sm md:text-base">ELISE BUIL</span>
             <div className="w-12 h-[2px] bg-primary"></div>
           </div>
-          <p className="text-gray-400 mt-8 font-medium text-lg uppercase tracking-widest">Au plaisir de vous rencontrer</p>
+          <p className="text-gray-600 mt-8 font-medium text-lg uppercase tracking-widest">Au plaisir de vous rencontrer</p>
         </section>
 
         {/* Testimonials - Google Reviews Section */}

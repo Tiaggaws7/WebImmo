@@ -85,12 +85,12 @@ const ReviewCard: React.FC<{ review: Review }> = ({ review }) => {
           <p className="font-bold text-gray-900 leading-tight text-sm">
             {review.author}
           </p>
-          <span className="text-xs text-gray-400">{review.date}</span>
+          <span className="text-xs text-gray-600">{review.date}</span>
         </div>
       </div>
       
       <div className="absolute top-8 right-8 text-gray-200 pointer-events-none">
-        <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" alt="Google" className="h-3 opacity-30 grayscale" />
+        <img src="/google-logo.svg" alt="Google" width={74} height={24} loading="lazy" decoding="async" className="h-3 w-auto opacity-30 grayscale" />
       </div>
     </div>
   );
@@ -174,7 +174,7 @@ const GoogleReviews: React.FC = () => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
         <div>
           <h2 className="text-4xl font-extrabold text-gray-900 mb-3 tracking-tight">Avis Google</h2>
-          <p className="text-gray-500 text-lg">
+          <p className="text-gray-600 text-lg">
             La satisfaction de mes clients est ma priorité au quotidien.
           </p>
         </div>
@@ -225,14 +225,16 @@ const GoogleReviews: React.FC = () => {
         </div>
         
         {/* Navigation Dots for Mobile */}
-        <div className="flex justify-center gap-1.5 mt-8 md:hidden">
+        <div className="flex justify-center gap-0 -mx-2 mt-8 md:hidden">
           {Array.from({ length: maxIndex + 1 }).map((_, dotIdx) => (
             <button
               key={dotIdx}
               onClick={() => setCurrentIndex(dotIdx)}
-              className={`rounded-full transition-all duration-300 ${dotIdx === currentIndex ? "w-6 h-2 bg-primary" : "w-2 h-2 bg-gray-300"}`}
+              className="flex h-6 w-6 shrink-0 items-center justify-center"
               aria-label={`Aller à l'avis ${dotIdx + 1}`}
-            />
+            >
+              <span className={`rounded-full transition-all duration-300 ${dotIdx === currentIndex ? "w-6 h-2 bg-primary" : "w-2 h-2 bg-gray-300"}`} />
+            </button>
           ))}
         </div>
       </div>

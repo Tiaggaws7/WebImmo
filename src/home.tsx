@@ -3,18 +3,42 @@ import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from 'react-router-dom'
 import { House } from './types'
 import { getListingCoverImage } from './lib/coverImage'
-import { collection, getDocs, doc, getDoc, query, where, limit } from 'firebase/firestore'
-import { db } from './firebase-config'
-import profilePicture from './assets/profile_picture.jpg'
+import { fetchHouses, fetchHomepageSettings, getEarlyHeroImage } from './lib/firestoreRest'
+import ProfilePicture from './components/ProfilePicture'
 import GoogleReviews from './components/GoogleReviews';
 import { MapPin, Search, Phone, CheckCircle2, ChevronDown, ArrowRight, Home as HomeIcon, Star } from 'lucide-react'
 import reviewsData from "./data/reviews.json";
 
+/** Photo de secours servie localement (préchargée) si Firestore tarde ou échoue. */
+const HERO_FALLBACK = '/hero/hero-1600.webp'
+const HERO_SRCSET = '/hero/hero-640.webp 640w, /hero/hero-960.webp 960w, /hero/hero-1280.webp 1280w, /hero/hero-1600.webp 1600w'
+
+/**
+ * Le hero actuel est également disponible en WebP optimisé dans /public/hero.
+ * On l'utilise à la place du fichier Firebase Storage d'origine (240 Ko) tant
+ * que l'administrateur n'a pas téléversé une nouvelle photo. Dès que l'URL
+ * change, la nouvelle image distante est utilisée normalement.
+ */
+const OPTIMIZED_HERO_MARKER = 'settings%2Fhero-image-1791818766770'
+
+function preferredHeroImage(url: string): string {
+  return url && url.includes(OPTIMIZED_HERO_MARKER) ? HERO_FALLBACK : url
+}
+
 function Home() {
   const [houses, setHouses] = useState<House[]>([])
-  const [heroImage, setHeroImage] = useState<string>(() => localStorage.getItem('home_hero_bg') || '')
-  const [isHeroLoaded, setIsHeroLoaded] = useState(false)
+  const [heroImage, setHeroImage] = useState<string>(() => {
+    // URL connue avant le rendu React (préchargée par index.html) : elle est
+    // déjà dans le cache, ce qui évite la découverte tardive qui pénalisait le LCP.
+    return preferredHeroImage(
+      getEarlyHeroImage()
+        || localStorage.getItem('home_hero_bg')
+        || '',
+    ) || HERO_FALLBACK
+  })
   const [isLoadingHouses, setIsLoadingHouses] = useState(true)
+  // Le hero (LCP) est rendu seul d'abord ; le reste arrive à la frame suivante.
+  const [showBelowFold, setShowBelowFold] = useState(false)
   const [isHovered, setIsHovered] = useState<number | null>(null)
   const [searchLocation, setSearchLocation] = useState('')
   const [searchType, setSearchType] = useState('')
@@ -26,6 +50,17 @@ function Home() {
   const reviewsRef = useRef<HTMLElement>(null)
 
   const availableLocations = Array.from(new Set(houses.map(h => h.location).filter(Boolean))).sort() as string[]
+
+  useEffect(() => {
+    let second = 0
+    const first = requestAnimationFrame(() => {
+      second = requestAnimationFrame(() => setShowBelowFold(true))
+    })
+    return () => {
+      cancelAnimationFrame(first)
+      cancelAnimationFrame(second)
+    }
+  }, [])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -65,40 +100,34 @@ function Home() {
 
   const [exclusiveHouses, setExclusiveHouses] = useState<House[]>([])
 
-  // Récupération précoce de l'image hero, indépendante du chargement lourd des biens
-  // pour ne pas retarder le LCP (large image) du hero banner.
+  // Récupération de l'image hero. L'URL a déjà été préchargée par index.html
+  // (localStorage ou API REST) : on ne fait ici que confirmer la valeur.
   useEffect(() => {
     let cancelled = false;
 
     const loadHero = async () => {
-      // 1) Cache local : URL connue instantanément → affichage immédiat
       const cached = localStorage.getItem('home_hero_bg');
-      if (cached) setHeroImage(cached);
+      if (cached) setHeroImage(preferredHeroImage(cached));
 
-      // 2) Récupération réseau en arrière-plan (settings, sinon première maison)
       try {
-        const settingsDoc = await getDoc(doc(db, 'settings', 'homepage'));
+        const settings = await fetchHomepageSettings();
         if (cancelled) return;
-        const settingsHero = settingsDoc.exists() && settingsDoc.data().heroImage
-          ? settingsDoc.data().heroImage
-          : '';
-        if (settingsHero) {
-          setHeroImage(settingsHero);
-          localStorage.setItem('home_hero_bg', settingsHero);
+
+        if (settings.heroImage) {
+          setHeroImage(preferredHeroImage(settings.heroImage));
+          localStorage.setItem('home_hero_bg', settings.heroImage);
           return;
         }
       } catch {
-        // silencieux : on garde le cache local s'il existe
+        // silencieux : on garde le cache local / l'image de secours
       }
 
       // Fallback : première maison disponible
       try {
         if (cancelled) return;
-        const q = query(collection(db, 'houses'), where('condition', '==', 'disponible'), limit(1));
-        const snap = await getDocs(q);
-        if (cancelled) return;
-        const fallback = snap.docs[0]?.data().principalImage;
-        if (fallback) {
+        const allHouses = await fetchHouses();
+        const fallback = allHouses.find((house) => house.condition === 'disponible')?.principalImage;
+        if (fallback && !cancelled) {
           setHeroImage(fallback);
           localStorage.setItem('home_hero_bg', fallback);
         }
@@ -113,14 +142,10 @@ function Home() {
 
   // Récupération des maisons
   useEffect(() => {
-    const fetchHouses = async () => {
+    const loadHouses = async () => {
       try {
         setIsLoadingHouses(true)
-        const querySnapshot = await getDocs(collection(db, 'houses'))
-        const allHouses = querySnapshot.docs.map(doc => ({
-          ...doc.data() as House,
-          id: doc.id
-        }))
+        const allHouses = await fetchHouses()
 
         // Houses available for general display
         const data = allHouses
@@ -148,7 +173,7 @@ function Home() {
         setIsLoadingHouses(false)
       }
     }
-    fetchHouses()
+    loadHouses()
   }, [])
 
   return (
@@ -164,19 +189,6 @@ function Home() {
         <meta property="og:description" content="Découvrez les meilleures offres immobilières en Guadeloupe avec Elise Buil." />
         <meta property="og:url" content="https://elisebuilimmobilierguadeloupe.com/" />
         <meta property="og:type" content="website" />
-        {/* Google Tag (gtag.js) */}
-        <script
-          async
-          src="https://www.googletagmanager.com/gtag/js?id=AW-17711266631"
-        ></script>
-        <script>
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'AW-17711266631');
-          `}
-        </script>
         {/* Canonical URL (SEO best practice) */}
         <link rel="canonical" href="https://elisebuilimmobilierguadeloupe.com/" />
       </Helmet>
@@ -189,11 +201,14 @@ function Home() {
             {heroImage && (
               <img
                 src={heroImage}
-                alt="Hero Background"
-                className={`w-full h-full object-cover transition-opacity duration-700 ease-out ${isHeroLoaded ? 'opacity-100' : 'opacity-0'}`}
+                srcSet={heroImage.startsWith('/hero/') ? HERO_SRCSET : undefined}
+                sizes={heroImage.startsWith('/hero/') ? '100vw' : undefined}
+                width={1600}
+                height={1200}
+                alt=""
+                className="w-full h-full object-cover"
                 fetchPriority="high"
                 decoding="async"
-                onLoad={() => setIsHeroLoaded(true)}
               />
             )}
             {/* Light, luminous overlay preserving vibrant natural daylight */}
@@ -244,7 +259,7 @@ function Home() {
                     <MapPin className="text-primary w-5 h-5" />
                   </div>
                   <div className="flex-1 min-w-0 w-full flex justify-between items-center text-gray-700 font-medium">
-                    <span className={`truncate ${!searchLocation ? 'text-gray-400' : 'text-gray-700'}`}>
+                    <span className={`truncate ${!searchLocation ? 'text-gray-600' : 'text-gray-700'}`}>
                       {searchLocation || "Localisation en Guadeloupe..."}
                     </span>
                     <ChevronDown className={`w-5 h-5 text-gray-300 transition-transform duration-300 ${isLocationOpen ? 'rotate-180' : ''}`} />
@@ -282,7 +297,7 @@ function Home() {
                     <HomeIcon className="text-primary w-5 h-5" />
                   </div>
                   <div className="flex-1 min-w-0 w-full flex justify-between items-center text-gray-700 font-medium">
-                    <span className={`truncate ${!searchType ? 'text-gray-400' : 'text-gray-700'}`}>
+                    <span className={`truncate ${!searchType ? 'text-gray-600' : 'text-gray-700'}`}>
                       {searchType === "appartement" ? "Appartement" :
                         searchType === "maison" ? "Maison" :
                           searchType === "local commercial" ? "Local commercial" :
@@ -332,8 +347,10 @@ function Home() {
           </div>
         </section>
 
+        {showBelowFold && (
+          <>
         {/* Sélection Exclusive Section */}
-        <section className="pt-16 md:pt-24 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="defer-render pt-16 md:pt-24 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-end mb-12">
             <div>
               <h2 className="text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">Sélection Exclusive</h2>
@@ -395,20 +412,20 @@ function Home() {
         </section>
 
         {/* Avis Google Section */}
-        <section ref={reviewsRef} className="bg-[#f5f5f5] py-24">
+        <section ref={reviewsRef} className="defer-render bg-[#f5f5f5] py-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <GoogleReviews />
           </div>
         </section>
 
         {/* À propos Section */}
-        <section className="bg-white py-32">
+        <section className="defer-render bg-white py-32">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col lg:flex-row gap-20 items-center">
 
               <div className="lg:w-5/12 relative flex justify-center mt-8 lg:mt-0">
                 <div className="relative rounded-3xl overflow-hidden shadow-2xl group w-full max-w-[400px] aspect-[4/5]">
-                  <img src={profilePicture} alt="Elise BUIL" className="w-full h-full object-cover object-top transition-transform duration-1000 group-hover:scale-105" />
+                  <ProfilePicture className="w-full h-full object-cover object-top transition-transform duration-1000 group-hover:scale-105" sizes="(min-width: 1024px) 400px, 90vw" />
                 </div>
 
                 <div className="absolute bottom-8 right-0 lg:-right-10 bg-white p-4 pr-6 rounded-2xl shadow-xl flex items-center gap-4 z-10">
@@ -454,7 +471,7 @@ function Home() {
                   <div className="flex items-center gap-5 w-full sm:w-auto group bg-white border border-gray-100 py-3.5 px-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
                     <Phone className="w-6 h-6 text-primary" />
                     <div>
-                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-0.5">Contact direct</p>
+                      <p className="text-[10px] text-gray-600 uppercase font-bold tracking-widest mb-0.5">Contact direct</p>
                       <a href="tel:+590690590565" className="font-extrabold text-gray-800 text-lg tracking-tight hover:text-primary transition-colors">
                         +590 690 590 565
                       </a>
@@ -468,7 +485,7 @@ function Home() {
         </section>
 
         {/* Vendre Section */}
-        <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto -mt-16 relative z-10">
+        <section className="defer-render py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto -mt-16 relative z-10">
           <div className="bg-primary rounded-[3rem] overflow-hidden shadow-2xl relative">
             <div className="absolute top-0 right-0 w-2/3 h-full bg-gradient-to-l from-red-900/80 via-red-900/30 to-transparent pointer-events-none"></div>
 
@@ -501,6 +518,8 @@ function Home() {
             </div>
           </div>
         </section>
+          </>
+        )}
       </main>
 
       {/* Adding custom animations */}
@@ -553,6 +572,8 @@ const ExclusiveMainCard = ({
           <img
             src={imageUrl}
             alt={house.title || "Maison principale"}
+            width={1200}
+            height={800}
             className={`w-full h-full object-cover transition-all duration-1000 ${
               isHovered ? 'scale-110' : 'scale-100'
             } ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
@@ -635,6 +656,8 @@ const ExclusiveSideCard = ({
             <img
               src={imageUrl}
               alt={house.title || `Maison ${house.id}`}
+              width={1200}
+              height={800}
               className={`w-full h-full object-cover transition-all duration-1000 ${
                 isHovered ? 'scale-110' : 'scale-100'
               } ${isLoaded ? 'opacity-100' : 'opacity-0'}`}

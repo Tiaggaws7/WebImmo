@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet-async';
 import emailjs from 'emailjs-com';
-import { collection, getDocs } from 'firebase/firestore'
-import { db } from '../firebase-config'
-import { House } from '../types'
+import { fetchHouses } from '../lib/firestoreRest'
 
 export default function Selling_form() {
   const [formData, setFormData] = useState({
@@ -24,11 +22,7 @@ export default function Selling_form() {
       try {
         // Optimization: limit the fetch to 10 houses instead of the entire collection
         // This is much faster while still giving us enough data to find a "hero" image
-        const querySnapshot = await getDocs(collection(db, 'houses'));
-        const data = querySnapshot.docs.slice(0, 10).map(doc => ({
-          ...doc.data() as House,
-          id: doc.id
-        }));
+        const data = await fetchHouses();
         
         // Find the most expensive available house among the top 10
         const availableHouses = data.filter(h => h.condition === 'disponible');
@@ -112,7 +106,10 @@ export default function Selling_form() {
         {bgImage && (
           <img 
             src={bgImage} 
-            alt="Background" 
+            alt=""
+            width={1600}
+            height={1200}
+            decoding="async"
             className="w-full h-full object-cover scale-105 transition-opacity duration-1000"
           />
         )}

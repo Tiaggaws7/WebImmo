@@ -10,4 +10,11 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+  /* Sections sous la ligne de flottaison : leur mise en page est calculée
+     seulement lorsqu'elles approchent du viewport. Réduit fortement le travail
+     de style/layout du rendu initial sans retirer le contenu du DOM (SEO). */
+  .defer-render {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 1000px;
+  }
 }

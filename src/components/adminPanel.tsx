@@ -18,6 +18,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import imageCompression from 'browser-image-compression';
 import { db, auth } from '../firebase-config';
 import { isThumbnailOf } from '../lib/coverImage';
+import { invalidateHousesCache, invalidateSettingsCache } from '../lib/firestoreRest';
 
 
 const AdminPanel: React.FC = () => {
@@ -128,6 +129,7 @@ const AdminPanel: React.FC = () => {
     try {
       const houseCollection = collection(db, "houses");
       const docRef = await addDoc(houseCollection, house);
+      invalidateHousesCache();
 
       setHouses([...houses, { ...house, id: docRef.id }]);
       console.log("House added to Firestore with ID:", docRef.id);
@@ -325,6 +327,7 @@ const AdminPanel: React.FC = () => {
           }
         });
         await updateDoc(houseDoc, updateData);
+        invalidateHousesCache();
         setHouses(houses.map(h => h.id === editingHouse.id ? editingHouse : h));
         setEditingHouse(null);
       } else {
@@ -387,6 +390,7 @@ const AdminPanel: React.FC = () => {
     try {
       const houseDoc = doc(db, 'houses', id);
       await deleteDoc(houseDoc);
+      invalidateHousesCache();
       setHouses(houses.filter((house) => house.id !== id));
     } catch (error) {
       console.error('Error deleting house:', error);
@@ -497,17 +501,20 @@ const AdminPanel: React.FC = () => {
     try {
       const storage = getStorage();
       const compressionOptions = {
-        maxSizeMB: 1.5,
-        maxWidthOrHeight: 2560,
+        maxSizeMB: 0.45,
+        maxWidthOrHeight: 1920,
+        initialQuality: 0.8,
         useWebWorker: true,
+        fileType: 'image/webp',
       };
       const compressedFile = await imageCompression(file, compressionOptions);
-      const storageRef = ref(storage, `settings/hero-image-${Date.now()}`);
-      const snapshot = await uploadBytes(storageRef, compressedFile);
+      const storageRef = ref(storage, `settings/hero-image-${Date.now()}.webp`);
+      const snapshot = await uploadBytes(storageRef, compressedFile, { contentType: 'image/webp' });
       const downloadUrl = await getDownloadURL(snapshot.ref);
 
       // Save to Firestore settings
       await setDoc(doc(db, 'settings', 'homepage'), { heroImage: downloadUrl }, { merge: true });
+      invalidateSettingsCache();
       setHeroImageUrl(downloadUrl);
       alert('Image d\'accueil mise à jour avec succès !');
     } catch (error) {

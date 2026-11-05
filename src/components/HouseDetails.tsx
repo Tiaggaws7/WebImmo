@@ -8,12 +8,11 @@ import {
   Share2, Facebook, Twitter, Linkedin, Instagram, MessageCircle, Download, Link as LinkIcon, Home as HomeIcon
 } from "lucide-react"
 import { QRCodeCanvas } from 'qrcode.react';
-import { doc, getDoc, collection, getDocs } from "firebase/firestore"
-import { db } from "../firebase-config"
+import { fetchHouse, fetchHouses } from "../lib/firestoreRest"
 import type { House } from "../types"
 import { getListingCoverImage } from "../lib/coverImage"
+import ProfilePicture from './ProfilePicture'
 import { Helmet } from "react-helmet-async"
-import profilePicture from "../assets/profile_picture.jpg"
 
 const HouseDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -55,31 +54,19 @@ const HouseDetails: React.FC = () => {
   const [copySuccessMessage, setCopySuccessMessage] = useState("")
 
   useEffect(() => {
-    const fetchHouse = async () => {
+    const fetchHouseData = async () => {
       if (!id) return
       window.scrollTo(0, 0);
-      const houseDoc = doc(db, "houses", id)
-      const houseSnapshot = await getDoc(houseDoc)
+      const houseData = await fetchHouse(id)
 
-      if (houseSnapshot.exists()) {
-        const houseData = { id: houseSnapshot.id, ...houseSnapshot.data() } as House
+      if (houseData) {
         setHouse(houseData)
         // Trouver l'index de l'image principale
         const principalIndex = houseData.images.indexOf(houseData.principalImage)
         setActiveImageIndex(principalIndex >= 0 ? principalIndex : 0)
 
         // Fetch similar properties (same location or just recent)
-        const housesRef = collection(db, "houses")
-        // Fetch all and filter client side to avoid FireStore index issues
-        const similarSnapshot = await getDocs(housesRef)
-        const similarData = similarSnapshot.docs
-          .map(d => {
-            const data = d.data() as House;
-            return {
-              ...data,
-              id: d.id
-            }
-          })
+        const similarData = (await fetchHouses())
           .filter(h => h.id !== id && ['disponible', 'sous offre'].includes(h.condition))
           .slice(0, 3)
         setSimilarHouses(similarData)
@@ -88,7 +75,7 @@ const HouseDetails: React.FC = () => {
       }
     }
 
-    fetchHouse()
+    fetchHouseData()
   }, [id])
 
   // Preload images progressively: next, then next+1, etc. (skips already loaded)
@@ -315,7 +302,7 @@ const HouseDetails: React.FC = () => {
                     : 'opacity-20 group-hover/miniatures:opacity-40 hover:!opacity-100'
                     }`}
                 >
-                  <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                  <img src={img} alt={`Thumbnail ${idx + 1}`} width={64} height={48} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
@@ -436,7 +423,7 @@ const HouseDetails: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb & Header */}
         <div className="mb-6">
-          <nav className="flex text-sm text-gray-500 mb-6 uppercase tracking-wider font-semibold">
+          <nav className="flex text-sm text-gray-600 mb-6 uppercase tracking-wider font-semibold">
             <Link to="/" className="hover:text-black hover:underline transition-colors shrink-0">Accueil</Link>
             <span className="mx-2 text-gray-300">›</span>
             <Link to="/Acheter" className="hover:text-black hover:underline transition-colors shrink-0">Propriétés</Link>
@@ -667,7 +654,7 @@ const HouseDetails: React.FC = () => {
               {/* Agent Card */}
               <div className="bg-white border border-gray-100 rounded-2xl shadow-lg p-6 flex flex-col items-center text-center">
                 <div className="w-24 h-24 rounded-full overflow-hidden mb-4 ring-4 ring-gray-50 shadow-inner bg-slate-100 flex items-center justify-center">
-                  <img src={profilePicture} alt="Elise Buil" className="w-full h-full object-cover" />
+                  <ProfilePicture className="w-full h-full object-cover" sizes="96px" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900">Elise BUIL</h3>
                 <p className="text-[11px] text-gray-500 uppercase tracking-widest font-semibold mb-6">Accompagnement Commercial, Administratif et Juridique</p>
@@ -723,6 +710,8 @@ const DetailGalleryImage = ({
       <img
         src={src}
         alt={alt}
+        width={1600}
+        height={1200}
         className={`w-full h-full object-cover cursor-pointer hover:opacity-95 transition-all duration-700 ease-out ${
           isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
         }`}
@@ -753,6 +742,8 @@ const SimilarHouseCard = ({ house }: { house: House }) => {
           <img
             src={imageUrl}
             alt={house.title}
+            width={1200}
+            height={800}
             className={`w-full h-full object-cover group-hover:scale-105 transition-all duration-700 ease-out ${
               isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
             }`}
@@ -767,7 +758,7 @@ const SimilarHouseCard = ({ house }: { house: House }) => {
         )}
       </div>
       <div className="p-6 flex flex-col flex-grow">
-        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+        <div className="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">
           {house.location || "Guadeloupe"}
         </div>
         <h3 className="text-lg font-bold text-gray-900 mb-4 line-clamp-2 leading-tight group-hover:text-primary transition-colors">

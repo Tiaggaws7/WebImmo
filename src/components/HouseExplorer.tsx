@@ -52,13 +52,7 @@ const CustomSelect = ({ value, onChange, options, placeholder = "Sélectionner..
   );
 };
 
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../firebase-config';
-
-
-import { getAuth } from "firebase/auth";
-const auth = getAuth();
-console.log("Current user:", auth.currentUser);
+import { fetchHouses } from '../lib/firestoreRest';
 
 export default function HouseExplorer() {
   const [houses, setHouses] = useState<House[]>([])
@@ -84,18 +78,10 @@ export default function HouseExplorer() {
 
   useEffect(() => {
     // Fetch data from Firestore
-    const fetchHouses = async () => {
+    const loadHouses = async () => {
       try {
         setIsLoading(true);
-        const houseCollection = collection(db, 'houses');
-        const houseSnapshot = await getDocs(houseCollection);
-        const houseList = houseSnapshot.docs.map((doc) => {
-          const data = doc.data() as House;
-          return {
-            ...data,
-            id: doc.id,
-          };
-        });
+        const houseList = await fetchHouses();
 
         setHouses(houseList);
       } finally {
@@ -103,7 +89,7 @@ export default function HouseExplorer() {
       }
     };
 
-    fetchHouses();
+    loadHouses();
   }, []);
 
   useEffect(() => {
@@ -355,7 +341,7 @@ export default function HouseExplorer() {
         <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-3 mb-6 flex flex-col md:flex-row items-center divide-y md:divide-y-0 md:divide-x border border-gray-100">
           {/* Type */}
           <div className="flex-1 px-5 py-3 w-full">
-            <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Type de Propriété</label>
+            <label className="block text-[11px] font-bold text-gray-600 uppercase tracking-widest mb-1.5">Type de Propriété</label>
             <CustomSelect
               value={criteria.propertyTypes[0] || ""}
               onChange={(val) => setCriteria(prev => ({ ...prev, propertyTypes: val ? [val] : [] }))}
@@ -367,7 +353,7 @@ export default function HouseExplorer() {
 
           {/* Localisation */}
           <div className="flex-1 px-5 py-3 w-full">
-            <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Localisation</label>
+            <label className="block text-[11px] font-bold text-gray-600 uppercase tracking-widest mb-1.5">Localisation</label>
             <CustomSelect
               value={criteria.location}
               onChange={(val) => handleInputChange({ target: { name: 'location', value: val } } as any)}
@@ -379,7 +365,7 @@ export default function HouseExplorer() {
 
           {/* Budget Max */}
           <div className="flex-1 px-5 py-3 w-full">
-            <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Prix Maximum</label>
+            <label className="block text-[11px] font-bold text-gray-600 uppercase tracking-widest mb-1.5">Prix Maximum</label>
             <CustomSelect
               value={criteria.maxPrice.toString()}
               onChange={(val) => setCriteria(prev => ({ ...prev, maxPrice: val ? parseInt(val) : 100000000 }))}
@@ -410,7 +396,7 @@ export default function HouseExplorer() {
         {showFilters && (
           <div className="bg-white p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-in slide-in-from-top-4 fade-in duration-300">
             <div>
-              <label htmlFor="minSize" className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+              <label htmlFor="minSize" className="block text-[11px] font-bold text-gray-600 uppercase tracking-widest mb-2">
                 Surface Minimum (m²)
               </label>
               <div className="relative">
@@ -426,7 +412,7 @@ export default function HouseExplorer() {
               </div>
             </div>
             <div>
-              <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+              <label className="block text-[11px] font-bold text-gray-600 uppercase tracking-widest mb-2">
                 Pièces minimum
               </label>
               <CustomSelect
@@ -438,7 +424,7 @@ export default function HouseExplorer() {
               />
             </div>
             <div>
-              <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+              <label className="block text-[11px] font-bold text-gray-600 uppercase tracking-widest mb-2">
                 Chambres minimum
               </label>
               <CustomSelect
@@ -450,7 +436,7 @@ export default function HouseExplorer() {
               />
             </div>
             <div>
-              <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+              <label className="block text-[11px] font-bold text-gray-600 uppercase tracking-widest mb-2">
                 Salles de bain minimum
               </label>
               <CustomSelect
@@ -462,7 +448,7 @@ export default function HouseExplorer() {
               />
             </div>
             <div className="lg:col-span-4">
-              <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">
+              <label className="block text-[11px] font-bold text-gray-600 uppercase tracking-widest mb-3">
                 Annexes et commodités
               </label>
               <div className="flex flex-wrap gap-2">
@@ -617,6 +603,8 @@ const HouseCard = ({ house }: { house: House }) => {
           <img
             src={imageUrl}
             alt={house.title}
+            width={1200}
+            height={800}
             className={`w-full h-full object-cover group-hover:scale-105 transition-all duration-700 ease-out ${
               isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
             }`}
@@ -650,7 +638,9 @@ const HouseCard = ({ house }: { house: House }) => {
 
         {/* Heart Icon */}
         <button
+          type="button"
           onClick={(e) => e.preventDefault()}
+          aria-label="Ajouter aux favoris"
           className="absolute top-4 right-4 p-2.5 bg-black/20 hover:bg-black/50 rounded-full text-white backdrop-blur-md transition-all duration-300 group-hover:scale-110 z-10"
         >
           <Heart size={18} className="fill-transparent hover:fill-current" />
