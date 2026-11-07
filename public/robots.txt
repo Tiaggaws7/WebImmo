@@ -2,4 +2,3 @@ User-agent: *
 Allow: /
 
 Sitemap: https://elisebuilimmobilierguadeloupe.com/sitemap.xml
-Agentmap: https://elisebuilimmobilierguadeloupe.com/.well-known/ai-catalog.json

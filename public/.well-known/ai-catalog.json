@@ -27,8 +27,8 @@
       "identifier": "urn:air:elisebuilimmobilierguadeloupe.com:api:listings",
       "displayName": "Catalogue immobilier JSON",
       "type": "application/json",
-      "url": "https://firestore.googleapis.com/v1/projects/webimmo-6189a/databases/(default)/documents/houses?key=AIzaSyC69Z9yIw8aGdRt9k4CQp8SuRpH6oJGSGI",
-      "description": "Annonces immobilières en lecture seule au format JSON Firestore : identifiant, titre, prix, surface, localisation, photos, description et statut.",
+      "url": "https://elisebuilimmobilierguadeloupe.com/api/listings",
+      "description": "Annonces immobilières en lecture seule au format JSON ({ count, houses }) : identifiant, titre, prix, surface, localisation, photos, description et statut.",
       "tags": ["immobilier", "guadeloupe", "api", "json", "annonces"],
       "capabilities": ["ListingsRead"],
       "representativeQueries": [
@@ -36,7 +36,7 @@
         "récupérer les annonces immobilières au format JSON"
       ],
       "version": "1.0",
-      "updatedAt": "2026-11-05T00:00:00Z"
+      "updatedAt": "2026-11-07T00:00:00Z"
     },
     {
       "identifier": "urn:air:elisebuilimmobilierguadeloupe.com:web:estimation",

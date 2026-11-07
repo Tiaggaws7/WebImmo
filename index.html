@@ -40,7 +40,10 @@
     -->
     <script>
       (function () {
-        var KEY = 'AIzaSyC69Z9yIw8aGdRt9k4CQp8SuRpH6oJGSGI';
+        var KEY = '%VITE_FIREBASE_API_KEY%';
+        var APP_CHECK_SITE_KEY = '%VITE_RECAPTCHA_SITE_KEY%';
+        var APP_CHECK_ENABLED =
+          APP_CHECK_SITE_KEY.length > 0 && APP_CHECK_SITE_KEY.indexOf('%VITE_') !== 0;
         var BASE = 'https://firestore.googleapis.com/v1/projects/webimmo-6189a/databases/(default)/documents/';
         var preloaded = {};
 
@@ -79,34 +82,42 @@
             : url;
         }
 
-        window.__WEB_IMMO_FS__ = {
-          settings: get('settings/homepage'),
-          houses: get('houses?pageSize=300')
-        };
+        // App Check exige un jeton obtenu par le SDK : le préchargement REST
+        // direct n'est possible que lorsque App Check est désactivé.
+        if (!APP_CHECK_ENABLED) {
+          window.__WEB_IMMO_FS__ = {
+            settings: get('settings/homepage'),
+            houses: get('houses?pageSize=300')
+          };
 
-        var cached = null;
-        try { cached = localStorage.getItem('home_hero_bg'); } catch (error) { /* stockage indisponible */ }
-        if (cached) {
-          var cachedHero = localHero(cached);
-          if (cachedHero.indexOf('/hero/') !== 0) preload(cachedHero);
-        }
-
-        // Si Firestore est lent (> 700 ms), on précharge la photo locale de
-        // secours : dans le cas normal, seul le vrai hero est téléchargé.
-        setTimeout(function () {
-          if (!window.__WEB_IMMO_HERO__) preloadLocal();
-        }, 700);
-
-        window.__WEB_IMMO_FS__.settings.then(function (doc) {
-          var url = doc && doc.fields && doc.fields.heroImage && doc.fields.heroImage.stringValue;
-          if (url) {
-            var hero = localHero(url);
-            window.__WEB_IMMO_HERO__ = hero;
-            if (hero.indexOf('/hero/') !== 0) preload(hero);
-          } else {
-            preloadLocal();
+          var cached = null;
+          try { cached = localStorage.getItem('home_hero_bg'); } catch (error) { /* stockage indisponible */ }
+          if (cached) {
+            var cachedHero = localHero(cached);
+            if (cachedHero.indexOf('/hero/') !== 0) preload(cachedHero);
           }
-        });
+
+          // Si Firestore est lent (> 700 ms), on précharge la photo locale de
+          // secours : dans le cas normal, seul le vrai hero est téléchargé.
+          setTimeout(function () {
+            if (!window.__WEB_IMMO_HERO__) preloadLocal();
+          }, 700);
+
+          window.__WEB_IMMO_FS__.settings.then(function (doc) {
+            var url = doc && doc.fields && doc.fields.heroImage && doc.fields.heroImage.stringValue;
+            if (url) {
+              var hero = localHero(url);
+              window.__WEB_IMMO_HERO__ = hero;
+              if (hero.indexOf('/hero/') !== 0) preload(hero);
+            } else {
+              preloadLocal();
+            }
+          });
+        } else {
+          // Le SDK App Check doit charger avant toute lecture Firestore :
+          // on précharge la photo locale pour le LCP, React corrigera ensuite.
+          preloadLocal();
+        }
       })();
     </script>
 

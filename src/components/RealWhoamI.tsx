@@ -5,6 +5,8 @@ import ProfilePicture from './ProfilePicture';
 import GoogleReviews from './GoogleReviews';
 import { Handshake, Award, Mail, Star, Quote, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { fetchHouses } from '../lib/firestoreRest';
+import { trackEmailResult, trackFormStart, trackFormSubmit } from '../lib/tracking';
+import { submitLead, updateLeadStatus } from '../lib/leads';
 
 const RealWhoAmI: React.FC = () => {
 
@@ -53,6 +55,19 @@ const RealWhoAmI: React.FC = () => {
     setIsSubmitting(true);
     setSuccessMessage("");
     setErrorMessage("");
+    trackFormSubmit('contact');
+
+    const lead = await submitLead({
+      type: 'contact',
+      contact: {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+      },
+      data: {
+        message: formData.message,
+      },
+    });
 
     try {
       const serviceID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
@@ -69,11 +84,19 @@ const RealWhoAmI: React.FC = () => {
 
       await emailjs.send(serviceID, templateID, templateParams, userID);
 
+      trackEmailResult('contact', true);
+      updateLeadStatus(lead, 'email_sent');
       setSuccessMessage("Votre message a été envoyé avec succès ! Merci de m'avoir contacté.");
       setFormData({ name: "", email: "", phone: "", message: "" });
     } catch (error) {
       console.error("EmailJS Error:", error);
-      setErrorMessage("Une erreur s'est produite lors de l'envoi de votre message. Veuillez réessayer plus tard.");
+      trackEmailResult('contact', false);
+      updateLeadStatus(lead, 'email_error', error instanceof Error ? error.message : 'Erreur EmailJS');
+      setErrorMessage(
+        lead
+          ? "L'email n'a pas pu être envoyé, mais votre message a bien été enregistré. Nous vous recontacterons."
+          : "Une erreur s'est produite lors de l'envoi de votre message. Veuillez réessayer plus tard.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -281,7 +304,7 @@ const RealWhoAmI: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <form className="space-y-8" onSubmit={handleSubmit}>
+              <form className="space-y-8" onSubmit={handleSubmit} onFocusCapture={() => trackFormStart('contact')}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {/* Name Field */}
                   <div className="group">
@@ -368,6 +391,10 @@ const RealWhoAmI: React.FC = () => {
                     </>
                   ) : "Envoyer mon message"}
                 </button>
+
+                <p className="text-center text-[11px] text-gray-400">
+                  Vos informations sont utilisées uniquement pour répondre à votre demande.
+                </p>
 
                 {errorMessage && (
                   <p className="text-red-500 text-center font-bold mt-6 bg-red-50 p-4 rounded-xl">{errorMessage}</p>

@@ -18,4 +18,4 @@ Ce site présente les biens immobiliers disponibles en Guadeloupe et permet de d
 - [Catalogue ARD](https://elisebuilimmobilierguadeloupe.com/.well-known/ai-catalog.json): manifeste des ressources agentiques du site.
 - [Catalogue ARD (nouveau schéma)](https://elisebuilimmobilierguadeloupe.com/.well-known/ard.json): même catalogue au format ARD v0.91.
 - [Sitemap](https://elisebuilimmobilierguadeloupe.com/sitemap.xml): plan du site.
-- [Catalogue JSON des biens](https://firestore.googleapis.com/v1/projects/webimmo-6189a/databases/(default)/documents/houses?key=AIzaSyC69Z9yIw8aGdRt9k4CQp8SuRpH6oJGSGI): annonces en lecture seule au format JSON Firestore.
+- [Catalogue JSON des biens](https://elisebuilimmobilierguadeloupe.com/api/listings): annonces en lecture seule au format JSON ({ count, houses }).

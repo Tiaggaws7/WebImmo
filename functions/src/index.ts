@@ -103,6 +103,62 @@ function coverImageOf(houseData: HouseCoverData | undefined): string {
   return thumbnailImage && isThumbnailOf(thumbnailImage, coverImage) ? thumbnailImage : coverImage;
 }
 
+/** Convertit les valeurs Firestore (Timestamp, tableaux, objets) en JSON. */
+function toJson(value: unknown): unknown {
+  if (value instanceof admin.firestore.Timestamp) {
+    return value.toDate().toISOString();
+  }
+  if (Array.isArray(value)) {
+    return value.map(toJson);
+  }
+  if (value && typeof value === "object") {
+    const result: Record<string, unknown> = {};
+    for (const [key, item] of Object.entries(value)) {
+      result[key] = toJson(item);
+    }
+    return result;
+  }
+  return value;
+}
+
+/**
+ * API JSON publique des annonces, servie par le site lui-même.
+ *
+ * Remplace l'URL Firestore REST qui exposait la clé API dans le catalogue
+ * agentique : la clé reste côté serveur et peut être restreinte par référent.
+ * Lecture seule, CORS ouvert, cache CDN court.
+ */
+export const listings = onRequest(
+  {
+    memory: "256MiB",
+    timeoutSeconds: 30,
+    cors: true,
+    // Plafonne le nombre d'instances pour borner le coût en cas d'abus.
+    maxInstances: 10,
+  },
+  async (req, res) => {
+    if (req.method !== "GET" && req.method !== "HEAD") {
+      res.set("Allow", "GET, HEAD, OPTIONS");
+      res.status(405).json({ error: "Méthode non autorisée" });
+      return;
+    }
+
+    try {
+      const snapshot = await db.collection("houses").get();
+      // `en attente` est masqué du catalogue public (voir HouseExplorer).
+      const houses = snapshot.docs
+        .filter((doc) => doc.get("condition") !== "en attente")
+        .map((doc) => toJson({ ...doc.data(), id: doc.id }));
+
+      res.set("Cache-Control", "public, max-age=300, s-maxage=300");
+      res.status(200).json({ count: houses.length, houses });
+    } catch (error) {
+      logger.error("❌ Erreur pendant la lecture des annonces:", error);
+      res.status(500).json({ error: "Erreur serveur" });
+    }
+  }
+);
+
 /**
  * SSR / Prerender endpoint pour les pages de détails de maisons (/house/:id)
  * Intercepte les requêtes (surtout des robots WhatsApp/FB pour l'Open Graph),
@@ -113,6 +169,8 @@ export const renderHouseMeta = onRequest(
   {
     memory: "256MiB",
     timeoutSeconds: 30,
+    // Même plafond : cet endpoint public est appelé par les robots d'aperçu.
+    maxInstances: 10,
   },
   async (req, res) => {
     logger.log(`📱 Demande d'aperçu de lien pour: ${req.path}`);
@@ -203,3 +261,6 @@ export const renderHouseMeta = onRequest(
     }
   }
 );
+
+export { analytics, track } from "./analytics";
+export { leads, submitLead, updateLeadStatus } from "./leads";

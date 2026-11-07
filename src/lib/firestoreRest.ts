@@ -13,7 +13,23 @@ import type { House } from '../types';
  */
 
 const PROJECT_ID = 'webimmo-6189a';
-const API_KEY = 'AIzaSyC69Z9yIw8aGdRt9k4CQp8SuRpH6oJGSGI';
+
+/**
+ * Clé API Firebase (publique côté navigateur). Elle est lue depuis `.env`
+ * (non versionné) et injectée au build : ne jamais la réécrire en dur ici.
+ * Voir `SECURITY.md` pour la restriction par référent HTTP.
+ */
+function requireApiKey(): string {
+  const key = import.meta.env.VITE_FIREBASE_API_KEY as string | undefined;
+  if (!key) {
+    throw new Error(
+      'VITE_FIREBASE_API_KEY manquant : copiez .env.example vers .env et renseignez la clé Firebase.',
+    );
+  }
+  return key;
+}
+
+const API_KEY = requireApiKey();
 const DOCUMENTS_URL = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents`;
 
 /** Valeur Firestore au format REST. */
@@ -86,8 +102,22 @@ function decodeDocument(document: FirestoreDocument): Record<string, unknown> {
   };
 }
 
+const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY as string | undefined;
+let appCheckModule: Promise<typeof import('./appCheck')> | null = null;
+
+/**
+ * Jeton App Check chargé à la demande : le SDK n'est pas inclus dans le bundle
+ * public quand App Check est désactivé (`VITE_RECAPTCHA_SITE_KEY` vide).
+ */
+async function appCheckHeaders(): Promise<Record<string, string> | undefined> {
+  if (!RECAPTCHA_SITE_KEY) return undefined;
+  appCheckModule ??= import('./appCheck');
+  const token = await (await appCheckModule).getAppCheckToken();
+  return token ? { 'X-Firebase-AppCheck': token } : undefined;
+}
+
 async function getJson<T>(url: string): Promise<T | null> {
-  const response = await fetch(url);
+  const response = await fetch(url, { headers: await appCheckHeaders() });
   if (response.status === 404) return null;
   if (!response.ok) {
     throw new Error(`Firestore REST ${response.status} pour ${url}`);

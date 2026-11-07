@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet-async';
 import { MapPin, Home, Building, Map, Store, CheckSquare, User, ChevronLeft, Lock, ArrowRight } from 'lucide-react'
 import emailjs from 'emailjs-com';
+import { trackEmailResult, trackFormStart, trackFormStep, trackFormSubmit } from '../lib/tracking'
+import { submitLead, updateLeadStatus } from '../lib/leads'
 
 type FormData = {
   address: string
@@ -52,6 +54,8 @@ export default function ModernRealEstateForm() {
   })
   const [showFinalMessage, setShowFinalMessage] = useState(false)
   const [isStepValid, setIsStepValid] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
   const updateFormData = (field: string, value: any) => {
     setFormData(prev => ({
@@ -92,7 +96,35 @@ export default function ModernRealEstateForm() {
   }
 
   const handleSubmit = async () => {
-    if (!isStepValid) return;
+    if (!isStepValid || isSubmitting) return;
+    setIsSubmitting(true);
+    setErrorMessage('');
+    trackFormSubmit('estimation');
+
+    const lead = await submitLead({
+      type: 'estimation',
+      contact: {
+        name: `${formData.contact.firstName} ${formData.contact.lastName}`.trim(),
+        email: formData.contact.email,
+        phone: formData.contact.phone,
+      },
+      data: {
+        address: formData.address,
+        propertyType: formData.propertyType,
+        livingArea: formData.livingArea,
+        landArea: formData.landArea,
+        floors: formData.floors,
+        rooms: formData.rooms,
+        bedrooms: formData.bedrooms,
+        constructionPeriod: formData.constructionPeriod,
+        condition: formData.condition,
+        features: formData.features,
+        saleTimeline: formData.saleTimeline,
+        gender: formData.contact.gender,
+        firstName: formData.contact.firstName,
+        lastName: formData.contact.lastName,
+      },
+    });
 
     // Prepare email data
     const templateParams = {
@@ -123,10 +155,20 @@ export default function ModernRealEstateForm() {
         templateID,
         templateParams
       );
+      trackEmailResult('estimation', true);
+      updateLeadStatus(lead, 'email_sent');
       setShowFinalMessage(true);
     } catch (error) {
       console.error('Error sending email:', error);
-      // Handle error appropriately, e.g., display an error message to the user.
+      trackEmailResult('estimation', false);
+      updateLeadStatus(lead, 'email_error', error instanceof Error ? error.message : 'Erreur EmailJS');
+      setErrorMessage(
+        lead
+          ? "L'email n'a pas pu être envoyé, mais votre demande a bien été enregistrée. Nous vous recontacterons."
+          : "L'envoi a échoué. Merci de réessayer ou de nous appeler directement.",
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -170,6 +212,10 @@ export default function ModernRealEstateForm() {
     }
   }, [currentStep, formData])
 
+  useEffect(() => {
+    if (currentStep > 1) trackFormStep('estimation', currentStep)
+  }, [currentStep])
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-6">
       
@@ -204,7 +250,7 @@ export default function ModernRealEstateForm() {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-xl bg-white p-6 shadow-lg shadow-primary">
+        <div className="overflow-hidden rounded-xl bg-white p-6 shadow-lg shadow-primary" onFocusCapture={() => trackFormStart('estimation')}>
           <div className={`slide-in`} key={currentStep}>
             {/* Step 1: Address */}
             {currentStep === 1 && (
@@ -392,6 +438,13 @@ export default function ModernRealEstateForm() {
             </div>
           )}
 
+          {errorMessage && !showFinalMessage && (
+            <div className="mt-8 p-6 bg-red-50 border-2 border-red-200 rounded-xl text-center fade-in">
+              <h2 className="text-lg font-bold text-red-700 mb-2">L'envoi par email a échoué</h2>
+              <p className="text-red-600">{errorMessage}</p>
+            </div>
+          )}
+
           {!showFinalMessage && (
             <div className="mt-8 flex justify-between fade-in">
               {currentStep > 1 && (
@@ -405,20 +458,24 @@ export default function ModernRealEstateForm() {
               )}
               <button
                 onClick={currentStep === 5 ? handleSubmit : handleNext}
-                disabled={!isStepValid}
+                disabled={!isStepValid || isSubmitting}
                 className={`ml-auto flex items-center px-6 py-2 rounded-lg transition-all duration-300 ${
-                  isStepValid ? 'bg-primary text-white hover:bg-black' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  isStepValid && !isSubmitting ? 'bg-primary text-white hover:bg-black' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
               >
-                {currentStep === 5 ? "Recevoir mon estimation" : 'Étape suivante'}
-                {isStepValid ? (
+                {isSubmitting ? 'Envoi en cours…' : currentStep === 5 ? "Recevoir mon estimation" : 'Étape suivante'}
+                {isStepValid && !isSubmitting ? (
                   <ArrowRight className="ml-2 h-5 w-5" />
-                ) : (
+                ) : isSubmitting ? null : (
                   <Lock className="ml-2 h-5 w-5" />
                 )}
               </button>
             </div>
           )}
+
+          <p className="mt-6 text-center text-[11px] text-gray-400">
+            Vos informations sont utilisées uniquement pour répondre à votre demande.
+          </p>
         </div>
       </div>
     </div>

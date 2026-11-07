@@ -24,4 +24,3 @@ dist-ssr
 *.sw?
 .env
 src/note.txt
-src/firebase-config.ts

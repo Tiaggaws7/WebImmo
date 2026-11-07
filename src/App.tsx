@@ -1,12 +1,14 @@
 import { lazy, Suspense, useEffect } from 'react';
 import './App.css';
 import { HelmetProvider } from "react-helmet-async";
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import ScrollToTop from './components/ScrollToTop.tsx';
 import WhatsAppBubble from './components/WhatsAppBubble';
 import Home from './home.tsx';
+import AnalyticsFooter from './components/AnalyticsFooter';
 import { initAnalytics } from './lib/analytics';
+import { setupAutoTracking, trackPageview } from './lib/tracking';
 
 // La page d'accueil est le point d'entrée de la quasi-totalité des visites :
 // l'importer directement supprime un aller-retour réseau avant le premier rendu.
@@ -25,10 +27,22 @@ const PageLoader = () => (
 );
 
 const AppContent = () => {
+  const location = useLocation();
+
   useEffect(() => {
-    // gtag n'est chargé qu'à la première interaction (voir lib/analytics).
+    // gtag est chargé à la première interaction (ou après le rendu initial).
     initAnalytics();
+    setupAutoTracking();
   }, []);
+
+  useEffect(() => {
+    // Le titre est mis à jour par Helmet : on attend la frame suivante pour
+    // envoyer un libellé de page correct.
+    const frame = requestAnimationFrame(() => {
+      trackPageview(location.pathname, document.title);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [location.pathname]);
 
   return (
     <>
@@ -47,6 +61,7 @@ const AppContent = () => {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
+      {location.pathname !== '/Gestion' && <AnalyticsFooter />}
     </>
   );
 };

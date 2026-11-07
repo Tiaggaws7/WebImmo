@@ -105,6 +105,30 @@
         "function": "renderHouseMeta"
       },
       {
+        "source": "/api/listings",
+        "function": "listings"
+      },
+      {
+        "source": "/api/track",
+        "function": "track"
+      },
+      {
+        "source": "/api/analytics",
+        "function": "analytics"
+      },
+      {
+        "source": "/api/leads/submit",
+        "function": "submitLead"
+      },
+      {
+        "source": "/api/leads/status",
+        "function": "updateLeadStatus"
+      },
+      {
+        "source": "/api/leads",
+        "function": "leads"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }

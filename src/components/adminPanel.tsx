@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { PlusIcon, PencilIcon, TrashIcon, LogOutIcon, ArrowRight, ImageIcon, Upload, Loader2 } from 'lucide-react';
+import { PlusIcon, PencilIcon, TrashIcon, LogOutIcon, ArrowRight, ImageIcon, Upload, Loader2, BarChart3, Building2, Inbox } from 'lucide-react';
 import { Link } from "react-router-dom"
 import { House } from '../types';
 import {
@@ -19,6 +19,8 @@ import imageCompression from 'browser-image-compression';
 import { db, auth } from '../firebase-config';
 import { isThumbnailOf } from '../lib/coverImage';
 import { invalidateHousesCache, invalidateSettingsCache } from '../lib/firestoreRest';
+import AdminAnalytics from './adminAnalytics';
+import AdminLeads from './adminLeads';
 
 
 const AdminPanel: React.FC = () => {
@@ -57,6 +59,7 @@ const AdminPanel: React.FC = () => {
   const [heroImageUrl, setHeroImageUrl] = useState<string>('');
   const [isUploadingHero, setIsUploadingHero] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'houses' | 'analytics' | 'leads'>('houses');
 
 
   // Fetch houses from Firestore
@@ -624,21 +627,29 @@ const AdminPanel: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Interface d'administration - Management des biens</h1>
+        <div className="flex flex-col gap-4 lg:flex-row lg:justify-between lg:items-center mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">
+            {activeTab === 'houses'
+              ? "Gestion des biens"
+              : activeTab === 'analytics'
+                ? "Statistiques du site"
+                : "Demandes reçues"}
+          </h1>
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-              className={`p-2 rounded-md transition-colors flex items-center gap-2 border ${
-                isSettingsOpen 
-                ? 'bg-gray-200 border-gray-300 text-gray-900' 
-                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-              }`}
-              title="Paramètres du site"
-            >
-              <ImageIcon className="w-5 h-5" />
-              <span className="text-sm font-medium">Réglages</span>
-            </button>
+            {activeTab === 'houses' && (
+              <button
+                onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                className={`p-2 rounded-md transition-colors flex items-center gap-2 border ${
+                  isSettingsOpen
+                  ? 'bg-gray-200 border-gray-300 text-gray-900'
+                  : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                }`}
+                title="Paramètres du site"
+              >
+                <ImageIcon className="w-5 h-5" />
+                <span className="text-sm font-medium">Réglages</span>
+              </button>
+            )}
             <button
               onClick={handleLogout}
               className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 flex items-center"
@@ -649,6 +660,41 @@ const AdminPanel: React.FC = () => {
           </div>
         </div>
 
+        <div className="flex flex-wrap gap-1 mb-6 bg-white p-1 rounded-lg border border-gray-200 w-fit shadow-sm">
+          <button
+            type="button"
+            onClick={() => setActiveTab('houses')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-semibold transition-colors ${
+              activeTab === 'houses' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            <Building2 className="w-4 h-4" />
+            Biens
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('analytics')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-semibold transition-colors ${
+              activeTab === 'analytics' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            <BarChart3 className="w-4 h-4" />
+            Statistiques
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('leads')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-semibold transition-colors ${
+              activeTab === 'leads' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            <Inbox className="w-4 h-4" />
+            Demandes
+          </button>
+        </div>
+
+        {activeTab === 'houses' && (
+          <>
         {/* Hero Image Management Section (Discrete/Collapsible) */}
         {isSettingsOpen && (
           <div className="bg-white border border-gray-200 shadow-sm rounded-lg p-4 mb-8 animate-in fade-in slide-in-from-top-2 duration-200">
@@ -1184,6 +1230,11 @@ const AdminPanel: React.FC = () => {
             </tbody>
           </table>
         </div>
+          </>
+        )}
+
+        {activeTab === 'analytics' && <AdminAnalytics houses={houses} />}
+        {activeTab === 'leads' && <AdminLeads />}
       </div>
     </div>
   );

@@ -1,5 +1,11 @@
 # React + TypeScript + Vite
 
+## Configuration locale
+
+Copier `.env.example` vers `.env` et renseigner les valeurs (clé Firebase,
+EmailJS, Contentful). `.env` est ignoré par Git. Voir `SECURITY.md` pour la
+restriction et la rotation de la clé Firebase.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

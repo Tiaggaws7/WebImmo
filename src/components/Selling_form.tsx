@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet-async';
 import emailjs from 'emailjs-com';
 import { fetchHouses } from '../lib/firestoreRest'
+import { trackEmailResult, trackFormStart, trackFormSubmit } from '../lib/tracking'
+import { submitLead, updateLeadStatus } from '../lib/leads'
 
 export default function Selling_form() {
   const [formData, setFormData] = useState({
@@ -14,6 +16,8 @@ export default function Selling_form() {
   })
   
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
   // Initialize with cached image if available for "instant" feel
   const [bgImage, setBgImage] = useState<string>(() => localStorage.getItem('vendre_hero_bg') || '')
 
@@ -61,28 +65,54 @@ export default function Selling_form() {
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    if (isSubmitting) return
+    setIsSubmitting(true)
+    setErrorMessage('')
+    trackFormSubmit('vendre')
+
+    const lead = await submitLead({
+      type: 'vendre',
+      contact: {
+        name: `${formData.name} ${formData.surname}`.trim(),
+        email: formData.email,
+        phone: formData.phone,
+      },
+      data: {
+        name: formData.name,
+        surname: formData.surname,
+        project: formData.project,
+        availability: formData.availability,
+      },
+    });
 
     const serviceID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
     const templateID = import.meta.env.VITE_EMAILJS_VENDRE_TEMPLATE_ID;
     const userID = import.meta.env.VITE_EMAILJS_USER_ID;
-  
-    emailjs
-      .send(serviceID, templateID, formData, userID)
-      .then(
-        (result) => {
-          console.log('Email sent successfully:', result.text);
-          setIsSubmitted(true);
-        },
-        (error) => {
-          console.error('Failed to send email:', error.text);
-        }
+
+    try {
+      await emailjs.send(serviceID, templateID, formData, userID);
+      trackEmailResult('vendre', true);
+      updateLeadStatus(lead, 'email_sent');
+      setIsSubmitted(true);
+    } catch (error) {
+      console.error('Failed to send email:', error);
+      trackEmailResult('vendre', false);
+      updateLeadStatus(lead, 'email_error', error instanceof Error ? error.message : 'Erreur EmailJS');
+      setErrorMessage(
+        lead
+          ? "L'email n'a pas pu être envoyé, mais votre demande a bien été enregistrée. Nous vous recontacterons."
+          : "L'envoi a échoué. Merci de réessayer ou de nous appeler directement.",
       );
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   const handleReset = () => {
     setIsSubmitted(false)
+    setErrorMessage('')
     setFormData({
       name: '',
       surname: '',
@@ -174,7 +204,12 @@ export default function Selling_form() {
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="lg:w-7/12 p-10 md:p-14 lg:p-16 bg-white/80 backdrop-blur-2xl rounded-[2rem] space-y-8 shadow-2xl border border-white/60">
+          <form onSubmit={handleSubmit} onFocusCapture={() => trackFormStart('vendre')} className="lg:w-7/12 p-10 md:p-14 lg:p-16 bg-white/80 backdrop-blur-2xl rounded-[2rem] space-y-8 shadow-2xl border border-white/60">
+            {errorMessage && (
+              <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                {errorMessage}
+              </div>
+            )}
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
               <div>
                 <label htmlFor="name" className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-3 px-1">Prénom</label>
@@ -264,11 +299,17 @@ export default function Selling_form() {
             <div className="pt-4">
               <button
                 type="submit"
-                className="w-full flex justify-center py-5 px-6 rounded-[1.25rem] shadow-[0_15px_40px_rgb(191,10,25,0.4)] text-xl font-black text-white bg-gradient-to-r from-[#bf0a19] to-[#d90115] hover:from-[#d90115] hover:to-[#ff1a2e] transition-all duration-300 transform hover:-translate-y-1.5 active:scale-95 hover:shadow-[0_20px_50px_rgb(191,10,25,0.5)]"
+                disabled={isSubmitting}
+                className={`w-full flex justify-center py-5 px-6 rounded-[1.25rem] shadow-[0_15px_40px_rgb(191,10,25,0.4)] text-xl font-black text-white bg-gradient-to-r from-[#bf0a19] to-[#d90115] transition-all duration-300 transform hover:-translate-y-1.5 active:scale-95 hover:shadow-[0_20px_50px_rgb(191,10,25,0.5)] ${
+                  isSubmitting ? 'opacity-70 cursor-not-allowed hover:translate-y-0' : 'hover:from-[#d90115] hover:to-[#ff1a2e]'
+                }`}
               >
-                Obtenir mon estimation
+                {isSubmitting ? 'Envoi en cours…' : 'Obtenir mon estimation'}
               </button>
             </div>
+            <p className="text-center text-[11px] text-gray-500">
+              Vos informations sont utilisées uniquement pour répondre à votre demande.
+            </p>
           </form>
         )}
       </div>

@@ -11,6 +11,7 @@ import { QRCodeCanvas } from 'qrcode.react';
 import { fetchHouse, fetchHouses } from "../lib/firestoreRest"
 import type { House } from "../types"
 import { getListingCoverImage } from "../lib/coverImage"
+import { trackEvent } from "../lib/tracking"
 import ProfilePicture from './ProfilePicture'
 import { Helmet } from "react-helmet-async"
 
@@ -23,6 +24,7 @@ const HouseDetails: React.FC = () => {
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const [isGalleryOpen, setIsGalleryOpen] = useState(false)
   const preloadedRef = useRef<Set<string>>(new Set())
+  const trackedHouseRef = useRef<string>('')
 
   // Swipe states
   const [touchStart, setTouchStart] = useState<number | null>(null)
@@ -61,6 +63,15 @@ const HouseDetails: React.FC = () => {
 
       if (houseData) {
         setHouse(houseData)
+        if (trackedHouseRef.current !== id) {
+          trackedHouseRef.current = id
+          trackEvent('listing_view', {
+            houseId: id,
+            houseTitle: houseData.title,
+            price: houseData.price,
+            location: houseData.location,
+          })
+        }
         // Trouver l'index de l'image principale
         const principalIndex = houseData.images.indexOf(houseData.principalImage)
         setActiveImageIndex(principalIndex >= 0 ? principalIndex : 0)
@@ -125,6 +136,7 @@ const HouseDetails: React.FC = () => {
   }, [isGalleryOpen, house]);
 
   const openGallery = (index: number) => {
+    trackEvent('gallery_open', { houseId: id, imageIndex: index })
     setActiveImageIndex(index)
     setIsGalleryOpen(true)
     document.body.style.overflow = 'hidden'
@@ -151,6 +163,7 @@ const HouseDetails: React.FC = () => {
     const shareTitle = house ? `${house.title} | Immobilier Guadeloupe` : 'Découvrez ce bien';
 
     if (navigator.share) {
+      trackEvent('share', { houseId: id, method: 'native' })
       try {
         await navigator.share({
           title: shareTitle,
@@ -166,6 +179,7 @@ const HouseDetails: React.FC = () => {
     }
 
     // Fallback: Open modal
+    trackEvent('share', { houseId: id, method: 'modal' })
     setIsShareModalOpen(true);
     document.body.style.overflow = 'hidden';
   }
@@ -178,6 +192,7 @@ const HouseDetails: React.FC = () => {
 
   const copyToClipboard = (text: string, platform: string) => {
     navigator.clipboard.writeText(text).then(() => {
+      trackEvent('share', { houseId: id, method: platform })
       setCopySuccessMessage(`Lien copié pour ${platform} !`);
       setTimeout(() => setCopySuccessMessage(""), 3000);
     }).catch(err => {
@@ -188,6 +203,7 @@ const HouseDetails: React.FC = () => {
   const handleDownloadQR = () => {
     const canvas = document.getElementById("qr-code-canvas") as HTMLCanvasElement;
     if (canvas) {
+      trackEvent('qr_download', { houseId: id })
       const pngUrl = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
       const downloadLink = document.createElement("a");
       downloadLink.href = pngUrl;
@@ -637,6 +653,7 @@ const HouseDetails: React.FC = () => {
                       style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
                       src={house.virtualTourUrl}
                       title="Visite virtuelle"
+                      onLoad={() => trackEvent('virtual_tour_open', { houseId: id })}
                       frameBorder="0"
                       allowFullScreen
                       allow="fullscreen; accelerometer; gyroscope; magnetometer; vr; xr; xr-spatial-tracking; autoplay; camera; microphone"

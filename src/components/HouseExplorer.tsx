@@ -5,6 +5,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 
 import { House } from '../types';
 import { getListingCoverImage } from '../lib/coverImage';
+import { trackEvent } from '../lib/tracking';
 
 const CustomSelect = ({ value, onChange, options, placeholder = "Sélectionner...", triggerClassName }: { value: string, onChange: (v: string) => void, options: { label: string, value: string }[], placeholder?: string, triggerClassName?: string }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -75,6 +76,7 @@ export default function HouseExplorer() {
   })
   const [showFilters, setShowFilters] = useState(false)
   const [sortBy, setSortBy] = useState('newest')
+  const lastSearchRef = useRef('')
 
   useEffect(() => {
     // Fetch data from Firestore
@@ -195,6 +197,34 @@ export default function HouseExplorer() {
 
     setFilteredHouses(sorted);
   }, [houses, criteria, sortBy]);
+
+  // Recherche : événement debounce pour ne pas envoyer un hit par frappe.
+  useEffect(() => {
+    if (isLoading || houses.length === 0) return;
+
+    const filters = [
+      criteria.location ? `ville:${criteria.location}` : '',
+      criteria.propertyTypes.length ? `type:${criteria.propertyTypes.join('|')}` : '',
+      criteria.maxPrice < 100000000 ? `budget:${criteria.maxPrice}` : '',
+      criteria.minSize > 0 ? `surface:${criteria.minSize}` : '',
+      criteria.rooms !== '0' ? `pieces:${criteria.rooms}` : '',
+      criteria.bedrooms !== '0' ? `chambres:${criteria.bedrooms}` : '',
+      criteria.bathrooms !== '0' ? `sdb:${criteria.bathrooms}` : '',
+      criteria.amenities.length ? `annexes:${criteria.amenities.join('|')}` : '',
+      criteria.condition !== 'disponible' ? `etat:${criteria.condition}` : '',
+      sortBy !== 'newest' ? `tri:${sortBy}` : '',
+    ].filter(Boolean).join(', ') || 'aucun';
+
+    const key = `${filters}|${filteredHouses.length}`;
+    if (key === lastSearchRef.current) return;
+
+    const timer = window.setTimeout(() => {
+      lastSearchRef.current = key;
+      trackEvent('search', { filters, resultCount: filteredHouses.length });
+    }, 900);
+
+    return () => window.clearTimeout(timer);
+  }, [criteria, sortBy, filteredHouses.length, houses.length, isLoading]);
 
 
   const handleInputChange = (

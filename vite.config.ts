@@ -39,9 +39,27 @@ function inlineCssPlugin(): Plugin {
   }
 }
 
+/**
+ * Échoue tôt si la clé Firebase n'est pas fournie par `.env` (voir `.env.example`).
+ * Elle est injectée dans `index.html` et utilisée par Firestore REST : sans elle,
+ * le préchargement et les pages publiques seraient cassés silencieusement.
+ */
+function firebaseApiKeyPlugin(): Plugin {
+  return {
+    name: 'require-firebase-api-key',
+    configResolved(config) {
+      if (!config.env.VITE_FIREBASE_API_KEY) {
+        throw new Error(
+          'VITE_FIREBASE_API_KEY manquant : copiez .env.example vers .env et renseignez la clé Firebase.',
+        )
+      }
+    },
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), inlineCssPlugin()],
+  plugins: [react(), inlineCssPlugin(), firebaseApiKeyPlugin()],
   base: '/',
   // Les chunks Firebase embarquent de gros commentaires de licence : inutiles
   // pour le navigateur et signalés comme « JavaScript non minifié ».
