@@ -174,6 +174,15 @@ En local, les URLs doivent être absolues car Vite ne réécrit pas `/api/*` ver
 
 ## 6. Modèle de données
 
+### Périodes du tableau de bord
+
+Le tableau de bord propose **7, 30 ou 90 jours**, ainsi qu'une **période personnalisée** (366 jours maximum). L'API accepte :
+
+- `GET /api/analytics?days=30`
+- `GET /api/analytics?from=2026-10-01&to=2026-10-31`
+
+Les dates sont incluses et interprétées en heure de Guadeloupe. Cela permet de comparer une période précise avec Google Ads. Si le compte Google Ads utilise un autre fuseau horaire, de légers écarts peuvent apparaître en fin de journée.
+
 ### `analytics_events/{autoId}`
 
 Événement brut (rétention 90 jours via `expiresAt`) :
@@ -315,4 +324,5 @@ trackEvent('mon_evenement', { houseId: 'abc', method: 'test' });
 - Les visiteurs uniques sont dédupliqués par jour via un identifiant local anonyme. Un navigateur qui efface son stockage peut être recompté.
 - Le tableau de bord agrège au maximum 5 000 sessions par période pour rester rapide ; au-delà, les moyennes de durée sont approximatives.
 - Aucun historique antérieur au déploiement n'est disponible.
-- Le tableau de bord ne propose que 7, 30 ou 90 jours ; les agrégats quotidiens plus anciens restent stockés dans `analytics_daily` mais ne sont pas exposés par l'interface.
+- Le tableau de bord propose 7, 30, 90 jours ou une **période personnalisée** (366 jours maximum) ; les agrégats quotidiens restent stockés dans `analytics_daily` au-delà de 90 jours.
+- Pour les périodes anciennes, les agrégats quotidiens restent disponibles, mais le **détail** des emails, visites et actions est limité à 90 jours par la rétention TTL.

@@ -11,6 +11,7 @@ import { Link } from 'react-router-dom';
 import {
   AlertTriangle,
   BarChart3,
+  CalendarDays,
   ChevronDown,
   Clock,
   Eye,
@@ -205,6 +206,36 @@ function formatLongDate(dateKey: string): string {
 function formatDay(dateKey: string): string {
   const [, month, day] = dateKey.split('-');
   return month && day ? `${day}/${month}` : dateKey;
+}
+
+function guadeloupeToday(): string {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Guadeloupe',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date());
+  const get = (type: string) => parts.find((part) => part.type === type)?.value || '';
+  return `${get('year')}-${get('month')}-${get('day')}`;
+}
+
+function addDaysKey(dateKey: string, delta: number): string {
+  const [year, month, day] = dateKey.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day) + delta * 86_400_000);
+  return [
+    date.getUTCFullYear(),
+    String(date.getUTCMonth() + 1).padStart(2, '0'),
+    String(date.getUTCDate()).padStart(2, '0'),
+  ].join('-');
+}
+
+function daysBetweenKeys(from: string, to: string): number {
+  const [fromYear, fromMonth, fromDay] = from.split('-').map(Number);
+  const [toYear, toMonth, toDay] = to.split('-').map(Number);
+  return Math.round(
+    (Date.UTC(toYear, toMonth - 1, toDay) - Date.UTC(fromYear, fromMonth - 1, fromDay)) /
+      86_400_000,
+  );
 }
 
 function formatTime(iso: string): string {
@@ -812,7 +843,12 @@ function LoadingSkeleton() {
 }
 
 export default function AdminAnalytics({ houses }: { houses: House[] }) {
-  const [days, setDays] = useState(30);
+  const [query, setQuery] = useState('days=30');
+  const [rangeMode, setRangeMode] = useState<'7' | '30' | '90' | 'custom'>('30');
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
+  const [showDates, setShowDates] = useState(false);
+  const [dateError, setDateError] = useState('');
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -828,7 +864,7 @@ export default function AdminAnalytics({ houses }: { houses: House[] }) {
       if (!user) throw new Error('Session administrateur expirée. Reconnectez-vous.');
 
       const token = await user.getIdToken();
-      const response = await fetch(`${API_URL}?days=${days}`, {
+      const response = await fetch(`${API_URL}?${query}`, {
         headers: { Authorization: `Bearer ${token}` },
         cache: 'no-store',
       });
@@ -851,11 +887,53 @@ export default function AdminAnalytics({ houses }: { houses: House[] }) {
     } finally {
       if (requestId === requestRef.current) setLoading(false);
     }
-  }, [days]);
+  }, [query]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  const applyPreset = (value: 7 | 30 | 90) => {
+    setRangeMode(String(value) as '7' | '30' | '90');
+    setShowDates(false);
+    setDateError('');
+    setQuery(`days=${value}`);
+  };
+
+  const toggleDates = () => {
+    if (!customFrom || !customTo) {
+      if (data) {
+        setCustomFrom(data.range.from);
+        setCustomTo(data.range.to);
+      } else {
+        const today = guadeloupeToday();
+        setCustomTo(today);
+        setCustomFrom(addDaysKey(today, -29));
+      }
+    }
+    setShowDates((value) => !value);
+    setDateError('');
+  };
+
+  const applyCustomRange = () => {
+    if (!customFrom || !customTo) {
+      setDateError('Choisissez une date de début et une date de fin.');
+      return;
+    }
+    const span = daysBetweenKeys(customFrom, customTo);
+    if (span < 0) {
+      setDateError('La date de début doit être avant la date de fin.');
+      return;
+    }
+    if (span >= 366) {
+      setDateError('La période ne peut pas dépasser 366 jours.');
+      return;
+    }
+    setRangeMode('custom');
+    setShowDates(false);
+    setDateError('');
+    setQuery(`from=${encodeURIComponent(customFrom)}&to=${encodeURIComponent(customTo)}`);
+  };
 
   const housesById = useMemo(() => new Map(houses.map((house) => [house.id, house])), [houses]);
   const totals = data?.totals || {};
@@ -878,20 +956,35 @@ export default function AdminAnalytics({ houses }: { houses: House[] }) {
           )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex bg-gray-100 rounded-lg p-1">
+          <div className="flex flex-wrap bg-gray-100 rounded-lg p-1">
             {[7, 30, 90].map((value) => (
               <button
                 key={value}
                 type="button"
-                onClick={() => setDays(value)}
+                onClick={() => applyPreset(value as 7 | 30 | 90)}
                 className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
-                  days === value ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                  rangeMode === String(value) && !showDates
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-800'
                 }`}
                 title={`Voir les ${value} derniers jours`}
               >
                 {value} j
               </button>
             ))}
+            <button
+              type="button"
+              onClick={toggleDates}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+                rangeMode === 'custom' || showDates
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-800'
+              }`}
+              title="Choisir une période personnalisée"
+            >
+              <CalendarDays className="w-3.5 h-3.5" />
+              Dates
+            </button>
           </div>
           <button
             type="button"
@@ -904,6 +997,52 @@ export default function AdminAnalytics({ houses }: { houses: House[] }) {
           </button>
         </div>
       </div>
+
+      {showDates && (
+        <div className="bg-white border border-gray-100 rounded-xl shadow-sm p-4 flex flex-col md:flex-row md:items-end gap-3">
+          <div className="flex-1">
+            <label htmlFor="analytics-from" className="block text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-1">
+              Du
+            </label>
+            <input
+              id="analytics-from"
+              type="date"
+              value={customFrom}
+              max={customTo || guadeloupeToday()}
+              onChange={(event) => {
+                setCustomFrom(event.target.value);
+                setDateError('');
+              }}
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 bg-white"
+            />
+          </div>
+          <div className="flex-1">
+            <label htmlFor="analytics-to" className="block text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-1">
+              Au
+            </label>
+            <input
+              id="analytics-to"
+              type="date"
+              value={customTo}
+              min={customFrom || undefined}
+              max={guadeloupeToday()}
+              onChange={(event) => {
+                setCustomTo(event.target.value);
+                setDateError('');
+              }}
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 bg-white"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={applyCustomRange}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-semibold hover:bg-black transition-colors"
+          >
+            Afficher cette période
+          </button>
+          {dateError && <p className="text-xs text-red-600 md:ml-2">{dateError}</p>}
+        </div>
+      )}
 
       {loading && !data ? (
         <LoadingSkeleton />
@@ -1063,6 +1202,10 @@ export default function AdminAnalytics({ houses }: { houses: House[] }) {
               Derniers emails envoyés
             </h4>
             <SubmissionsTable items={data.recentSubmissions || []} housesById={housesById} />
+            <p className="mt-3 text-xs text-gray-400">
+              Le détail des emails est conservé 90 jours. Les compteurs et le graphique restent disponibles
+              pour les périodes plus anciennes.
+            </p>
           </Section>
 
           <div className="grid gap-6 lg:grid-cols-2">
@@ -1114,6 +1257,8 @@ export default function AdminAnalytics({ houses }: { houses: House[] }) {
                 <p className="text-xs text-gray-500">
                   Vocabulaire : un « événement » est une action enregistrée (clic, recherche, envoi de
                   formulaire…). Les ouvertures de page sont comptées séparément dans « Pages vues ».
+                  Les visites et actions détaillées sont conservées 90 jours ; les agrégats quotidiens
+                  restent disponibles au-delà.
                 </p>
                 <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                   <Section title="Appareils" subtitle="Répartition des pages vues par appareil">

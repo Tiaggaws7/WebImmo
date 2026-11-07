@@ -21,6 +21,7 @@ const VISITOR_DAYS_COLLECTION = "analytics_visitor_days";
 const SUBMISSIONS_COLLECTION = "analytics_submissions";
 const RETENTION_DAYS = 90;
 const MAX_SESSION_DURATION_MS = 2 * 60 * 60 * 1000;
+const MAX_CUSTOM_RANGE_DAYS = 366;
 const GUADELOUPE_TZ = "America/Guadeloupe";
 const MAX_BODY_BYTES = 16 * 1024;
 const HASH_SALT = process.env.ANALYTICS_HASH_SALT || "webimmo-analytics-v1";
@@ -247,6 +248,29 @@ function addDays(dateKey: string, delta: number): string {
     String(date.getUTCMonth() + 1).padStart(2, "0"),
     String(date.getUTCDate()).padStart(2, "0"),
   ].join("-");
+}
+
+function isValidDateKey(value: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) && addDays(value, 0) === value;
+}
+
+function daysBetweenKeys(from: string, to: string): number {
+  const [fromYear, fromMonth, fromDay] = from.split("-").map(Number);
+  const [toYear, toMonth, toDay] = to.split("-").map(Number);
+  return Math.round(
+    (Date.UTC(toYear, toMonth - 1, toDay) - Date.UTC(fromYear, fromMonth - 1, fromDay)) /
+      86_400_000,
+  );
+}
+
+function dateRange(from: string, to: string): string[] {
+  const dates: string[] = [];
+  let cursor = from;
+  while (cursor <= to && dates.length < MAX_CUSTOM_RANGE_DAYS) {
+    dates.push(cursor);
+    cursor = addDays(cursor, 1);
+  }
+  return dates;
 }
 
 function parseUserAgent(userAgent: string): { device: string; browser: string; os: string } {
@@ -888,11 +912,33 @@ export const analytics = onRequest(
       }
 
       const requestedDays = Number(String(req.query.days || "30"));
-      const days = [7, 30, 90].includes(requestedDays) ? requestedDays : 30;
-      const today = guadeloupeDate();
-      const dates = Array.from({ length: days }, (_, index) =>
-        addDays(today, -(days - 1 - index)),
-      );
+      const presetDays = [7, 30, 90].includes(requestedDays) ? requestedDays : 30;
+      const fromParam = String(req.query.from || "").trim();
+      const toParam = String(req.query.to || "").trim();
+      let rangeFrom: string;
+      let rangeTo: string;
+      let dates: string[];
+
+      if (fromParam || toParam) {
+        if (!isValidDateKey(fromParam) || !isValidDateKey(toParam)) {
+          res.status(400).json({ error: "Dates invalides" });
+          return;
+        }
+        const span = daysBetweenKeys(fromParam, toParam);
+        if (span < 0 || span >= MAX_CUSTOM_RANGE_DAYS) {
+          res.status(400).json({
+            error: `Période invalide : ${MAX_CUSTOM_RANGE_DAYS} jours maximum`,
+          });
+          return;
+        }
+        rangeFrom = fromParam;
+        rangeTo = toParam;
+        dates = dateRange(rangeFrom, rangeTo);
+      } else {
+        rangeTo = guadeloupeDate();
+        rangeFrom = addDays(rangeTo, -(presetDays - 1));
+        dates = Array.from({ length: presetDays }, (_, index) => addDays(rangeFrom, index));
+      }
 
       const dailyReferences = dates.map((date) =>
         admin.firestore().collection(DAILY_COLLECTION).doc(date),
@@ -913,7 +959,7 @@ export const analytics = onRequest(
         .firestore()
         .collection(SESSIONS_COLLECTION)
         .where("date", ">=", dates[0])
-        .where("date", "<=", today)
+        .where("date", "<=", rangeTo)
         .limit(5000)
         .get();
 
@@ -938,36 +984,42 @@ export const analytics = onRequest(
       const recentEventsSnapshot = await admin
         .firestore()
         .collection(EVENTS_COLLECTION)
-        .orderBy("timestamp", "desc")
-        .limit(120)
+        .where("date", ">=", rangeFrom)
+        .where("date", "<=", rangeTo)
+        .limit(500)
         .get();
 
       const recentEvents = recentEventsSnapshot.docs
         .map((document) => eventToJson(document.data(), document.id))
         .filter((event) => event.name !== "page_leave" && event.name !== "scroll_depth")
+        .sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp))
         .slice(0, 60);
 
       const recentSessionsSnapshot = await admin
         .firestore()
         .collection(SESSIONS_COLLECTION)
-        .orderBy("lastSeen", "desc")
-        .limit(20)
+        .where("date", ">=", rangeFrom)
+        .where("date", "<=", rangeTo)
+        .limit(200)
         .get();
 
-      const recentSessions = recentSessionsSnapshot.docs.map((document) =>
-        sessionToJson(document.data()),
-      );
+      const recentSessions = recentSessionsSnapshot.docs
+        .map((document) => sessionToJson(document.data()))
+        .sort((a, b) => Date.parse(b.time) - Date.parse(a.time))
+        .slice(0, 20);
 
       const recentSubmissionsSnapshot = await admin
         .firestore()
         .collection(SUBMISSIONS_COLLECTION)
-        .orderBy("timestamp", "desc")
-        .limit(40)
+        .where("date", ">=", rangeFrom)
+        .where("date", "<=", rangeTo)
+        .limit(200)
         .get();
 
-      const recentSubmissions = recentSubmissionsSnapshot.docs.map((document) =>
-        eventToJson(document.data(), document.id),
-      );
+      const recentSubmissions = recentSubmissionsSnapshot.docs
+        .map((document) => eventToJson(document.data(), document.id))
+        .sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp))
+        .slice(0, 40);
 
       const dwellTotals = mergeMap(dailyRows, "pathDwell");
       const dwellCounts = new Map(
@@ -997,7 +1049,7 @@ export const analytics = onRequest(
       res.set("Cache-Control", "private, no-store");
       res.status(200).json({
         generatedAt: new Date().toISOString(),
-        range: { days, from: dates[0], to: today },
+        range: { days: dates.length, from: rangeFrom, to: rangeTo },
         totals,
         daily: dailyRows.map((row) => ({
           date: row.date,
