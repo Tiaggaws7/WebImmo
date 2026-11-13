@@ -200,10 +200,20 @@ export async function fetchHouse(id: string): Promise<House | null> {
   return document ? (decodeDocument(document) as unknown as House) : null;
 }
 
-/** Démarre les requêtes au plus tôt, sans bloquer le rendu. */
-export function prefetchPublicData(): void {
-  void fetchHouses().catch(() => {});
-  void fetchHomepageSettings().catch(() => {});
+/**
+ * Démarre les requêtes au plus tôt, sans bloquer le rendu.
+ *
+ * Seules les routes qui affichent des annonces chargent la collection :
+ * `/Estimation`, `/house/:id` et `/Gestion` n'en ont pas besoin, et le JSON
+ * (~33 Ko gzip + un aller-retour Firestore) retardait leur premier rendu.
+ */
+export function prefetchPublicData(pathname: string = window.location.pathname): void {
+  const page = pathname.replace(/\/+$/, '').toLowerCase() || '/';
+  const needsHouses =
+    page === '/' || page === '/acheter' || page === '/vendre' || page === '/elisebuil';
+
+  if (needsHouses) void fetchHouses().catch(() => {});
+  if (page === '/') void fetchHomepageSettings().catch(() => {});
 }
 
 /** À appeler après une écriture depuis le panneau d'administration. */

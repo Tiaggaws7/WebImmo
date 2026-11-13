@@ -192,7 +192,7 @@ const GoogleReviews: React.FC = () => {
       <div className="relative">
         <button 
           onClick={goPrev}
-          className="absolute left-0 top-1/2 -translate-y-1/2 -ml-4 sm:-ml-12 lg:-ml-16 z-20 bg-white p-3 md:p-4 rounded-full shadow-lg border border-gray-100 hover:bg-gray-50 hover:scale-105 transition-all hidden sm:flex items-center justify-center text-gray-600 hover:text-primary focus:outline-none"
+          className="absolute left-0 top-1/2 -translate-y-1/2 -ml-4 lg:-ml-6 z-20 bg-white p-3 md:p-4 rounded-full shadow-lg border border-gray-100 hover:bg-gray-50 hover:scale-105 transition-all hidden sm:flex items-center justify-center text-gray-600 hover:text-primary focus:outline-none"
           aria-label="Avis précédent"
         >
           <ChevronLeft className="w-6 h-6" />
@@ -200,7 +200,7 @@ const GoogleReviews: React.FC = () => {
 
         <button 
           onClick={goNext}
-          className="absolute right-0 top-1/2 -translate-y-1/2 -mr-4 sm:-mr-12 lg:-mr-16 z-20 bg-white p-3 md:p-4 rounded-full shadow-lg border border-gray-100 hover:bg-gray-50 hover:scale-105 transition-all hidden sm:flex items-center justify-center text-gray-600 hover:text-primary focus:outline-none"
+          className="absolute right-0 top-1/2 -translate-y-1/2 -mr-4 lg:-mr-6 z-20 bg-white p-3 md:p-4 rounded-full shadow-lg border border-gray-100 hover:bg-gray-50 hover:scale-105 transition-all hidden sm:flex items-center justify-center text-gray-600 hover:text-primary focus:outline-none"
           aria-label="Avis suivant"
         >
           <ChevronRight className="w-6 h-6" />
@@ -225,7 +225,7 @@ const GoogleReviews: React.FC = () => {
         </div>
         
         {/* Navigation Dots for Mobile */}
-        <div className="flex justify-center gap-0 -mx-2 mt-8 md:hidden">
+        <div className="flex flex-wrap justify-center gap-0 -mx-2 mt-8 md:hidden">
           {Array.from({ length: maxIndex + 1 }).map((_, dotIdx) => (
             <button
               key={dotIdx}

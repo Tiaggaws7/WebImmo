@@ -24,19 +24,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://firebasestorage.googleapis.com" />
     <link rel="preconnect" href="https://firestore.googleapis.com" />
-    <link
-      rel="preload"
-      as="image"
-      href="/hero/hero-1280.webp"
-      imagesrcset="/hero/hero-640.webp 640w, /hero/hero-960.webp 960w, /hero/hero-1280.webp 1280w, /hero/hero-1600.webp 1600w"
-      imagesizes="100vw"
-      fetchpriority="high"
-    />
-
     <!--
-      Démarre les lectures Firestore (REST) et précharge l'image hero dès la
-      lecture du HTML, avant même le téléchargement de React. C'est ce qui
-      supprime la découverte tardive de l'image LCP (8,5 s → ~1,5 s).
+      Démarre les lectures Firestore (REST) avant le téléchargement de React,
+      et précharge l'image hero de l'accueil.
+
+      Le préchargement est limité à la page qui l'utilise : sur /Acheter,
+      /Vendre, /EliseBUIL, /Estimation ou une fiche bien, le hero de l'accueil
+      n'est jamais affiché et ses ~100 Ko retardaient le JavaScript et les
+      données de la page.
     -->
     <script>
       (function () {
@@ -46,6 +41,13 @@
           APP_CHECK_SITE_KEY.length > 0 && APP_CHECK_SITE_KEY.indexOf('%VITE_') !== 0;
         var BASE = 'https://firestore.googleapis.com/v1/projects/webimmo-6189a/databases/(default)/documents/';
         var preloaded = {};
+
+        // Route demandée : chaque page ne télécharge que les données et les
+        // images dont elle a besoin (le HTML est le même pour toutes les routes).
+        var PAGE = (location.pathname || '/').replace(/\/+$/, '').toLowerCase() || '/';
+        var NEEDS_SETTINGS = PAGE === '/';
+        var NEEDS_HOUSES =
+          PAGE === '/' || PAGE === '/acheter' || PAGE === '/vendre' || PAGE === '/elisebuil';
 
         function get(path) {
           return fetch(BASE + path + (path.indexOf('?') === -1 ? '?' : '&') + 'key=' + KEY)
@@ -71,7 +73,7 @@
         var LOCAL_SRCSET = '/hero/hero-640.webp 640w, /hero/hero-960.webp 960w, /hero/hero-1280.webp 1280w, /hero/hero-1600.webp 1600w';
         var OPTIMIZED_HERO_MARKER = 'settings%2Fhero-image-1791818766770';
         function preloadLocal() {
-          preload('/hero/hero-960.webp', LOCAL_SRCSET, '100vw');
+          preload('/hero/hero-1600.webp', LOCAL_SRCSET, '100vw');
         }
 
         // Le hero actuel existe aussi en WebP optimisé local : on évite ainsi
@@ -82,41 +84,35 @@
             : url;
         }
 
+        // Sur l'accueil, le hero est l'élément LCP : on lance son téléchargement
+        // immédiatement, sans attendre la réponse Firestore.
+        if (NEEDS_SETTINGS) preloadLocal();
+
         // App Check exige un jeton obtenu par le SDK : le préchargement REST
         // direct n'est possible que lorsque App Check est désactivé.
         if (!APP_CHECK_ENABLED) {
-          window.__WEB_IMMO_FS__ = {
-            settings: get('settings/homepage'),
-            houses: get('houses?pageSize=300')
-          };
+          var prefetched = {};
+          if (NEEDS_SETTINGS) prefetched.settings = get('settings/homepage');
+          if (NEEDS_HOUSES) prefetched.houses = get('houses?pageSize=300');
+          window.__WEB_IMMO_FS__ = prefetched;
 
-          var cached = null;
-          try { cached = localStorage.getItem('home_hero_bg'); } catch (error) { /* stockage indisponible */ }
-          if (cached) {
-            var cachedHero = localHero(cached);
-            if (cachedHero.indexOf('/hero/') !== 0) preload(cachedHero);
-          }
-
-          // Si Firestore est lent (> 700 ms), on précharge la photo locale de
-          // secours : dans le cas normal, seul le vrai hero est téléchargé.
-          setTimeout(function () {
-            if (!window.__WEB_IMMO_HERO__) preloadLocal();
-          }, 700);
-
-          window.__WEB_IMMO_FS__.settings.then(function (doc) {
-            var url = doc && doc.fields && doc.fields.heroImage && doc.fields.heroImage.stringValue;
-            if (url) {
-              var hero = localHero(url);
-              window.__WEB_IMMO_HERO__ = hero;
-              if (hero.indexOf('/hero/') !== 0) preload(hero);
-            } else {
-              preloadLocal();
+          if (NEEDS_SETTINGS) {
+            var cached = null;
+            try { cached = localStorage.getItem('home_hero_bg'); } catch (error) { /* stockage indisponible */ }
+            if (cached) {
+              var cachedHero = localHero(cached);
+              if (cachedHero.indexOf('/hero/') !== 0) preload(cachedHero);
             }
-          });
-        } else {
-          // Le SDK App Check doit charger avant toute lecture Firestore :
-          // on précharge la photo locale pour le LCP, React corrigera ensuite.
-          preloadLocal();
+
+            prefetched.settings.then(function (doc) {
+              var url = doc && doc.fields && doc.fields.heroImage && doc.fields.heroImage.stringValue;
+              if (url) {
+                var hero = localHero(url);
+                window.__WEB_IMMO_HERO__ = hero;
+                if (hero.indexOf('/hero/') !== 0) preload(hero);
+              }
+            });
+          }
         }
       })();
     </script>
@@ -170,51 +166,51 @@
           "ratingValue": "5.0",
           "bestRating": "5",
           "worstRating": "1",
-          "ratingCount": "16",
-          "reviewCount": "16"
+          "ratingCount": "23",
+          "reviewCount": "23"
         },
         "review": [
           {
             "@type": "Review",
             "author": {
               "@type": "Person",
-              "name": "diamante marchaux"
+              "name": "Laura Harismendy"
             },
-            "datePublished": "2024-03-15",
+            "datePublished": "2026-11-12",
             "reviewRating": {
               "@type": "Rating",
               "ratingValue": "5",
               "bestRating": "5"
             },
-            "reviewBody": "Conseillé par une amie, je ne regrette ABSOLUMENT pas d'avoir fait appel à l'agence. Elise est patiente, très efficace et surtout TRÈS PROFESSIONNELLE !!! Ses conseils et son estimation nous ont beaucoup aidé ! Encore merci!!! Je recommande à 100%!!!!"
+            "reviewBody": "J'ai confié à Me BUIL la vente de mon bien en exclusivité et je n'aurai pas pu espérer mieux . Réactive, professionnelle, à l'écoute et comprehensive, mon bien à trouvé preneur en 1 mois et demi à un prix juste ! Encore merci Me Buil ! Adan on dòt soley !!"
           },
           {
             "@type": "Review",
             "author": {
               "@type": "Person",
-              "name": "Klodin L"
+              "name": "Ludovic Bussiere"
             },
-            "datePublished": "2024-02-20",
+            "datePublished": "2026-11-12",
             "reviewRating": {
               "@type": "Rating",
               "ratingValue": "5",
               "bestRating": "5"
             },
-            "reviewBody": "Mme BUIL est une personne agréable, à l'écoute, très professionnelle et proactive. La mission a été gérée en 1 semaine.. Vraiment très efficace. Je recommande à 100 pour cent"
+            "reviewBody": "Nous sommes pleinement satisfaits de l'accompagnement de Meilleurs bien par l'intermédiaire d'Elise BUIL. Nous remercions Elise pour son accompagnement, sa réactivité et son professionnalisme de la première visite jusqu'à la signature. Nous ne pouvons que recommander ses services!"
           },
           {
             "@type": "Review",
             "author": {
               "@type": "Person",
-              "name": "Audrey Marcon"
+              "name": "Célia ALBERI-PICORD"
             },
-            "datePublished": "2024-02-10",
+            "datePublished": "2026-10-13",
             "reviewRating": {
               "@type": "Rating",
               "ratingValue": "5",
               "bestRating": "5"
             },
-            "reviewBody": "D'un professionnel exceptionnel et d'une gentillesse extrême. Je recommande vivement Élise pour la vente de votre maison !!"
+            "reviewBody": "Sérieure et rapide, Madame Buil a été exceptionnelle. Le plus appréciable est son expertise en matière de conseil (elle connait très bien sa matière), la qualité de sa clientèle (elle présente de vrais acheteurs à de vrais vendeurs et vice versa), son tempérament jovial et très humain. Merci à elle, je la recommande sans réserve."
           }
         ]
       }

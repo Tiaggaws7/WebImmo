@@ -566,8 +566,8 @@ export default function HouseExplorer() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredHouses.map((house) => (
-              <HouseCard key={house.id} house={house} />
+            {filteredHouses.map((house, index) => (
+              <HouseCard key={house.id} house={house} priority={index === 0} />
             ))}
           </div>
         )}
@@ -577,7 +577,7 @@ export default function HouseExplorer() {
   );
 }
 
-const HouseCard = ({ house }: { house: House }) => {
+const HouseCard = ({ house, priority = false }: { house: House; priority?: boolean }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
 
@@ -638,7 +638,8 @@ const HouseCard = ({ house }: { house: House }) => {
             className={`w-full h-full object-cover group-hover:scale-105 transition-all duration-700 ease-out ${
               isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
             }`}
-            loading="lazy"
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
             decoding="async"
             onLoad={() => setIsLoaded(true)}
             onError={() => {

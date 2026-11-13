@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  /* Garde-fou : un élément trop large (carrousel, marge négative, contenu
+     dynamique) ne doit jamais rendre la page scrollable horizontalement sur
+     mobile — cela crée un bandeau blanc à droite et décale les éléments
+     `fixed` (bouton WhatsApp). `clip` (et non `hidden`) n'ouvre pas de
+     conteneur de défilement : `position: sticky` continue de fonctionner. */
+  html {
+    overflow-x: clip;
+  }
+}
+
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
     display: none;

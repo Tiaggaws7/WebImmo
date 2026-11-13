@@ -57,9 +57,72 @@ function firebaseApiKeyPlugin(): Plugin {
   }
 }
 
+/**
+ * Précharge le chunk JavaScript de la route demandée dès la lecture du HTML.
+ *
+ * Sans cela, le chunk n'est découvert qu'après l'exécution de React : sur
+ * mobile, ce détour coûte un aller-retour réseau complet avant d'afficher
+ * /Acheter, /Vendre ou /EliseBUIL. Le HTML est commun à toutes les routes : on
+ * injecte donc une petite table de correspondance, et seules les pages
+ * réellement visitées téléchargent leur chunk (aucun octet gaspillé).
+ */
+function routeChunkPreloadPlugin(): Plugin {
+  const componentByRoute: Record<string, string> = {
+    '/': 'home',
+    '/acheter': 'HouseExplorer',
+    '/vendre': 'Selling_form',
+    '/elisebuil': 'RealWhoamI',
+    '/estimation': 'EstimationForm',
+    '/gestion': 'adminPanel',
+  };
+  const houseRoute = 'HouseDetails';
+
+  return {
+    name: 'route-chunk-preload',
+    apply: 'build',
+    enforce: 'post',
+    transformIndexHtml: {
+      order: 'post',
+      handler(html, ctx) {
+        if (!ctx.bundle) return html;
+
+        const chunkByComponent: Record<string, string> = {};
+        const dependenciesByFile: Record<string, string[]> = {};
+
+        for (const [fileName, output] of Object.entries(ctx.bundle)) {
+          if (output.type !== 'chunk') continue;
+          dependenciesByFile[fileName] = output.imports.map((dependency) => `/${dependency}`);
+          if (!output.facadeModuleId) continue;
+          const component = output.facadeModuleId.split('/').pop()?.replace(/\.tsx?$/, '');
+          if (component) chunkByComponent[component] = fileName;
+        }
+
+        const preloadFor = (component: string): string[] | undefined => {
+          const fileName = chunkByComponent[component];
+          if (!fileName) return undefined;
+          return [`/${fileName}`, ...(dependenciesByFile[fileName] ?? [])];
+        };
+
+        const routes: Record<string, string[]> = {};
+        for (const [route, component] of Object.entries(componentByRoute)) {
+          const files = preloadFor(component);
+          if (files) routes[route] = files;
+        }
+        const houseFiles = preloadFor(houseRoute);
+        if (houseFiles) routes['/house/'] = houseFiles;
+        if (Object.keys(routes).length === 0) return html;
+
+        const script = `<script>(function(){var r=${JSON.stringify(routes)};var p=(location.pathname||'/').replace(/\\/+$/,'').toLowerCase()||'/';var u=r[p]||(p.indexOf('/house/')===0?r['/house/']:null);if(!u)return;for(var i=0;i<u.length;i++){var l=document.createElement('link');l.rel='modulepreload';l.crossOrigin='';l.href=u[i];document.head.appendChild(l);}})();</script>`;
+
+        return html.replace('</head>', `  ${script}\n  </head>`);
+      },
+    },
+  };
+}
+
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), inlineCssPlugin(), firebaseApiKeyPlugin()],
+  plugins: [react(), inlineCssPlugin(), routeChunkPreloadPlugin(), firebaseApiKeyPlugin()],
   base: '/',
   // Les chunks Firebase embarquent de gros commentaires de licence : inutiles
   // pour le navigateur et signalés comme « JavaScript non minifié ».

@@ -3,9 +3,10 @@
  *
  * Le tag représente ~160 Ko de JavaScript et ~400 ms de blocage du thread
  * principal. Il n'est utile qu'à partir du moment où l'utilisateur interagit
- * (clic, saisie, défilement) : on le charge donc à la première interaction.
- * Un chargement différé après l'événement `load` est aussi programmé pour ne
- * pas bloquer le rendu initial.
+ * (clic, saisie, défilement) : on le charge donc uniquement au premier geste.
+ * Toute conversion (formulaire, appel, navigation) implique une interaction
+ * préalable, le tag est donc chargé à temps. Les visiteurs qui repartent sans
+ * interagir ne sont pas mesurés par Google Ads.
  *
  * La mesure d'audience du site est entièrement first-party (voir
  * `lib/tracking.ts`) : aucun événement n'est envoyé à Google Analytics.
@@ -82,34 +83,18 @@ function scheduleLoad(): void {
   if (loadScheduled || scriptRequested) return;
   loadScheduled = true;
 
-  const start = () => {
-    loadTags();
-  };
-
+  // Le tag n'est téléchargé qu'au premier geste de l'utilisateur. Toute
+  // conversion (soumission de formulaire, clic sur un numéro, navigation)
+  // implique une interaction préalable : le tag est donc chargé à temps.
+  // Cela évite ~160 Ko de JavaScript publicitaire sur la première visite.
   const events = ['pointerdown', 'keydown', 'touchstart', 'scroll'] as const;
   const onInteraction = () => {
-    start();
+    loadTags();
     for (const event of events) window.removeEventListener(event, onInteraction);
   };
   for (const event of events) {
     window.addEventListener(event, onInteraction, { once: true, passive: true });
   }
-
-  // Charge aussi après le rendu initial : les conversions Google Ads ne
-  // dépendent pas d'une interaction préalable.
-  const idle = () => {
-    const idleWindow = window as Window & {
-      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
-    };
-    if (idleWindow.requestIdleCallback) {
-      idleWindow.requestIdleCallback(start, { timeout: 4000 });
-    } else {
-      window.setTimeout(start, 2500);
-    }
-  };
-
-  if (document.readyState === 'complete') idle();
-  else window.addEventListener('load', idle, { once: true });
 }
 
 /**
@@ -143,5 +128,7 @@ export function resumeAnalytics(): void {
   ensureGtagStub();
   window.gtag?.('consent', 'update', { analytics_storage: 'granted', ad_storage: 'granted' });
   loadScheduled = false;
-  scheduleLoad();
+  // Le clic sur « Autoriser la mesure d'audience » est déjà une interaction :
+  // inutile d'attendre un autre geste, la personne vient de consentir.
+  loadTags();
 }

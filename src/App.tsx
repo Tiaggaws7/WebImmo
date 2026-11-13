@@ -5,13 +5,16 @@ import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import ScrollToTop from './components/ScrollToTop.tsx';
 import WhatsAppBubble from './components/WhatsAppBubble';
-import Home from './home.tsx';
 import AnalyticsFooter from './components/AnalyticsFooter';
 import { initAnalytics } from './lib/analytics';
 import { setupAutoTracking, trackPageview } from './lib/tracking';
 
-// La page d'accueil est le point d'entrée de la quasi-totalité des visites :
-// l'importer directement supprime un aller-retour réseau avant le premier rendu.
+// La page d'accueil est le point d'entrée de la quasi-totalité des visites.
+// Elle est préchargée depuis index.html (voir routeChunkPreloadPlugin) pour
+// éviter un aller-retour, mais reste hors du bundle initial : les visiteurs qui
+// arrivent directement sur /Acheter, /Vendre, etc. n'ont pas à télécharger son
+// code ni les avis clients.
+const Home = lazy(() => import('./home.tsx'));
 const Selling_form = lazy(() => import('./components/Selling_form'));
 const HouseExplorer = lazy(() => import('./components/HouseExplorer.tsx'));
 const HouseDetails = lazy(() => import('./components/HouseDetails.tsx'));

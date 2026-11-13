@@ -80,6 +80,22 @@ function cleanString(value: unknown, maxLength = 500): string {
   return cleaned.trim().slice(0, maxLength);
 }
 
+/** Conserve les retours à la ligne des messages et descriptions. */
+function cleanMultilineString(value: unknown, maxLength = 2000): string {
+  if (typeof value !== "string") return "";
+  const normalized = value.replace(/\r\n?/g, "\n");
+  let cleaned = "";
+  for (const character of normalized) {
+    if (character === "\n") {
+      cleaned += "\n";
+      continue;
+    }
+    const code = character.codePointAt(0) || 0;
+    cleaned += code < 32 || code === 127 ? " " : character;
+  }
+  return cleaned.trim().slice(0, maxLength);
+}
+
 function cleanEmail(value: unknown): string {
   const email = cleanString(value, 160).toLowerCase();
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) ? email : "";
@@ -196,8 +212,10 @@ function sanitizeData(value: unknown): Record<string, string | number | boolean 
     }
 
     if (typeof item === "string") {
-      const maxLength = LONG_TEXT_KEYS.has(key) ? 2000 : 160;
-      const text = cleanString(item, maxLength);
+      const maxLength = LONG_TEXT_KEYS.has(key) ? 5000 : 160;
+      const text = LONG_TEXT_KEYS.has(key)
+        ? cleanMultilineString(item, maxLength)
+        : cleanString(item, maxLength);
       if (text) clean[key] = text;
       continue;
     }
