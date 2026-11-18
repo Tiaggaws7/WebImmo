@@ -5,6 +5,8 @@
 > Les avis affichés sur le site viennent de [`src/data/reviews.json`](src/data/reviews.json).
 > Les commandes `firebase functions:secrets:set` de ce guide sont la cause de la
 > facture Secret Manager : ne les relancez pas.
+>
+> ➡️ La mise à jour automatique actuelle est décrite dans [AVIS_GOOGLE_AUTOMATIQUES.md](AVIS_GOOGLE_AUTOMATIQUES.md).
 
 ## 🎯 Vue d'ensemble
 

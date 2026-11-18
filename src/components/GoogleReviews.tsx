@@ -4,10 +4,13 @@ import reviewsData from "../data/reviews.json";
 
 // --- Types ---
 interface Review {
+  id?: string;
   author: string;
   rating: number;
-  date: string;
-  visitDate: string;
+  /** Date ISO de l'avis (remplie automatiquement depuis Google). */
+  createTime?: string;
+  /** Ancien format : date relative saisie à la main. */
+  date?: string;
   text: string;
   ownerResponse: string | null;
 }
@@ -21,6 +24,25 @@ interface ReviewsData {
 }
 
 // --- Helpers & Subcomponents ---
+
+/** « il y a 3 mois », calculé à l'affichage pour rester juste dans le temps. */
+const formatRelativeDate = (iso?: string): string | null => {
+  if (!iso) return null;
+  const time = new Date(iso).getTime();
+  if (Number.isNaN(time)) return null;
+  const days = Math.max(0, Math.floor((Date.now() - time) / 86_400_000));
+  const plural = (n: number, unit: string) => `il y a ${n === 1 ? "un" : n} ${unit}`;
+  if (days < 1) return "aujourd'hui";
+  if (days < 7) return days === 1 ? "il y a un jour" : `il y a ${days} jours`;
+  if (days < 30) {
+    const weeks = Math.floor(days / 7);
+    return weeks === 1 ? "il y a une semaine" : `il y a ${weeks} semaines`;
+  }
+  if (days < 365) return plural(Math.max(1, Math.floor(days / 30)), "mois");
+  const years = Math.floor(days / 365);
+  return plural(years, years === 1 ? "an" : "ans");
+};
+
 const renderStars = (rating: number, size: string = "text-lg", activeColor: string = "text-yellow-400") => {
   const stars = [];
   for (let i = 0; i < 5; i++) {
@@ -40,42 +62,58 @@ const ReviewCard: React.FC<{ review: Review }> = ({ review }) => {
   const [showResponse, setShowResponse] = useState(false);
 
   return (
-    <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 hover:shadow-xl transition-shadow duration-300 flex flex-col h-full relative">
+    <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 hover:shadow-xl transition-shadow duration-300 flex flex-col h-full relative overflow-hidden">
       <div className="flex items-center gap-1 mb-5">
           {renderStars(review.rating, "text-xl", "text-yellow-400")}
       </div>
-      
+
       <div className="flex-grow flex flex-col mb-8">
-        <p className={`text-gray-700 italic leading-relaxed transition-all duration-300 ${showResponse ? '' : 'line-clamp-4'}`}>
+        <p className="text-gray-700 italic leading-relaxed line-clamp-4">
           "{review.text}"
         </p>
-        
-        {review.ownerResponse && !showResponse && (
-          <button 
+
+        {review.ownerResponse && (
+          <button
             onClick={() => setShowResponse(true)}
             className="mt-4 text-left text-[13px] text-gray-500 font-semibold hover:text-primary transition-colors inline-block w-max"
           >
             Voir la réponse
           </button>
         )}
-
-        {review.ownerResponse && showResponse && (
-          <div className="mt-5 border-l-[3px] border-primary/40 bg-red-50/50 py-3 px-4 rounded-r-xl relative animate-in fade-in duration-300">
-            <button 
-              onClick={() => setShowResponse(false)}
-              className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-[10px] uppercase font-bold transition-colors"
-            >
-              Fermer
-            </button>
-            <p className="text-[10px] text-primary font-extrabold mb-1.5 uppercase tracking-widest pr-12">
-              Réponse d'Elise BUIL
-            </p>
-            <p className="text-gray-600 text-xs leading-relaxed whitespace-pre-line">
-              {review.ownerResponse}
-            </p>
-          </div>
-        )}
       </div>
+
+      {/* Panneau superposé : la carte garde sa taille, les autres avis ne bougent pas */}
+      {review.ownerResponse && (
+        <div
+          aria-hidden={!showResponse}
+          className={`absolute inset-0 z-10 bg-white rounded-3xl p-8 flex flex-col transition-[opacity,transform,visibility] duration-300 ease-out ${
+            showResponse
+              ? "opacity-100 translate-y-0 visible"
+              : "opacity-0 translate-y-3 invisible pointer-events-none"
+          }`}
+        >
+          <button
+            tabIndex={showResponse ? 0 : -1}
+            onClick={() => setShowResponse(false)}
+            className="absolute top-6 right-6 text-gray-400 hover:text-gray-700 text-[10px] uppercase font-bold transition-colors"
+          >
+            Fermer
+          </button>
+          <div className="overflow-y-auto pr-2 -mr-2 mt-2 [scrollbar-width:thin] [scrollbar-color:#e5e7eb_transparent]">
+            <p className="text-gray-700 italic text-sm leading-relaxed mb-4">
+              "{review.text}"
+            </p>
+            <div className="border-l-[3px] border-primary/40 bg-red-50/50 py-3 px-4 rounded-r-xl">
+              <p className="text-[10px] text-primary font-extrabold mb-1.5 uppercase tracking-widest">
+                Réponse d'Elise BUIL
+              </p>
+              <p className="text-gray-600 text-xs leading-relaxed whitespace-pre-line">
+                {review.ownerResponse}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       
       <div className="flex items-center gap-4 mt-auto pt-6 border-t border-gray-50">
         <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-primary font-bold text-lg flex-shrink-0">
@@ -85,7 +123,7 @@ const ReviewCard: React.FC<{ review: Review }> = ({ review }) => {
           <p className="font-bold text-gray-900 leading-tight text-sm">
             {review.author}
           </p>
-          <span className="text-xs text-gray-600">{review.date}</span>
+          <span className="text-xs text-gray-600">{formatRelativeDate(review.createTime) ?? review.date}</span>
         </div>
       </div>
       
@@ -215,7 +253,7 @@ const GoogleReviews: React.FC = () => {
           >
             {reviewsWithText.map((review, idx) => (
                <div 
-                 key={idx} 
+                 key={review.id ?? idx}
                  className="w-full md:w-1/3 flex-shrink-0 px-4"
                >
                  <ReviewCard review={review} />
