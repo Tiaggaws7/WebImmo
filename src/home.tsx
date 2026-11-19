@@ -8,22 +8,28 @@ import ProfilePicture from './components/ProfilePicture'
 import GoogleReviews from './components/GoogleReviews';
 import { MapPin, Search, Phone, CheckCircle2, ChevronDown, ArrowRight, Home as HomeIcon, Star } from 'lucide-react'
 import reviewsData from "./data/reviews.json";
-
-/** Photo de secours servie localement (préchargée) si Firestore tarde ou échoue. */
-const HERO_FALLBACK = '/hero/hero-1600.webp'
-const HERO_SRCSET = '/hero/hero-640.webp 640w, /hero/hero-960.webp 960w, /hero/hero-1280.webp 1280w, /hero/hero-1600.webp 1600w'
+import heroManifest from './lib/heroManifest.json'
+import SmartImage from './components/SmartImage'
 
 /**
- * Le hero actuel est également disponible en WebP optimisé dans /public/hero.
- * On l'utilise à la place du fichier Firebase Storage d'origine (240 Ko) tant
- * que l'administrateur n'a pas téléversé une nouvelle photo. Dès que l'URL
- * change, la nouvelle image distante est utilisée normalement.
+ * Le hero actuel est également disponible en local, en AVIF et WebP
+ * (src/lib/heroManifest.json, voir scripts/images/build-hero.mjs). On l'utilise à
+ * la place du fichier Firebase Storage d'origine tant que l'administrateur n'a
+ * pas téléversé une nouvelle photo. Dès que l'URL change, la nouvelle image
+ * distante est utilisée normalement (via /api/img, voir SmartImage).
  */
 const OPTIMIZED_HERO_MARKER = 'settings%2Fhero-image-1791818766770'
 
+/** '' = hero local. */
 function preferredHeroImage(url: string): string {
-  return url && url.includes(OPTIMIZED_HERO_MARKER) ? HERO_FALLBACK : url
+  return url && !url.includes(OPTIMIZED_HERO_MARKER) ? url : ''
 }
+
+const srcSetOf = (variants: { url: string; width: number }[]) =>
+  variants.map((variant) => `${variant.url} ${variant.width}w`).join(', ')
+const HERO_AVIF_SRCSET = srcSetOf(heroManifest.avif)
+const HERO_WEBP_SRCSET = srcSetOf(heroManifest.webp)
+const HERO_WEBP_DEFAULT = (heroManifest.webp.find((variant) => variant.width >= 1280) ?? heroManifest.webp[0]).url
 
 function Home() {
   const [houses, setHouses] = useState<House[]>([])
@@ -34,7 +40,7 @@ function Home() {
       getEarlyHeroImage()
         || localStorage.getItem('home_hero_bg')
         || '',
-    ) || HERO_FALLBACK
+    )
   })
   const [isLoadingHouses, setIsLoadingHouses] = useState(true)
   // Le hero (LCP) est rendu seul d'abord ; le reste arrive à la frame suivante.
@@ -197,12 +203,21 @@ function Home() {
         {/* Hero Section */}
         <section className="relative min-h-[100dvh] md:min-h-[max(600px,80vh)] flex items-center pt-32 pb-16 md:pt-20 md:pb-10 bg-slate-900">
           {/* Background Image Container */}
-          <div className="absolute inset-0 z-0 bg-slate-900">
-            {heroImage && (
-              <img
+          <div
+            className="absolute inset-0 z-0 bg-slate-900"
+            // Placeholder instantané : couleur moyenne + miniature floue (212 octets)
+            // visibles pendant le téléchargement de la photo.
+            style={{
+              backgroundColor: heroManifest.color,
+              backgroundImage: `url(${heroManifest.lqip})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          >
+            {heroImage ? (
+              <SmartImage
                 src={heroImage}
-                srcSet={heroImage.startsWith('/hero/') ? HERO_SRCSET : undefined}
-                sizes={heroImage.startsWith('/hero/') ? '100vw' : undefined}
+                sizes="100vw"
                 width={1600}
                 height={1200}
                 alt=""
@@ -210,6 +225,21 @@ function Home() {
                 fetchPriority="high"
                 decoding="async"
               />
+            ) : (
+              <picture className="contents">
+                <source type="image/avif" srcSet={HERO_AVIF_SRCSET} sizes="100vw" />
+                <img
+                  src={HERO_WEBP_DEFAULT}
+                  srcSet={HERO_WEBP_SRCSET}
+                  sizes="100vw"
+                  width={heroManifest.width}
+                  height={heroManifest.height}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  fetchPriority="high"
+                  decoding="async"
+                />
+              </picture>
             )}
             {/* Light, luminous overlay preserving vibrant natural daylight */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/25 to-black/20" />
@@ -569,8 +599,9 @@ const ExclusiveMainCard = ({
         )}
 
         {imageUrl && (
-          <img
+          <SmartImage
             src={imageUrl}
+            sizes="(min-width: 1024px) 66vw, 100vw"
             alt={house.title || "Maison principale"}
             width={1200}
             height={800}
@@ -653,8 +684,9 @@ const ExclusiveSideCard = ({
           )}
 
           {imageUrl && (
-            <img
+            <SmartImage
               src={imageUrl}
+              sizes="(min-width: 1024px) 33vw, 100vw"
               alt={house.title || `Maison ${house.id}`}
               width={1200}
               height={800}

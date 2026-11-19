@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import type { Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
+import { readFileSync } from 'node:fs'
 
 /**
  * Injecte la feuille de style directement dans index.html.
@@ -34,6 +35,32 @@ function inlineCssPlugin(): Plugin {
         }
 
         return html
+      },
+    },
+  }
+}
+
+/**
+ * Injecte dans index.html les variantes du hero (src/lib/heroManifest.json,
+ * produit par scripts/images/build-hero.mjs) : le script de préchargement du
+ * <head> et le composant Home lisent ainsi la même liste de fichiers.
+ */
+function heroManifestPlugin(): Plugin {
+  return {
+    name: 'hero-manifest',
+    transformIndexHtml: {
+      order: 'pre',
+      handler(html) {
+        const manifest = JSON.parse(readFileSync('src/lib/heroManifest.json', 'utf8')) as {
+          avif: { url: string; width: number }[]
+          webp: { url: string; width: number }[]
+        }
+        const slim = (list: { url: string; width: number }[]) =>
+          list.map(({ url, width }) => ({ url, width }))
+        return html.replace(
+          '__HERO_MANIFEST__',
+          JSON.stringify({ avif: slim(manifest.avif), webp: slim(manifest.webp) }),
+        )
       },
     },
   }
@@ -122,7 +149,7 @@ function routeChunkPreloadPlugin(): Plugin {
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), inlineCssPlugin(), routeChunkPreloadPlugin(), firebaseApiKeyPlugin()],
+  plugins: [react(), heroManifestPlugin(), inlineCssPlugin(), routeChunkPreloadPlugin(), firebaseApiKeyPlugin()],
   base: '/',
   // Les chunks Firebase embarquent de gros commentaires de licence : inutiles
   // pour le navigateur et signalés comme « JavaScript non minifié ».

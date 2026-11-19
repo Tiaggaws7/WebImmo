@@ -55,33 +55,55 @@
             .catch(function () { return null; });
         }
 
-        function preload(url, srcset, sizes) {
-          if (!url || preloaded[url]) return;
-          preloaded[url] = true;
+        // Variantes du hero générées par scripts/images/build-hero.mjs :
+        // le manifeste est injecté au build (voir vite.config.ts).
+        var HERO = __HERO_MANIFEST__;
+        var WIDTHS = [320, 480, 640, 800, 960, 1280, 1600, 2000];
+        var OPTIMIZED_HERO_MARKER = 'settings%2Fhero-image-1791818766770';
+
+        function srcsetOf(list) {
+          return list.map(function (v) { return v.url + ' ' + v.width + 'w'; }).join(', ');
+        }
+
+        // Précharge la variante que <picture> choisira (AVIF en priorité).
+        function preloadLocal() {
+          if (preloaded.local) return;
+          preloaded.local = true;
           var link = document.createElement('link');
           link.rel = 'preload';
           link.as = 'image';
-          link.href = url;
-          if (srcset) {
-            link.imageSrcset = srcset;
-            link.imageSizes = sizes;
-          }
+          link.type = 'image/avif';
+          link.imageSrcset = srcsetOf(HERO.avif);
+          link.imageSizes = '100vw';
           link.setAttribute('fetchpriority', 'high');
+          link.href = HERO.avif[HERO.avif.length - 1].url;
           document.head.appendChild(link);
         }
 
-        var LOCAL_SRCSET = '/hero/hero-640.webp 640w, /hero/hero-960.webp 960w, /hero/hero-1280.webp 1280w, /hero/hero-1600.webp 1600w';
-        var OPTIMIZED_HERO_MARKER = 'settings%2Fhero-image-1791818766770';
-        function preloadLocal() {
-          preload('/hero/hero-1600.webp', LOCAL_SRCSET, '100vw');
+        // Photo hero distante (téléversée par l'administrateur) : mêmes
+        // variantes que celles demandées par <SmartImage> via /api/img.
+        function preloadRemote(url) {
+          var m = /^https:\/\/firebasestorage\.googleapis\.com\/v0\/b\/[^/]+\/o\/([^?#]+)/.exec(url);
+          if (!m || preloaded[url]) return;
+          preloaded[url] = true;
+          var path = decodeURIComponent(m[1]);
+          var link = document.createElement('link');
+          link.rel = 'preload';
+          link.as = 'image';
+          link.type = 'image/avif';
+          link.imageSrcset = WIDTHS.map(function (w) {
+            return '/api/img?p=' + encodeURIComponent(path) + '&w=' + w + '&fm=avif ' + w + 'w';
+          }).join(', ');
+          link.imageSizes = '100vw';
+          link.setAttribute('fetchpriority', 'high');
+          link.href = '/api/img?p=' + encodeURIComponent(path) + '&w=1280&fm=avif';
+          document.head.appendChild(link);
         }
 
-        // Le hero actuel existe aussi en WebP optimisé local : on évite ainsi
-        // de télécharger le fichier Firebase de 240 Ko.
-        function localHero(url) {
-          return url && url.indexOf(OPTIMIZED_HERO_MARKER) !== -1
-            ? '/hero/hero-1600.webp'
-            : url;
+        // Le hero actuel existe aussi en local (AVIF/WebP optimisés) : on évite
+        // ainsi le fichier Firebase d'origine.
+        function isLocalHero(url) {
+          return !url || url.indexOf(OPTIMIZED_HERO_MARKER) !== -1;
         }
 
         // Sur l'accueil, le hero est l'élément LCP : on lance son téléchargement
@@ -99,17 +121,14 @@
           if (NEEDS_SETTINGS) {
             var cached = null;
             try { cached = localStorage.getItem('home_hero_bg'); } catch (error) { /* stockage indisponible */ }
-            if (cached) {
-              var cachedHero = localHero(cached);
-              if (cachedHero.indexOf('/hero/') !== 0) preload(cachedHero);
-            }
+            if (cached && !isLocalHero(cached)) preloadRemote(cached);
 
             prefetched.settings.then(function (doc) {
               var url = doc && doc.fields && doc.fields.heroImage && doc.fields.heroImage.stringValue;
               if (url) {
-                var hero = localHero(url);
-                window.__WEB_IMMO_HERO__ = hero;
-                if (hero.indexOf('/hero/') !== 0) preload(hero);
+                // '' = hero local ; sinon URL distante.
+                window.__WEB_IMMO_HERO__ = isLocalHero(url) ? '' : url;
+                if (!isLocalHero(url)) preloadRemote(url);
               }
             });
           }
