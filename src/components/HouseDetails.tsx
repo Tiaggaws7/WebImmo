@@ -14,6 +14,7 @@ import { getListingCoverImage } from "../lib/coverImage"
 import { trackEvent } from "../lib/tracking"
 import ProfilePicture from './ProfilePicture'
 import SmartImage from './SmartImage'
+import { optimizedSrcSet, storagePathOf } from '../lib/imageUrl'
 import { Helmet } from "react-helmet-async"
 
 const HouseDetails: React.FC = () => {
@@ -90,32 +91,38 @@ const HouseDetails: React.FC = () => {
     fetchHouseData()
   }, [id])
 
-  // Preload images progressively: next, then next+1, etc. (skips already loaded)
+  // Galerie plein écran : on précharge seulement les 2 photos suivantes, dans la
+  // variante optimisée que <SmartImage> demandera (même srcset/sizes). Avant, TOUTES
+  // les photos d'origine (jusqu'à 1,4 Mo chacune) étaient téléchargées dès l'ouverture
+  // de la fiche, en concurrence avec la photo principale (LCP) et sur mobile.
   useEffect(() => {
-    if (!house || house.images.length <= 1) return;
+    if (!house || !isGalleryOpen || house.images.length <= 1) return;
 
     let cancelled = false;
+    const total = house.images.length;
 
-    const preloadSequentially = async () => {
-      const total = house.images.length;
-      for (let offset = 1; offset < total; offset++) {
+    const preloadNext = async () => {
+      for (let offset = 1; offset <= Math.min(2, total - 1); offset++) {
         if (cancelled) break;
-        const index = (activeImageIndex + offset) % total;
-        const url = house.images[index];
-        if (preloadedRef.current.has(url)) continue; // Already loaded, skip
+        const url = house.images[(activeImageIndex + offset) % total];
+        if (preloadedRef.current.has(url)) continue;
         await new Promise<void>((resolve) => {
           const img = new Image();
           img.onload = () => { preloadedRef.current.add(url); resolve(); };
           img.onerror = () => resolve();
+          const path = storagePathOf(url);
+          if (path) {
+            img.sizes = '100vw';
+            img.srcset = optimizedSrcSet(path, 'avif');
+          }
           img.src = url;
         });
       }
     };
 
-    preloadSequentially();
-
+    void preloadNext();
     return () => { cancelled = true; };
-  }, [house, activeImageIndex])
+  }, [house, activeImageIndex, isGalleryOpen])
 
   const handleNextImage = () => {
     if (house) setActiveImageIndex((prev) => (prev + 1) % house.images.length)
