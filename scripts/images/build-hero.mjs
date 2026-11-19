@@ -8,8 +8,8 @@
  * - Les variantes sont encodées depuis la source, jamais depuis une variante
  *   déjà recompressée (pas de perte cumulée).
  * - Aucune variante n'est agrandie au-delà de la largeur de la source.
- * - Réglages mesurés (PSNR vs source, largeur 1280) : AVIF q60 ≈ 39,5 dB pour
- *   ~108 Ko, contre 34,4 dB pour l'ancien WebP de 105 Ko (artefacts visibles).
+ * - Réglages mesurés (PSNR vs source, largeur 1280) : AVIF q55 ≈ 38,5 dB pour
+ *   ~92 Ko, contre 34,4 dB pour l'ancien WebP de 105 Ko (artefacts visibles). Au-delà de ~72 Ko à 960 px, le LCP mobile se dégrade (Lighthouse, 4G simulée).
  * - Les noms contiennent le hash de leur contenu : `firebase.json` les sert en
  *   cache immuable d'un an, et une nouvelle image obtient de nouvelles URL.
  * - Écrit `src/lib/heroManifest.json`, lu par l'application ET injecté dans
@@ -34,7 +34,7 @@ if (!source) {
 const outDir = opt('out', 'public/hero')
 const manifestPath = opt('manifest', 'src/lib/heroManifest.json')
 const WIDTHS = [640, 960, 1280, 1600, 1920, 2400]
-const QUALITY = { avif: Number(opt('avif-quality', 60)), webp: Number(opt('webp-quality', 80)) }
+const QUALITY = { avif: Number(opt('avif-quality', 55)), webp: Number(opt('webp-quality', 80)) }
 
 const input = await readFile(source)
 const meta = await sharp(input).metadata()
