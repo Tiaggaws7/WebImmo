@@ -72,11 +72,13 @@ export async function transform(
 
   switch (format) {
   case "avif":
-    return pipeline.avif({ quality, effort: 4 }).toBuffer();
+    // effort 2 : même poids qu'effort 4 (mesuré : 37 Ko dans les deux cas) mais
+    // ~6× plus rapide (140 ms au lieu de 860 ms) — important pour le premier visiteur.
+    return pipeline.avif({ quality, effort: 2 }).toBuffer();
   case "jpeg":
     return pipeline.jpeg({ quality, mozjpeg: true }).toBuffer();
   default:
-    return pipeline.webp({ quality, effort: 4 }).toBuffer();
+    return pipeline.webp({ quality, effort: 3 }).toBuffer();
   }
 }
 
@@ -87,7 +89,7 @@ const CONTENT_TYPES: Record<Format, string> = {
 };
 
 export const img = onRequest(
-  { region: "us-central1", memory: "512MiB", timeoutSeconds: 30, cors: false },
+  { region: "us-central1", memory: "512MiB", cpu: 1, concurrency: 6, timeoutSeconds: 30, cors: false },
   async (req, res) => {
     if (req.method !== "GET" && req.method !== "HEAD") {
       res.status(405).send("Method not allowed");

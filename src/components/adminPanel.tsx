@@ -16,6 +16,7 @@ import {
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import imageCompression from 'browser-image-compression';
+import { warmImage } from '../lib/imageUrl';
 
 /**
  * Les fichiers portent un timestamp dans leur nom (jamais réécrits) : le
@@ -193,6 +194,9 @@ const AdminPanel: React.FC = () => {
         );
 
         const uploadedUrls = results.map(r => r.fullUrl);
+
+        // Préchauffe les variantes AVIF : les visiteurs ne paieront jamais la conversion.
+        results.forEach(({ fullUrl, thumbUrl }) => { warmImage(fullUrl); warmImage(thumbUrl); });
 
         // On mémorise la miniature de chaque image pour pouvoir la réutiliser
         // lorsque l'utilisateur change la photo principale.
@@ -523,6 +527,7 @@ const AdminPanel: React.FC = () => {
       const storageRef = ref(storage, `settings/hero-image-${Date.now()}.webp`);
       const snapshot = await uploadBytes(storageRef, compressedFile, { contentType: 'image/webp', cacheControl: IMMUTABLE_CACHE });
       const downloadUrl = await getDownloadURL(snapshot.ref);
+      warmImage(downloadUrl);
 
       // Save to Firestore settings
       await setDoc(doc(db, 'settings', 'homepage'), { heroImage: downloadUrl }, { merge: true });

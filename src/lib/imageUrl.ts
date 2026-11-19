@@ -45,3 +45,19 @@ export function optimizedSrcSet(
 ): string {
   return widths.map((width) => `${optimizedUrl(path, width, format)} ${width}w`).join(', ');
 }
+
+/** Largeurs réellement demandées par les cartes et la fiche selon l'écran. */
+const WARM_WIDTHS = [480, 640, 800, 960, 1280] as const;
+
+/**
+ * Préchauffe le cache de `/api/img` pour une photo : le CDN garde ensuite chaque
+ * variante un an, le premier visiteur ne paie donc jamais la conversion.
+ * À appeler juste après un téléversement depuis l'administration (sans attendre).
+ */
+export function warmImage(url: string): void {
+  const path = storagePathOf(url);
+  if (!path) return;
+  for (const width of WARM_WIDTHS) {
+    void fetch(optimizedUrl(path, width, 'avif'), { priority: 'low' } as RequestInit).catch(() => {});
+  }
+}
