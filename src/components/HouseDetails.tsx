@@ -13,6 +13,7 @@ import type { House } from "../types"
 import { getListingCoverImage } from "../lib/coverImage"
 import { trackEvent } from "../lib/tracking"
 import ProfilePicture from './ProfilePicture'
+import SmartImage from './SmartImage'
 import { Helmet } from "react-helmet-async"
 
 const HouseDetails: React.FC = () => {
@@ -290,9 +291,10 @@ const HouseDetails: React.FC = () => {
               <ChevronLeft className="w-10 h-10" />
             </button>
 
-            <img
+            <SmartImage
               key={activeImageIndex}
               src={house.images[activeImageIndex]}
+              sizes="100vw"
               alt={`${house.title} - Image ${activeImageIndex + 1}`}
               className="max-w-full max-h-full object-contain pointer-events-none select-none"
               onClick={(e) => e.stopPropagation()}
@@ -318,7 +320,7 @@ const HouseDetails: React.FC = () => {
                     : 'opacity-20 group-hover/miniatures:opacity-40 hover:!opacity-100'
                     }`}
                 >
-                  <img src={img} alt={`Thumbnail ${idx + 1}`} width={64} height={48} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+                  <SmartImage src={img} sizes="64px" widths={[320]} alt={`Thumbnail ${idx + 1}`} width={64} height={48} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
@@ -493,6 +495,8 @@ const HouseDetails: React.FC = () => {
                   key={idx}
                   src={img}
                   alt={house.title}
+                  sizes={house.images.length === 2 ? '(min-width: 1280px) 640px, 50vw' : '(min-width: 1280px) 1280px, 100vw'}
+                  priority={idx === 0}
                   onClick={() => openGallery(idx)}
                 />
               ))}
@@ -504,6 +508,8 @@ const HouseDetails: React.FC = () => {
                 <DetailGalleryImage
                   src={house.images[0]}
                   alt={house.title}
+                  sizes="(min-width: 1280px) 850px, (min-width: 768px) 66vw, 100vw"
+                  priority
                   onClick={() => openGallery(0)}
                   className="h-full"
                 />
@@ -511,6 +517,7 @@ const HouseDetails: React.FC = () => {
               <div className="hidden md:grid grid-rows-2 gap-2 h-full">
                 <DetailGalleryImage
                   src={house.images[1]}
+                  sizes="(min-width: 1280px) 430px, 33vw"
                   alt={`${house.title} 2`}
                   onClick={() => openGallery(1)}
                   className="h-full"
@@ -518,6 +525,7 @@ const HouseDetails: React.FC = () => {
                 <div className="relative w-full h-full">
                   <DetailGalleryImage
                     src={house.images[2]}
+                    sizes="(min-width: 1280px) 430px, 33vw"
                     alt={`${house.title} 3`}
                     onClick={() => openGallery(2)}
                     className="h-full"
@@ -708,12 +716,18 @@ const DetailGalleryImage = ({
   src,
   alt,
   onClick,
-  className = ""
+  className = "",
+  sizes,
+  priority = false
 }: {
   src: string;
   alt: string;
   onClick?: () => void;
   className?: string;
+  /** Largeur d'affichage (attribut `sizes`) pour choisir la bonne variante. */
+  sizes: string;
+  /** Première photo de la page : élément LCP, chargée immédiatement. */
+  priority?: boolean;
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -724,15 +738,17 @@ const DetailGalleryImage = ({
           <HomeIcon className="w-12 h-12 text-slate-700/50" />
         </div>
       )}
-      <img
+      <SmartImage
         src={src}
+        sizes={sizes}
         alt={alt}
         width={1600}
         height={1200}
+        loading={priority ? 'eager' : 'lazy'}
+        fetchPriority={priority ? 'high' : 'auto'}
         className={`w-full h-full object-cover cursor-pointer hover:opacity-95 transition-all duration-700 ease-out ${
           isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
         }`}
-        loading="lazy"
         decoding="async"
         onLoad={() => setIsLoaded(true)}
       />
@@ -756,8 +772,9 @@ const SimilarHouseCard = ({ house }: { house: House }) => {
           </div>
         )}
         {imageUrl ? (
-          <img
+          <SmartImage
             src={imageUrl}
+            sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
             alt={house.title}
             width={1200}
             height={800}

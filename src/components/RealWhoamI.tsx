@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import SmartImage from './SmartImage'
 import { Helmet } from "react-helmet-async";
 import emailjs from "emailjs-com";
 import ProfilePicture from './ProfilePicture';
@@ -197,7 +198,7 @@ const RealWhoAmI: React.FC = () => {
             {/* Large Image Block */}
             <div className="lg:col-span-7 rounded-[2rem] overflow-hidden shadow-xl relative min-h-[400px] lg:min-h-[500px] group bg-gray-200">
               {expensiveHouseImage && (
-                <img src={expensiveHouseImage} alt="L'immobilier d'exception" width={1200} height={800} loading="lazy" decoding="async" className="w-full h-full object-cover absolute inset-0 transition-transform duration-1000 group-hover:scale-105" />
+                <SmartImage src={expensiveHouseImage} sizes="(min-width: 1024px) 58vw, 100vw" alt="L'immobilier d'exception" width={1200} height={800} loading="lazy" decoding="async" className="w-full h-full object-cover absolute inset-0 transition-transform duration-1000 group-hover:scale-105" />
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
               <div className="absolute bottom-10 left-10 right-10">

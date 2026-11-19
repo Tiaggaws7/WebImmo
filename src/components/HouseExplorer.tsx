@@ -6,6 +6,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { House } from '../types';
 import { getListingCoverImage } from '../lib/coverImage';
 import { trackEvent } from '../lib/tracking';
+import SmartImage from './SmartImage';
 
 const CustomSelect = ({ value, onChange, options, placeholder = "Sélectionner...", triggerClassName }: { value: string, onChange: (v: string) => void, options: { label: string, value: string }[], placeholder?: string, triggerClassName?: string }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -630,8 +631,9 @@ const HouseCard = ({ house, priority = false }: { house: House; priority?: boole
         )}
 
         {imageUrl && !hasError ? (
-          <img
+          <SmartImage
             src={imageUrl}
+            sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
             alt={house.title}
             width={1200}
             height={800}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import SmartImage from './SmartImage'
 import { Helmet } from 'react-helmet-async';
 import emailjs from 'emailjs-com';
 import { fetchHouses } from '../lib/firestoreRest'
@@ -134,11 +135,13 @@ export default function Selling_form() {
       {/* Background Image Setup */}
       <div className="absolute inset-0 z-0 bg-gray-900">
         {bgImage && (
-          <img 
-            src={bgImage} 
+          <SmartImage
+            src={bgImage}
+            sizes="100vw"
             alt=""
             width={1600}
             height={1200}
+            fetchPriority="high"
             decoding="async"
             className="w-full h-full object-cover scale-105 transition-opacity duration-1000"
           />
