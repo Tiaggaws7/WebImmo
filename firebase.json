@@ -81,6 +81,15 @@
         ]
       },
       {
+        "source": "/hero/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=31536000, immutable"
+          }
+        ]
+      },
+      {
         "source": "index.html",
         "headers": [
           {
@@ -90,11 +99,11 @@
         ]
       },
       {
-        "source": "**/*.@(jpg|jpeg|gif|png|svg|webp|ico)",
+        "source": "**/*.@(jpg|jpeg|gif|png|svg|webp|avif|ico|woff2)",
         "headers": [
           {
             "key": "Cache-Control",
-            "value": "public, max-age=2592000"
+            "value": "public, max-age=2592000, stale-while-revalidate=86400"
           }
         ]
       }
@@ -103,6 +112,10 @@
       {
         "source": "/house/**",
         "function": "renderHouseMeta"
+      },
+      {
+        "source": "/api/img",
+        "function": "img"
       },
       {
         "source": "/api/listings",
