@@ -8,20 +8,21 @@ import WhatsAppBubble from './components/WhatsAppBubble';
 import AnalyticsFooter from './components/AnalyticsFooter';
 import { initAnalytics } from './lib/analytics';
 import { setupAutoTracking, trackPageview } from './lib/tracking';
+import { enableIntentPrefetch, routeLoaders } from './lib/routes';
 
 // La page d'accueil est le point d'entrée de la quasi-totalité des visites.
 // Elle est préchargée depuis index.html (voir routeChunkPreloadPlugin) pour
 // éviter un aller-retour, mais reste hors du bundle initial : les visiteurs qui
 // arrivent directement sur /Acheter, /Vendre, etc. n'ont pas à télécharger son
 // code ni les avis clients.
-const Home = lazy(() => import('./home.tsx'));
-const Selling_form = lazy(() => import('./components/Selling_form'));
-const HouseExplorer = lazy(() => import('./components/HouseExplorer.tsx'));
-const HouseDetails = lazy(() => import('./components/HouseDetails.tsx'));
-const RealWhoAmI = lazy(() => import('./components/RealWhoamI.tsx'));
-const EstimationForm = lazy(() => import('./components/EstimationForm.tsx'));
-const AdminPanel = lazy(() => import('./components/adminPanel.tsx'));
-const NotFound = lazy(() => import('./NotFound.tsx'));
+const Home = lazy(routeLoaders.home);
+const Selling_form = lazy(routeLoaders.sell);
+const HouseExplorer = lazy(routeLoaders.buy);
+const HouseDetails = lazy(routeLoaders.house);
+const RealWhoAmI = lazy(routeLoaders.about);
+const EstimationForm = lazy(routeLoaders.estimate);
+const AdminPanel = lazy(routeLoaders.admin);
+const NotFound = lazy(routeLoaders.notFound);
 
 const PageLoader = () => (
   <div className="min-h-screen bg-[#fafafa] flex items-center justify-center" aria-label="Chargement...">
@@ -36,6 +37,8 @@ const AppContent = () => {
     // gtag est chargé à la première interaction (ou après le rendu initial).
     initAnalytics();
     setupAutoTracking();
+    // Survol / focus / toucher d'un lien interne : la page est préchargée.
+    return enableIntentPrefetch();
   }, []);
 
   useEffect(() => {
