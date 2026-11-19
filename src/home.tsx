@@ -43,7 +43,10 @@ function Home() {
     )
   })
   const [isLoadingHouses, setIsLoadingHouses] = useState(true)
-  // Le hero (LCP) est rendu seul d'abord ; le reste arrive à la frame suivante.
+  // Le hero (LCP) est rendu seul d'abord ; le reste n'est monté qu'une fois la
+  // photo affichée (ou après 2,5 s au plus). Sinon les premières photos des
+  // annonces se disputent la bande passante avec l'image LCP.
+  const [heroLoaded, setHeroLoaded] = useState(false)
   const [showBelowFold, setShowBelowFold] = useState(false)
   const [isHovered, setIsHovered] = useState<number | null>(null)
   const [searchLocation, setSearchLocation] = useState('')
@@ -58,15 +61,20 @@ function Home() {
   const availableLocations = Array.from(new Set(houses.map(h => h.location).filter(Boolean))).sort() as string[]
 
   useEffect(() => {
-    let second = 0
-    const first = requestAnimationFrame(() => {
-      second = requestAnimationFrame(() => setShowBelowFold(true))
-    })
-    return () => {
-      cancelAnimationFrame(first)
-      cancelAnimationFrame(second)
+    if (showBelowFold) return
+    if (heroLoaded) {
+      let second = 0
+      const first = requestAnimationFrame(() => {
+        second = requestAnimationFrame(() => setShowBelowFold(true))
+      })
+      return () => {
+        cancelAnimationFrame(first)
+        cancelAnimationFrame(second)
+      }
     }
-  }, [])
+    const timer = window.setTimeout(() => setShowBelowFold(true), 2500)
+    return () => window.clearTimeout(timer)
+  }, [heroLoaded, showBelowFold])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -224,6 +232,8 @@ function Home() {
                 className="w-full h-full object-cover"
                 fetchPriority="high"
                 decoding="async"
+                onLoad={() => setHeroLoaded(true)}
+                onError={() => setHeroLoaded(true)}
               />
             ) : (
               <picture className="contents">
@@ -238,6 +248,8 @@ function Home() {
                   className="w-full h-full object-cover"
                   fetchPriority="high"
                   decoding="async"
+                  onLoad={() => setHeroLoaded(true)}
+                  onError={() => setHeroLoaded(true)}
                 />
               </picture>
             )}

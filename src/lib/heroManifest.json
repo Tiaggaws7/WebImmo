@@ -8,64 +8,64 @@
     {
       "width": 640,
       "height": 480,
-      "bytes": 63142,
-      "url": "/hero/hero-640.cc94f1ff.avif"
+      "bytes": 51103,
+      "url": "/hero/hero-640.a22c74e9.avif"
     },
     {
       "width": 960,
       "height": 720,
-      "bytes": 104411,
-      "url": "/hero/hero-960.cc94f1ff.avif"
+      "bytes": 84470,
+      "url": "/hero/hero-960.19d4dcc3.avif"
     },
     {
       "width": 1280,
       "height": 960,
-      "bytes": 135016,
-      "url": "/hero/hero-1280.cc94f1ff.avif"
+      "bytes": 110515,
+      "url": "/hero/hero-1280.a8fff639.avif"
     },
     {
       "width": 1600,
       "height": 1200,
-      "bytes": 165596,
-      "url": "/hero/hero-1600.cc94f1ff.avif"
+      "bytes": 135564,
+      "url": "/hero/hero-1600.11ed8aa7.avif"
     },
     {
       "width": 1645,
       "height": 1234,
-      "bytes": 195534,
-      "url": "/hero/hero-1645.cc94f1ff.avif"
+      "bytes": 155935,
+      "url": "/hero/hero-1645.e45f97fe.avif"
     }
   ],
   "webp": [
     {
       "width": 640,
       "height": 480,
-      "bytes": 59382,
-      "url": "/hero/hero-640.cc94f1ff.webp"
+      "bytes": 54484,
+      "url": "/hero/hero-640.14ee3fe0.webp"
     },
     {
       "width": 960,
       "height": 720,
-      "bytes": 102416,
-      "url": "/hero/hero-960.cc94f1ff.webp"
+      "bytes": 94462,
+      "url": "/hero/hero-960.9d68c5cc.webp"
     },
     {
       "width": 1280,
       "height": 960,
-      "bytes": 138726,
-      "url": "/hero/hero-1280.cc94f1ff.webp"
+      "bytes": 128348,
+      "url": "/hero/hero-1280.c1a80796.webp"
     },
     {
       "width": 1600,
       "height": 1200,
-      "bytes": 176734,
-      "url": "/hero/hero-1600.cc94f1ff.webp"
+      "bytes": 165468,
+      "url": "/hero/hero-1600.83c30294.webp"
     },
     {
       "width": 1645,
       "height": 1234,
-      "bytes": 208034,
-      "url": "/hero/hero-1645.cc94f1ff.webp"
+      "bytes": 191650,
+      "url": "/hero/hero-1645.02b54fad.webp"
     }
   ]
 }
