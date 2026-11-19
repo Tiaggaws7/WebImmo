@@ -16,6 +16,13 @@ import {
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import imageCompression from 'browser-image-compression';
+
+/**
+ * Les fichiers portent un timestamp dans leur nom (jamais réécrits) : le
+ * navigateur et le CDN peuvent les garder un an. Sans cela, Firebase Storage
+ * sert « private, max-age=0 » et chaque visite retélécharge toutes les photos.
+ */
+const IMMUTABLE_CACHE = 'public, max-age=31536000, immutable';
 import { db, auth } from '../firebase-config';
 import { isThumbnailOf } from '../lib/coverImage';
 import { invalidateHousesCache, invalidateSettingsCache } from '../lib/firestoreRest';
@@ -172,13 +179,13 @@ const AdminPanel: React.FC = () => {
             baseName = baseName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9_\-]/g, "_");
             
             const storageRef = ref(storage, `houses/${baseName}-${timestamp}.webp`);
-            const snapshot = await uploadBytes(storageRef, compressedFile, { contentType: 'image/webp' });
+            const snapshot = await uploadBytes(storageRef, compressedFile, { contentType: 'image/webp', cacheControl: IMMUTABLE_CACHE });
             const fullUrl = await getDownloadURL(snapshot.ref);
 
             // Create and upload thumbnail
             const thumbnailFile = await imageCompression(file, thumbnailOptions);
             const thumbRef = ref(storage, `houses/thumbnails/${baseName}-${timestamp}.jpeg`);
-            const thumbSnapshot = await uploadBytes(thumbRef, thumbnailFile, { contentType: 'image/jpeg' });
+            const thumbSnapshot = await uploadBytes(thumbRef, thumbnailFile, { contentType: 'image/jpeg', cacheControl: IMMUTABLE_CACHE });
             const thumbUrl = await getDownloadURL(thumbSnapshot.ref);
 
             return { fullUrl, thumbUrl };
@@ -504,15 +511,17 @@ const AdminPanel: React.FC = () => {
     try {
       const storage = getStorage();
       const compressionOptions = {
-        maxSizeMB: 0.45,
-        maxWidthOrHeight: 1920,
-        initialQuality: 0.8,
+        // L'original stocké est un « master » net : /api/img en dérive les
+        // variantes AVIF/WebP légères (640 → 2000 px) servies aux visiteurs.
+        maxSizeMB: 2.5,
+        maxWidthOrHeight: 2400,
+        initialQuality: 0.92,
         useWebWorker: true,
         fileType: 'image/webp',
       };
       const compressedFile = await imageCompression(file, compressionOptions);
       const storageRef = ref(storage, `settings/hero-image-${Date.now()}.webp`);
-      const snapshot = await uploadBytes(storageRef, compressedFile, { contentType: 'image/webp' });
+      const snapshot = await uploadBytes(storageRef, compressedFile, { contentType: 'image/webp', cacheControl: IMMUTABLE_CACHE });
       const downloadUrl = await getDownloadURL(snapshot.ref);
 
       // Save to Firestore settings
