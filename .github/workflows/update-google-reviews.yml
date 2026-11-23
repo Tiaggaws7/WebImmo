@@ -1,6 +1,7 @@
 # Met à jour automatiquement les avis Google du site, chaque jour.
 #
-# 1. Récupère les avis + réponses via l'API Google Business Profile.
+# 1. Récupère les avis + réponses (via SerpApi, ou l'API Google Business
+#    Profile si l'accès est un jour accordé).
 # 2. S'il n'y a rien de nouveau : s'arrête (aucun déploiement).
 # 3. Sinon : build du site, déploiement sur Firebase Hosting, puis commit
 #    de src/data/reviews.json et index.html dans le dépôt.
@@ -36,12 +37,15 @@ jobs:
       - name: Récupérer les avis Google
         id: fetch
         env:
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
           GBP_CLIENT_ID: ${{ secrets.GBP_CLIENT_ID }}
           GBP_CLIENT_SECRET: ${{ secrets.GBP_CLIENT_SECRET }}
           GBP_REFRESH_TOKEN: ${{ secrets.GBP_REFRESH_TOKEN }}
           GBP_ACCOUNT_ID: ${{ secrets.GBP_ACCOUNT_ID }}
           GBP_LOCATION_ID: ${{ secrets.GBP_LOCATION_ID }}
-        run: node scripts/reviews/fetch-google-reviews.mjs
+          # Lancement manuel = relecture complète de tous les avis.
+          FULL_FLAG: ${{ github.event_name == 'workflow_dispatch' && '--full' || '' }}
+        run: node scripts/reviews/fetch-google-reviews.mjs $FULL_FLAG
 
       - name: Installer les dépendances
         if: steps.fetch.outputs.changed == 'true'

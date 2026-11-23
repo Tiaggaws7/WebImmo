@@ -1,48 +1,182 @@
 #!/usr/bin/env node
 /**
- * Récupère les avis Google (et les réponses d'Elise) via l'API officielle
- * Google Business Profile, puis met à jour :
+ * Récupère les avis Google de la fiche « Elise BUIL » (et les réponses),
+ * puis met à jour :
  *   - src/data/reviews.json      (avis affichés sur le site)
  *   - index.html                 (données structurées JSON-LD : note, nombre d'avis, 3 derniers avis)
  *
- * Aucune dépendance : Node 20+ (fetch natif).
+ * Deux sources possibles (choisie automatiquement) :
  *
- * Variables d'environnement :
- *   GBP_CLIENT_ID, GBP_CLIENT_SECRET, GBP_REFRESH_TOKEN   (obligatoires)
- *   GBP_ACCOUNT_ID, GBP_LOCATION_ID                       (facultatives : détectées automatiquement
- *                                                          s'il n'y a qu'un seul établissement)
+ *   1. SerpApi (si SERPAPI_KEY est défini) — lit la fiche Google Maps publique.
+ *        SERPAPI_KEY        clé de l'offre gratuite SerpApi (250 recherches / mois)
+ *        GOOGLE_MAPS_DATA_ID  identifiant de la fiche (valeur par défaut : celle d'Elise BUIL)
+ *      Pour économiser le quota, une exécution normale ne lit que la 1re page
+ *      (avis les plus récents) et ne relit tout que si quelque chose a changé.
+ *      Avec --full (ou le dimanche), tout est relu.
+ *
+ *   2. API officielle Google Business Profile (si l'accès est un jour accordé).
+ *        GBP_CLIENT_ID, GBP_CLIENT_SECRET, GBP_REFRESH_TOKEN   (obligatoires)
+ *        GBP_ACCOUNT_ID, GBP_LOCATION_ID                       (facultatives)
  *
  * Options :
- *   --dry-run          affiche le résultat sans rien écrire
- *   --from-file <f>    utilise une réponse d'API enregistrée (JSON) au lieu d'appeler Google (tests)
+ *   --dry-run            affiche le résultat sans rien écrire
+ *   --full               (SerpApi) relit tous les avis, même sans changement apparent
+ *   --from-file <f>      utilise une réponse Business Profile enregistrée (tests)
  *
  * Code de sortie : 0 = OK (fichiers modifiés ou non), 1 = erreur.
  * Sur GitHub Actions, écrit `changed=true|false` dans $GITHUB_OUTPUT.
+ *
+ * Aucune dépendance : Node 20+ (fetch natif).
  */
 import { readFile, writeFile, appendFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const REVIEWS_JSON = path.join(ROOT, "src/data/reviews.json");
 const INDEX_HTML = path.join(ROOT, "index.html");
 
-const args = process.argv.slice(2);
-const DRY_RUN = args.includes("--dry-run");
-const fromFileIdx = args.indexOf("--from-file");
-const FROM_FILE = fromFileIdx >= 0 ? args[fromFileIdx + 1] : null;
-
+/** Fiche Google Maps « Elise BUIL » (extrait du lien maps.app.goo.gl de la fiche). */
+const DEFAULT_DATA_ID = "0xa1e7abce3b7c5abf:0xa07e51ac209254d1";
+const ANONYMOUS = "Un client Google";
 const STARS = { ONE: 1, TWO: 2, THREE: 3, FOUR: 4, FIVE: 5 };
 
 // ---------------------------------------------------------------------------
-// Appels à l'API Google
+// Utilitaires
 // ---------------------------------------------------------------------------
 
+function env(name) {
+  return process.env[name]?.trim() || "";
+}
+
 function requireEnv(name) {
-  const value = process.env[name]?.trim();
+  const value = env(name);
   if (!value) throw new Error(`Variable d'environnement manquante : ${name}`);
   return value;
 }
+
+/** Google ajoute parfois une traduction automatique : on garde le texte d'origine. */
+export function cleanText(raw) {
+  if (!raw) return "";
+  let text = String(raw);
+  const original = text.match(/\((?:Original|Texte d'origine)\)\s*\n([\s\S]*)$/);
+  if (original) text = original[1];
+  text = text.replace(/^\((?:Translated by Google|Traduit par Google)\)\s*/, "");
+  return text.trim();
+}
+
+/** Avis normalisés → contenu de reviews.json */
+export function buildSiteData({ reviews, averageRating, totalReviewCount }) {
+  const sorted = reviews
+    .filter((r) => r.rating > 0)
+    .sort((a, b) => (b.createTime ?? "").localeCompare(a.createTime ?? ""));
+  const computedAverage = sorted.length ? sorted.reduce((s, r) => s + r.rating, 0) / sorted.length : 0;
+  return {
+    statistics: {
+      averageRating: Math.round((averageRating || computedAverage) * 10) / 10,
+      totalReviews: totalReviewCount || sorted.length,
+    },
+    reviews: sorted.map((r) => ({
+      id: r.id,
+      author: r.author,
+      rating: r.rating,
+      createTime: r.createTime,
+      text: r.text,
+      ownerResponse: r.ownerResponse,
+    })),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Source 1 : SerpApi (fiche Google Maps publique)
+// ---------------------------------------------------------------------------
+
+async function serpGet(params) {
+  const url = new URL("https://serpapi.com/search.json");
+  for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== "") url.searchParams.set(k, String(v));
+  url.searchParams.set("api_key", requireEnv("SERPAPI_KEY"));
+  const res = await fetch(url);
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok || body.error) {
+    const msg = body.error ?? `HTTP ${res.status}`;
+    const hint = /run out|limit|quota/i.test(msg) ? "\nLe quota gratuit SerpApi du mois est peut-être épuisé." : "";
+    throw new Error(`Erreur SerpApi : ${msg}${hint}`);
+  }
+  return body;
+}
+
+export function normalizeSerpReview(r) {
+  const text = r.extracted_snippet?.original ?? r.snippet ?? "";
+  const reply = r.response?.extracted_snippet?.original ?? r.response?.snippet ?? "";
+  return {
+    id: r.review_id ?? "",
+    author: r.user?.name?.trim() || ANONYMOUS,
+    rating: Math.round(Number(r.rating) || 0),
+    createTime: r.iso_date ?? "",
+    text: cleanText(text),
+    ownerResponse: cleanText(reply) || null,
+  };
+}
+
+async function fetchSerpPage(dataId, nextPageToken) {
+  return serpGet({
+    engine: "google_maps_reviews",
+    data_id: dataId,
+    hl: "fr",
+    sort_by: "newestFirst",
+    // `num` n'est accepté qu'à partir de la 2e page.
+    num: nextPageToken ? 20 : undefined,
+    next_page_token: nextPageToken,
+  });
+}
+
+/** Vrai si la 1re page (avis les plus récents) est identique à ce qui est déjà sur le site. */
+export function firstPageUnchanged(page, previous) {
+  const total = page.place_info?.reviews;
+  if (total !== undefined && total !== previous.statistics.totalReviews) return false;
+  const rating = page.place_info?.rating;
+  if (rating !== undefined && Math.round(rating * 10) / 10 !== previous.statistics.averageRating) return false;
+  const known = new Map(previous.reviews.map((r) => [r.id, r]));
+  return (page.reviews ?? []).map(normalizeSerpReview).every((r) => {
+    const old = known.get(r.id);
+    return old && old.text === r.text && old.ownerResponse === r.ownerResponse && old.rating === r.rating;
+  });
+}
+
+async function fetchFromSerpApi(previous, { full }) {
+  const dataId = env("GOOGLE_MAPS_DATA_ID") || DEFAULT_DATA_ID;
+  let page = await fetchSerpPage(dataId);
+  console.log(`Source : SerpApi (fiche « ${page.place_info?.title ?? dataId} »)`);
+
+  if (!full && firstPageUnchanged(page, previous)) {
+    console.log("Avis les plus récents identiques à ceux du site : pas de lecture complète (1 recherche utilisée).");
+    return null;
+  }
+
+  const info = page.place_info ?? {};
+  const reviews = [...(page.reviews ?? [])];
+  let pages = 1;
+  while (page.serpapi_pagination?.next_page_token && pages < 30) {
+    page = await fetchSerpPage(dataId, page.serpapi_pagination.next_page_token);
+    reviews.push(...(page.reviews ?? []));
+    pages++;
+  }
+  console.log(`${pages} recherche(s) SerpApi utilisée(s).`);
+
+  // Une page peut chevaucher la précédente : on retire les doublons.
+  const seen = new Set();
+  const normalized = reviews.map(normalizeSerpReview).filter((r) => {
+    if (!r.id) return true;
+    if (seen.has(r.id)) return false;
+    seen.add(r.id);
+    return true;
+  });
+  return { reviews: normalized, averageRating: info.rating, totalReviewCount: info.reviews };
+}
+
+// ---------------------------------------------------------------------------
+// Source 2 : API officielle Google Business Profile
+// ---------------------------------------------------------------------------
 
 async function getAccessToken() {
   const res = await fetch("https://oauth2.googleapis.com/token", {
@@ -81,8 +215,8 @@ async function apiGet(url, token) {
 }
 
 async function findLocation(token) {
-  const accountId = process.env.GBP_ACCOUNT_ID?.trim();
-  const locationId = process.env.GBP_LOCATION_ID?.trim();
+  const accountId = env("GBP_ACCOUNT_ID");
+  const locationId = env("GBP_LOCATION_ID");
   if (accountId && locationId) {
     return { account: `accounts/${accountId.replace(/^accounts\//, "")}`, location: `locations/${locationId.replace(/^locations\//, "")}` };
   }
@@ -103,71 +237,52 @@ async function findLocation(token) {
     } while (pageToken);
   }
 
-  const matches = locationId ? found.filter((f) => f.location.endsWith(`/${locationId}`)) : found;
+  const matches = locationId
+    ? found.filter((f) => f.location.endsWith(`/${locationId}`))
+    : found.filter((f) => /elise\s*buil/i.test(f.title ?? ""));
   if (matches.length === 1) return matches[0];
 
   const list = found.map((f) => `  - ${f.title} → GBP_ACCOUNT_ID=${f.account.split("/")[1]} GBP_LOCATION_ID=${f.location.split("/")[1]}`).join("\n");
   throw new Error(
     matches.length === 0
-      ? `Aucun établissement trouvé pour ce compte Google.${list ? `\nÉtablissements visibles :\n${list}` : ""}`
+      ? `Fiche « Elise BUIL » introuvable pour ce compte Google.${list ? `\nÉtablissements visibles :\n${list}` : ""}`
       : `Plusieurs établissements trouvés, précisez GBP_ACCOUNT_ID et GBP_LOCATION_ID :\n${list}`,
   );
 }
 
-async function fetchAllReviews(token, { account, location }) {
-  const base = `https://mybusiness.googleapis.com/v4/${account}/${location}/reviews`;
+export function normalizeGbp(api) {
+  return {
+    reviews: (api.reviews ?? []).map((r) => ({
+      id: r.reviewId ?? r.name?.split("/").pop() ?? "",
+      author: r.reviewer?.isAnonymous ? ANONYMOUS : r.reviewer?.displayName?.trim() || ANONYMOUS,
+      rating: STARS[r.starRating] ?? 0,
+      createTime: r.createTime,
+      text: cleanText(r.comment),
+      ownerResponse: cleanText(r.reviewReply?.comment) || null,
+    })),
+    averageRating: api.averageRating,
+    totalReviewCount: api.totalReviewCount,
+  };
+}
+
+async function fetchFromBusinessProfile() {
+  const token = await getAccessToken();
+  const loc = await findLocation(token);
+  console.log(`Source : API Business Profile (${loc.title ?? ""} ${loc.account}/${loc.location})`);
+  const base = `https://mybusiness.googleapis.com/v4/${loc.account}/${loc.location}/reviews`;
   let pageToken = "";
-  let averageRating = 0;
-  let totalReviewCount = 0;
-  const reviews = [];
+  const api = { reviews: [], averageRating: 0, totalReviewCount: 0 };
   do {
     const url = new URL(base);
     url.searchParams.set("pageSize", "50");
     if (pageToken) url.searchParams.set("pageToken", pageToken);
     const data = await apiGet(url, token);
-    reviews.push(...(data.reviews ?? []));
-    averageRating = data.averageRating ?? averageRating;
-    totalReviewCount = data.totalReviewCount ?? totalReviewCount;
+    api.reviews.push(...(data.reviews ?? []));
+    api.averageRating = data.averageRating ?? api.averageRating;
+    api.totalReviewCount = data.totalReviewCount ?? api.totalReviewCount;
     pageToken = data.nextPageToken ?? "";
   } while (pageToken);
-  return { reviews, averageRating, totalReviewCount };
-}
-
-// ---------------------------------------------------------------------------
-// Transformation
-// ---------------------------------------------------------------------------
-
-/** Google ajoute parfois une traduction automatique : on garde le texte d'origine. */
-export function cleanText(raw) {
-  if (!raw) return "";
-  let text = String(raw);
-  const original = text.match(/\((?:Original|Texte d'origine)\)\s*\n([\s\S]*)$/);
-  if (original) text = original[1];
-  text = text.replace(/^\((?:Translated by Google|Traduit par Google)\)\s*/, "");
-  return text.trim();
-}
-
-export function toSiteData(api) {
-  const reviews = api.reviews
-    .map((r) => ({
-      id: r.reviewId ?? r.name?.split("/").pop() ?? "",
-      author: r.reviewer?.isAnonymous ? "Un client Google" : (r.reviewer?.displayName?.trim() || "Un client Google"),
-      rating: STARS[r.starRating] ?? 0,
-      createTime: r.createTime,
-      text: cleanText(r.comment),
-      ownerResponse: cleanText(r.reviewReply?.comment) || null,
-    }))
-    .filter((r) => r.rating > 0)
-    .sort((a, b) => (b.createTime ?? "").localeCompare(a.createTime ?? ""));
-
-  const computedAverage = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
-  return {
-    statistics: {
-      averageRating: Math.round((api.averageRating || computedAverage) * 10) / 10,
-      totalReviews: api.totalReviewCount || reviews.length,
-    },
-    reviews,
-  };
+  return normalizeGbp(api);
 }
 
 // ---------------------------------------------------------------------------
@@ -214,32 +329,53 @@ export function updateIndexHtml(html, data) {
 // Programme principal
 // ---------------------------------------------------------------------------
 
-async function main() {
-  let api;
-  if (FROM_FILE) {
-    api = JSON.parse(await readFile(FROM_FILE, "utf8"));
+async function setOutput(changed) {
+  if (process.env.GITHUB_OUTPUT) await appendFile(process.env.GITHUB_OUTPUT, `changed=${changed}\n`);
+}
+
+export async function main(argv = process.argv.slice(2)) {
+  const dryRun = argv.includes("--dry-run");
+  const full = argv.includes("--full") || new Date().getUTCDay() === 0;
+  const fromFileIdx = argv.indexOf("--from-file");
+  const fromFile = fromFileIdx >= 0 ? argv[fromFileIdx + 1] : null;
+
+  const oldJson = await readFile(REVIEWS_JSON, "utf8");
+  const previous = JSON.parse(oldJson);
+
+  let normalized;
+  if (fromFile) {
+    normalized = normalizeGbp(JSON.parse(await readFile(fromFile, "utf8")));
+  } else if (env("SERPAPI_KEY")) {
+    normalized = await fetchFromSerpApi(previous, { full });
+  } else if (env("GBP_REFRESH_TOKEN")) {
+    normalized = await fetchFromBusinessProfile();
   } else {
-    const token = await getAccessToken();
-    const loc = await findLocation(token);
-    console.log(`Établissement : ${loc.title ?? ""} (${loc.account}/${loc.location})`);
-    api = await fetchAllReviews(token, loc);
+    throw new Error("Aucune source configurée : définissez SERPAPI_KEY (ou les identifiants GBP_*).");
   }
 
-  const data = toSiteData(api);
-  const previous = JSON.parse(await readFile(REVIEWS_JSON, "utf8"));
+  if (!normalized) {
+    await setOutput(false);
+    return;
+  }
 
-  // Garde-fou : on ne vide jamais le site à cause d'une réponse anormale de Google.
+  const data = buildSiteData(normalized);
+
+  // Garde-fou : on ne vide jamais le site à cause d'une réponse anormale.
   if (data.reviews.length === 0) {
-    throw new Error("Google n'a renvoyé aucun avis : mise à jour annulée par sécurité.");
+    throw new Error("Aucun avis reçu : mise à jour annulée par sécurité.");
   }
   if (data.reviews.length < previous.reviews.length / 2) {
     throw new Error(
-      `Google a renvoyé ${data.reviews.length} avis contre ${previous.reviews.length} actuellement : mise à jour annulée par sécurité.`,
+      `${data.reviews.length} avis reçus contre ${previous.reviews.length} actuellement : mise à jour annulée par sécurité.`,
     );
   }
 
+  const hadReplies = previous.reviews.some((r) => r.ownerResponse);
+  if (hadReplies && !data.reviews.some((r) => r.ownerResponse)) {
+    throw new Error("Aucune réponse du propriétaire reçue alors que le site en affiche : mise à jour annulée par sécurité.");
+  }
+
   const newJson = JSON.stringify(data, null, 2) + "\n";
-  const oldJson = await readFile(REVIEWS_JSON, "utf8");
   const oldHtml = await readFile(INDEX_HTML, "utf8");
   const newHtml = updateIndexHtml(oldHtml, data);
   const changed = newJson !== oldJson || newHtml !== oldHtml;
@@ -250,20 +386,19 @@ async function main() {
       (changed ? "Changements détectés." : "Aucun changement."),
   );
 
-  if (DRY_RUN) {
-    console.log(newJson.slice(0, 2000));
+  if (dryRun) {
+    console.log(newJson.slice(0, 3000));
   } else if (changed) {
     await writeFile(REVIEWS_JSON, newJson);
     await writeFile(INDEX_HTML, newHtml);
     console.log("Fichiers mis à jour : src/data/reviews.json, index.html");
   }
-
-  if (process.env.GITHUB_OUTPUT) {
-    await appendFile(process.env.GITHUB_OUTPUT, `changed=${changed && !DRY_RUN}\n`);
-  }
+  await setOutput(changed && !dryRun);
 }
 
-main().catch((err) => {
-  console.error(`\n❌ ${err.message}`);
-  process.exit(1);
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+  main().catch((err) => {
+    console.error(`\n❌ ${err.message}`);
+    process.exit(1);
+  });
+}
