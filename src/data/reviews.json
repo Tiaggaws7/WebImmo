@@ -1,191 +1,191 @@
 {
   "statistics": {
-    "averageRating": 5.0,
+    "averageRating": 5,
     "totalReviews": 23
   },
   "reviews": [
     {
+      "id": "Ci9DQUlRQUNvZENodHljRjlvT205a04yaG5RWGhJYW1kTlZIRjBjVlpRZWpFelZIYxAB",
       "author": "Laura Harismendy",
       "rating": 5,
-      "date": "il y a 1 jour",
-      "visitDate": "novembre",
-      "text": "J'ai confié à Me BUIL la vente de mon bien en exclusivité et je n'aurai pas pu espérer mieux . Réactive, professionnelle, à l'écoute et comprehensive, mon bien à trouvé preneur en 1 mois et demi à un prix juste ! Encore merci Me Buil ! Adan on dòt soley !!",
-      "ownerResponse": "Un grand merci pour ce très bel avis et pour vos mots qui me touchent sincèrement !\n\nJ’ai été ravie de vous accompagner dans la vente de votre maison et particulièrement heureuse d’avoir pu concrétiser votre projet rapidement, dans des conditions répondant à vos attentes.\n\nJe tiens également à vous remercier pour la confiance que vous m’avez accordée en me confiant cette vente en exclusivité, ainsi que pour votre réactivité et la qualité de nos échanges. Une belle collaboration qui a largement contribué à la réussite de cette vente !\n\nJe vous souhaite une très belle continuation\n\nAdan on dòt solèy ! ☀️😊"
+      "createTime": "2026-11-12T19:07:28Z",
+      "text": "J'ai confié à Me BUIL la vente de mon bien en exclusivité et je n'aurai pas pu espérer mieux . Réactive,  professionnelle, à l'écoute et comprehensive,  mon bien à trouvé preneur en 1 mois et demi à un prix juste ! Encore merci Me Buil  ! Adan on dòt soley !!",
+      "ownerResponse": "Un grand merci pour ce très bel avis et pour vos mots qui me touchent sincèrement !\n\nJ’ai été ravie de vous accompagner dans la vente de votre maison et particulièrement heureuse d’avoir pu concrétiser votre projet rapidement, dans des conditions répondant à vos attentes. \n\nJe tiens également à vous remercier pour la confiance que vous m’avez accordée en me confiant cette vente en exclusivité, ainsi que pour votre réactivité et la qualité de nos échanges. Une belle collaboration qui a largement contribué à la réussite de cette vente !\n\nJe vous souhaite une très belle continuation \n\nAdan on dòt solèy ! ☀️😊"
     },
     {
+      "id": "Ci9DQUlRQUNvZENodHljRjlvT2pkT1NEZGhSMVZ1TkdsM1NEazVOVUYzYlhOQ2VtYxAB",
       "author": "Ludovic Bussiere",
       "rating": 5,
-      "date": "il y a 1 jour",
-      "visitDate": "juin",
-      "text": "Nous sommes pleinement satisfaits de l'accompagnement de Meilleurs bien par l'intermédiaire d'Elise BUIL. Nous remercions Elise pour son accompagnement, sa réactivité et son professionnalisme de la première visite jusqu'à la signature.\nNous ne pouvons que recommander ses services!",
+      "createTime": "2026-11-12T15:28:07Z",
+      "text": "Nous sommes pleinement satisfaits de l’accompagnement de Meilleurs bien par l’intermédiaire d’Elise BUIL. Nous remercions Elise pour son accompagnement, sa réactivité et son professionnalisme de la première visite jusqu’à la signature.\nNous ne pouvons que recommander ses services!",
       "ownerResponse": "Un immense merci pour votre si gentil message qui me touche vraiment beaucoup ! ☺️\n\nJ’ai été sincèrement ravie de vous accompagner tout au long de votre projet immobilier et de partager avec vous cette belle étape.\n\nJe tiens aussi à vous remercier pour votre confiance, votre réactivité et surtout pour la qualité de nos échanges, toujours aussi agréables. C’est aussi grâce à vous que tout s’est déroulé dans les meilleures conditions !\n\nCe fut un véritable plaisir de vous accompagner de notre première rencontre jusqu’à la signature.\n\nJe vous souhaite plein de belles choses pour la suite et vous remercie encore chaleureusement d’avoir pris le temps de partager votre expérience ! 😊"
     },
     {
-      "author": "Célia ALBERI-PICORD",
-      "rating": 5,
-      "date": "il y a 1 mois",
-      "visitDate": "septembre",
-      "text": "Sérieure et rapide, Madame Buil a été exceptionnelle. Le plus appréciable est son expertise en matière de conseil (elle connait très bien sa matière), la qualité de sa clientèle (elle présente de vrais acheteurs à de vrais vendeurs et vice versa), son tempérament jovial et très humain. Merci à elle, je la recommande sans réserve.",
-      "ownerResponse": "Un immense merci pour ce très bel avis qui me touche sincèrement !\n\nJ’ai vraiment eu beaucoup de plaisir à vous accompagner dans la vente de votre appartement. Au-delà de la satisfaction d’avoir pu mener à bien votre projet, j’ai particulièrement apprécié nos échanges et la belle relation humaine qui s’est créée à cette occasion.\n\nJe vous remercie chaleureusement pour la confiance que vous m’avez accordée tout au long de cet accompagnement.\n\nAu plaisir de vous revoir !"
-    },
-    {
+      "id": "Ci9DQUlRQUNvZENodHljRjlvT2xCeVdWcERVMlZVZG5kc2MwWjBYMEkyWVROeWRXYxAB",
       "author": "Evlie RAMOTHE",
       "rating": 5,
-      "date": "il y a 1 mois",
-      "visitDate": "septembre",
+      "createTime": "2026-09-23T14:52:15Z",
       "text": "Nous mettons un 5* à Élise !\n\nNous avons eu un accompagnement aux petits oignons par Élise BUIL, une conseillère immobilière géniale, d'un grand professionnalisme et surtout d'une efficacité redoutable !\n\nEn 4 ou 5 visites c’était plié pour nous !\n\nElle sait détecter les bons profils et mettre en avant les biens.\n\nToujours à l'écoute, disponible, pleine d'optimisme, elle sait rassurer. Elle fait preuve également d'une grande lucidité.\n\nNous la recommandons donc les yeux fermés ! 💯",
-      "ownerResponse": "Un immense merci pour ce magnifique témoignage qui me touche vraiment beaucoup !\n\nJ’ai pris énormément de plaisir à vous accompagner dans la vente de votre appartement . Votre confiance, nos échanges et la belle relation que nous avons partagée ont rendu cet accompagnement particulièrement agréable.\n\nC’est aussi pour ces moments-là que j’aime tant mon métier !\n\nMerci du fond du cœur pour votre gentillesse, votre confiance et cette si belle recommandation.\n\nJ’espère avoir le plaisir de vous revoir !"
+      "ownerResponse": "Un immense merci pour ce magnifique témoignage qui me touche vraiment beaucoup !\n\nJ’ai pris énormément de plaisir à vous accompagner dans la vente de votre appartement . Votre confiance, nos échanges et la belle relation que nous avons partagée ont rendu cet accompagnement particulièrement agréable.\n\nC’est aussi pour ces moments-là que j’aime tant mon métier !\n\nMerci du fond du cœur pour votre gentillesse, votre confiance et cette si belle recommandation.\n\nJ’espère avoir le plaisir de vous revoir  !"
     },
     {
+      "id": "Ci9DQUlRQUNvZENodHljRjlvT21sd2NHWk5SRlZsYkhrdFgxSnZUelJOTm5scFRuYxAB",
       "author": "Arnaud Radegonde",
       "rating": 5,
-      "date": "il y a 1 mois",
-      "visitDate": "septembre",
+      "createTime": "2026-09-23T13:08:47Z",
       "text": "Excellente commerciale, très bonne réactivité et bonne humeur. Je recommande vivement pour tout accompagnement de projet immobilier.",
       "ownerResponse": "Un grand merci pour ce très bel avis et votre recommandation !\n\nJ’ai été ravie de vous accompagner dans votre projet immobilier. Ce fut un réel plaisir de partager cette expérience avec vous et je vous remercie sincèrement pour la confiance que vous m’avez accordée.\n\nJe vous souhaite une très belle continuation et au plaisir de vous revoir !"
     },
     {
+      "id": "Ci9DQUlRQUNvZENodHljRjlvT2tnMllYQmtlRXRoTlVwNE1uTjVPV1pYUTBST1VsRRAB",
+      "author": "Célia ALBERI-PICORD",
+      "rating": 5,
+      "createTime": "2026-09-17T15:13:42Z",
+      "text": "Sérieure et rapide, Madame Buil a été exceptionnelle. Le plus appréciable est son expertise en matière de conseil (elle connait très bien sa matière), la qualité de sa clientèle (elle présente de vrais acheteurs à de vrais vendeurs et vice versa), son tempérament jovial et très humain. Merci à elle, je la recommande sans réserve.",
+      "ownerResponse": "Un immense merci pour ce très bel avis qui me touche sincèrement !\n\nJ’ai vraiment eu beaucoup de plaisir à vous accompagner dans la vente de votre appartement. Au-delà de la satisfaction d’avoir pu mener à bien votre projet, j’ai particulièrement apprécié nos échanges et la belle relation humaine qui s’est créée à cette occasion.\n\nJe vous remercie chaleureusement pour la confiance que vous m’avez accordée tout au long de cet accompagnement.\n\nAu plaisir de vous revoir !"
+    },
+    {
+      "id": "Ci9DQUlRQUNvZENodHljRjlvT2kxSE9HaDJhMk5WWW1vd1QxbFVOWEpFY0ZkVlluYxAB",
       "author": "Philippe Cordoval",
       "rating": 5,
-      "date": "il y a 3 mois",
-      "visitDate": "juillet",
+      "createTime": "2026-08-08T06:59:32Z",
       "text": "Suite à ma demande pour l'estimation des biens de mes parents, Madame BUIL a été très professionnelle avec de nombreux conseils pertinents et très réactive. Je la recommande vivement.",
       "ownerResponse": "Un grand merci pour votre avis et votre confiance.\n\nJ’ai été ravie de vous accompagner dans l’estimation des biens de vos parents. Je suis heureuse d’avoir pu vous apporter les conseils et les informations dont vous aviez besoin.\n\nJe reste bien entendu à votre disposition pour la suite de vos projets immobiliers.\n\nAu plaisir de vous revoir !"
     },
     {
+      "id": "Ci9DQUlRQUNvZENodHljRjlvT25oU1ptcDRVMjFrYTNsR00zaHpNbmRyVm5GVWNGRRAB",
       "author": "VIDAL CORINNE",
       "rating": 5,
-      "date": "il y a 4 mois",
-      "visitDate": "juin",
-      "text": "Nous souhaitons exprimer toute notre gratitude à Élise pour l’accompagnement remarquable qu’elle nous a offert lors de la vente de notre villa familiale.\nDu premier échange jusqu’à la finalisation de la vente, elle a fait preuve d’un professionnalisme exemplaire, d’une grande maîtrise et d’un engagement constant. Chaque étape a été menée avec rigueur, fluidité et une attention sincère portée à nos attentes.\nRarement toutes les qualités essentielles se réunissent chez une même personne : compétence, disponibilité, sens du détail, efficacité et qualité relationnelle. Élise a su transformer une étape importante de notre vie en une expérience sereine et pleinement aboutie.\nMerci infiniment pour ce travail d’excellence. Nous la recommandons avec la plus grande confiance.",
-      "ownerResponse": "Merci infiniment pour ce magnifique avis. Vos mots m’ont vraiment touchée et me rappellent à quel point les rencontres et les relations humaines sont ce qu’il y a de plus précieux dans ce métier.\nJ’ai eu beaucoup de plaisir à vous accompagner et je vous remercie sincèrement pour votre confiance tout au long de cette aventure. Savoir que vous gardez un si beau souvenir de cette expérience est la plus belle des récompenses.\nMerci du fond du cœur, et surtout, prenez soin de vous.À très bientôt j’espère . 🌺"
+      "createTime": "2026-06-17T15:18:43Z",
+      "text": "Nous souhaitons exprimer toute notre gratitude à Élise pour l’accompagnement remarquable qu’elle nous a offert lors de la vente de notre villa familiale.\n\nDu premier échange jusqu’à la finalisation de la vente, elle a fait preuve d’un professionnalisme exemplaire, d’une grande maîtrise et d’un engagement constant. Chaque étape a été menée avec rigueur, fluidité et une attention sincère portée à nos attentes.\n\nRarement toutes les qualités essentielles se réunissent chez une même personne : compétence, disponibilité, sens du détail, efficacité et qualité relationnelle. Élise a su transformer une étape importante de notre vie en une expérience sereine et pleinement aboutie.\n\nMerci infiniment pour ce travail d’excellence. Nous la recommandons avec la plus grande confiance.",
+      "ownerResponse": "Merci infiniment pour ce magnifique avis. Vos mots m’ont vraiment touchée et me rappellent à quel point les rencontres et les relations humaines sont ce qu’il y a de plus précieux dans ce métier.\n\nJ’ai eu beaucoup de plaisir à vous accompagner et je vous remercie sincèrement pour votre confiance tout au long de cette aventure. Savoir que vous gardez un si beau souvenir de cette expérience est la plus belle des récompenses.\n\nMerci du fond du cœur, et surtout, prenez soin de vous.À très bientôt j’espère . 🌺"
     },
     {
+      "id": "Ci9DQUlRQUNvZENodHljRjlvT2pGcmNUZGhORk55UW5kb2EzRXpSRUp6WTJSc01WRRAB",
+      "author": "Régine Hierso",
+      "rating": 5,
+      "createTime": "2026-05-01T15:04:03Z",
+      "text": "Très professionnelle, réactive.\nElle est à l'écoute du client.\nJe recommande vivement!",
+      "ownerResponse": "Merci sincèrement pour votre avis 🙏\nJe suis très heureuse que mon  accompagnement ait répondu à vos attentes.\n\nJe reste bien sûr disponible pour vous conseiller dans la suite de vos démarches.\n\nTrès belle continuation à vous 🌺"
+    },
+    {
+      "id": "Ci9DQUlRQUNvZENodHljRjlvT2xjd1VISXhVSHAwY0RWUFgxTjZUR3hZUWxKdWFIYxAB",
       "author": "Juliana Cioculeasa",
       "rating": 5,
-      "date": "il y a 6 mois",
-      "visitDate": "avril",
+      "createTime": "2026-04-14T19:18:24Z",
       "text": "Elise Buil, professionnel réactif et très efficace. L'estimation du potentiel locatif a été faite avec précision. Personne très agréable et à l'écoute. Une excellente expérience.",
       "ownerResponse": "Merci beaucoup pour votre avis 🙏\nVotre satisfaction est ma plus belle récompense. J’ai à cœur d’accompagner chaque projet avec sérieux et une vraie dimension humaine, et votre retour me conforte dans cette approche.\n\nMerci pour votre confiance et à très bientôt 😊"
     },
     {
-      "author": "Régine Hierso",
-      "rating": 5,
-      "date": "il y a 6 mois",
-      "visitDate": "avril",
-      "text": "Très professionnelle, réactive.\nElle est à l'écoute du client.\nJe recommande vivement!",
-      "ownerResponse": "Merci sincèrement pour votre avis 🙏\nJe suis très heureuse que mon accompagnement ait répondu à vos attentes.\n\nJe reste bien sûr disponible pour vous conseiller dans la suite de vos démarches.\n\nTrès belle continuation à vous 🌺"
-    },
-    {
+      "id": "Ci9DQUlRQUNvZENodHljRjlvT2tKRFZsRTFRbVpTTVVnMmFFNUtWVmhPTFZGR1FVRRAB",
       "author": "diamante marchaux",
       "rating": 5,
-      "date": "il y a 7 mois",
-      "visitDate": "mars",
+      "createTime": "2026-03-20T16:17:48Z",
       "text": "Conseillé par une amie, je ne regrette ABSOLUMENT pas d'avoir fait appel à l'agence. Elise est patiente, très efficace et surtout TRÈS PROFESSIONNELLE !!! Ses conseils et son estimation nous ont beaucoup aidé !\nEncore merci!!! Je recommande à 100%!!!!",
-      "ownerResponse": "Un grand merci pour votre confiance et pour la chaleur de vos mots, qui me touchent sincèrement.\n\nJ’attache une importance particulière à proposer un accompagnement humain, proche des gens, et votre retour me conforte dans cette manière de travailler.\n\nTrès belle continuation à vous dans vos projets 🌺"
+      "ownerResponse": "Un grand merci pour votre confiance et pour la chaleur de vos mots, qui me touchent sincèrement. \n\nJ’attache une importance particulière à proposer un accompagnement humain, proche des gens, et votre retour me conforte dans cette manière de travailler.\n\nTrès belle continuation à vous dans vos projets 🌺"
     },
     {
+      "id": "Ci9DQUlRQUNvZENodHljRjlvT2xOeFpGOTVXR3BUTkVjeFgydFNkV1ZyWnpKdFVVRRAB",
       "author": "Klodin L",
       "rating": 5,
-      "date": "il y a 8 mois",
-      "visitDate": "février",
+      "createTime": "2026-02-21T15:34:44Z",
       "text": "Mme BUIL est une personne agréable, à l'écoute, très professionnelle et proactive. La mission a été gérée en 1 semaine..\nVraiment très efficace. Je recommande à 100 pour cent",
       "ownerResponse": "Un grand merci pour votre avis, je suis ravie de vous savoir satisfaite. Accompagner un projet immobilier est toujours un moment important dans une vie, et je suis heureuse d’avoir pu y contribuer à vos côtés.\nBelle continuation dans vos projets 🌺"
     },
     {
+      "id": "Ci9DQUlRQUNvZENodHljRjlvT25WSlFsbGxZa3BxYUd4UmVVSmxTbTlwUVVOV1ZsRRAB",
       "author": "Audrey Marcon",
       "rating": 5,
-      "date": "il y a 9 mois",
-      "visitDate": "février",
-      "text": "D'un professionnel exceptionnel et d'une gentillesse extrême. Je recommande vivement Élise pour la vente de votre maison !!",
-      "ownerResponse": "Un immense merci pour votre commentaire.\nChaque accompagnement est une histoire, et j’ai eu beaucoup de plaisir à partager cette étape importante à vos côtés. Je vous souhaite une belle continuation, au plaisir de vous revoir!"
+      "createTime": "2026-02-12T22:11:14Z",
+      "text": "D'un professionnel exceptionnel et d'une gentillesse extrême. Je  recommande vivement Élise pour la vente de votre maison !!",
+      "ownerResponse": "Un immense merci pour votre commentaire. \nChaque accompagnement est une histoire, et j’ai eu beaucoup de plaisir à partager cette étape importante à vos côtés. Je vous souhaite une belle continuation, au plaisir de vous revoir!"
     },
     {
+      "id": "Ci9DQUlRQUNvZENodHljRjlvT2tKNmNWWmhRa052WW14UFYySmZkMU5YY21WMmVtYxAB",
       "author": "Lili 95",
       "rating": 5,
-      "date": "il y a 9 mois",
-      "visitDate": "janvier",
+      "createTime": "2026-01-27T18:18:30Z",
       "text": "Rapidité et efficacité en plus que sympathique. Je recommande.",
       "ownerResponse": "Un grand merci pour votre retour positif, belle continuation à vous 🌺"
     },
     {
+      "id": "Ci9DQUlRQUNvZENodHljRjlvT20xM1lVbFhSRmhOU3pKTWVVNTRTVEJVVjJGb1pYYxAB",
+      "author": "Lilotop",
+      "rating": 5,
+      "createTime": "2026-01-09T20:18:23Z",
+      "text": "J’ai sollicité cette agente immobilière et j’ai été pleinement satisfaite de son accompagnement. Très professionnelle, disponible et à l’écoute, son sérieux, sa réactivité et la qualité de son travail sont à souligner.\nJe recommande vivement ses services.",
+      "ownerResponse": "Un grand merci pour votre commentaire qui me touche particulièrement. Mon métier m'offre la chance de faire de très belles rencontres, et la vôtre en fait partie. \nJe vous souhaite une belle continuation dans vos projets."
+    },
+    {
+      "id": "Ci9DQUlRQUNvZENodHljRjlvT25kVVIzWTRSMHBtTmxwVE0zZ3dORzlJZVVkdFpVRRAB",
       "author": "CORMIER Johann",
       "rating": 5,
-      "date": "il y a 10 mois",
-      "visitDate": "janvier",
+      "createTime": "2026-01-09T19:18:08Z",
       "text": "",
       "ownerResponse": "Un grand merci pour votre retour positif. Je vous souhaite une excellente continuation dans vos projets futurs."
     },
     {
-      "author": "Jean-Philippe Dran",
-      "rating": 5,
-      "date": "il y a 10 mois",
-      "visitDate": "décembre 2025",
-      "text": "Elise s’est chargée de la vente de mon appartement au Lamentin avec un très grand professionnalisme.\nElle a été d’une aide précieuse et efficace tout au long du processus et à chacune des étapes de la prospection jusqu’à la signature finale.\nAu-delà de son professionnalisme, Elise est d’une efficacité et d’une pugnacité remarquable en plus de toujours garder le sourire !\n\nJe recommande vivement et sans réserve !\nMille mercis Elise.",
-      "ownerResponse": "Vous accompagner dans la vente de votre appartement a été un réel plaisir humainement et votre satisfaction est ma plus belle réussite. Un immense merci pour votre confiance et pour ces mots qui donnent tout le sens de mon engagement au quotidien. Belle continuation à vous dans vos projets."
-    },
-    {
-      "author": "Pegguy FERRIER",
-      "rating": 5,
-      "date": "il y a 10 mois",
-      "visitDate": "décembre 2025",
-      "text": "EXCELLENTE expérience avec Mme Elise BUIL : merci pour son efficace collaboration pour la vente de notre bien !\n\nDommage de n'avoir pu vous connaître plus tôt !!\n\nNous recommandons chaudement!",
-      "ownerResponse": "Je vous remercie pour votre commentaire qui me va droit au coeur. Ce fut un réel plaisir de vous accompagner et je suis ravie que nos chemins se soient croisés, même tardivement. Je vous souhaite une excellente continuation."
-    },
-    {
+      "id": "Ci9DQUlRQUNvZENodHljRjlvT2w4dFJrY3dSRzlyV1hCWFZHeEVXaTB0UVZCU1gyYxAB",
       "author": "Steve Gelanie",
       "rating": 5,
-      "date": "il y a 10 mois",
-      "visitDate": "décembre 2025",
+      "createTime": "2025-12-23T17:15:40Z",
       "text": "",
       "ownerResponse": "Je vous remercie pour votre retour positif, ce fut un réel plaisir de vous accompagner dans votre acquisition. Je vous souhaite une bonne installation et une belle continuation."
     },
     {
-      "author": "Lilotop",
+      "id": "Ci9DQUlRQUNvZENodHljRjlvT2tOQlFuUlFURXRRTm5WZmEyMWpPSHBuU0VSMFJIYxAB",
+      "author": "Jean-Philippe Dran",
       "rating": 5,
-      "date": "il y a 10 mois",
-      "visitDate": "janvier",
-      "text": "J’ai sollicité cette agente immobilière et j’ai été pleinement satisfaite de son accompagnement. Très professionnelle, disponible et à l’écoute, son sérieux, sa réactivité et la qualité de son travail sont à souligner.\nJe recommande vivement ses services.",
-      "ownerResponse": "Un grand merci pour votre commentaire qui me touche particulièrement. Mon métier m'offre la chance de faire de très belles rencontres, et la vôtre en fait partie.\nJe vous souhaite une belle continuation dans vos projets."
+      "createTime": "2025-12-23T13:50:33Z",
+      "text": "Elise s’est chargée de la vente de mon appartement au Lamentin avec un très grand professionnalisme.\nElle a été d’une aide précieuse et efficace tout au long du processus et à chacune des étapes de la prospection jusqu’à la signature finale.\nAu-delà de son professionnalisme, Elise est d’une efficacité et d’une pugnacité remarquable en plus de toujours garder le sourire !\n\nJe recommande vivement et sans réserve !\nMille mercis Elise.",
+      "ownerResponse": "Vous accompagner dans la vente de votre appartement a été un réel plaisir humainement et votre satisfaction est ma plus belle réussite. Un immense merci pour votre confiance et pour ces mots qui donnent tout le sens de mon engagement au quotidien. Belle continuation à vous dans vos projets."
     },
     {
+      "id": "Ci9DQUlRQUNvZENodHljRjlvT2xRMlVtUTNORTFUYkY5V2QxOTBhMlpHTXpsMk9YYxAB",
+      "author": "Pegguy FERRIER",
+      "rating": 5,
+      "createTime": "2025-12-23T11:11:18Z",
+      "text": "EXCELLENTE expérience avec Mme Elise BUIL : merci pour son efficace collaboration pour la vente de notre bien !\n\nDommage de n'avoir pu vous connaître plus tôt !!\n\nNous recommandons chaudement!",
+      "ownerResponse": "Je vous remercie pour votre commentaire qui me va droit au coeur. Ce fut un réel plaisir de vous accompagner et je suis ravie que nos chemins se soient croisés, même tardivement. Je vous souhaite une excellente continuation."
+    },
+    {
+      "id": "Ci9DQUlRQUNvZENodHljRjlvT2xwbmNUWXRWbWhrUzA4MU5rbFljMFJzVlZjMWNtYxAB",
       "author": "Elise Laurent",
       "rating": 5,
-      "date": "il y a 1 an",
-      "visitDate": "novembre 2025",
+      "createTime": "2025-11-07T14:33:02Z",
       "text": "Très bonne professionnelle!",
       "ownerResponse": "Je vous remercie vivement pour votre retour positif et pour ces mots qui me touchent particulièrement. Belle continuation à vous dans vos projets futurs."
     },
     {
+      "id": "Ci9DQUlRQUNvZENodHljRjlvT2pOcllWWktSRnB1U1hKbVV6ZzRUV2REZFZOT1dHYxAB",
       "author": "Dora Raynaud",
       "rating": 5,
-      "date": "il y a 1 an",
-      "visitDate": "septembre 2025",
+      "createTime": "2025-09-23T20:26:47Z",
       "text": "Agent immobilier au top, présente pour chaque étape, toujours disponiblle, on sait que c'est son métier mais elle fait plus que ce qu'elle doit faire. Vraiment je recommanderai les yeux fermés à tout mon entourage. Merci d'être plus qu'un agent immobilier. Bonne continuation.",
       "ownerResponse": "Un sincère merci pour ce commentaire qui me touche particulièrement. Ce métier est avant tout une aventure humaine, faites de rencontres précieuses comme la vôtre. Merci pour la confiance que vous m'avez accordée pour vous accompagner dans la vente de votre maison. Je vous souhaite du fond du coeur une belle continuation dans vos nouveaux projets."
     },
     {
-      "author": "Jennifer Rolland",
-      "rating": 5,
-      "date": "il y a 1 an",
-      "visitDate": "septembre 2025",
-      "text": "Conseillère très professionnelle et à l'écoute des besoins de ses clients.\nElle sait dénicher les perles rares !",
-      "ownerResponse": "La chance est parfois de notre côté pour dénicher le bon bien au bon moment... mais surtout de trouver de très belles personnes. Ravie d'avoir croisé votre chemin et de vous avoir accompagnée."
-    },
-    {
+      "id": "Ci9DQUlRQUNvZENodHljRjlvT2pRMGMwNTBZV05WWkZCV1NHeElTMjgyUzFaWGRWRRAB",
       "author": "nicolas chevillat",
       "rating": 5,
-      "date": "il y a 1 an",
-      "visitDate": "septembre 2025",
+      "createTime": "2025-09-15T15:02:10Z",
       "text": "Professionnalisme\nRéactivité et accompagnement sans faille\nJe recommande Mme BUIL pour toutes vos futures transactions immobilières et démarches administratives et juridiques",
       "ownerResponse": "Merci beaucoup pour votre retour positif et pour la confiance que vous m'avez accordée pour vous accompagner dans la vente de votre appartement. Je vous souhaite de tout coeur une belle continuation dans vos projets à venir."
     },
     {
+      "id": "Ci9DQUlRQUNvZENodHljRjlvT2xScFZGbEdOSFp2TlZRelJVOVhjREJCWVVSUllrRRAB",
+      "author": "Jennifer Rolland",
+      "rating": 5,
+      "createTime": "2025-09-10T11:51:48Z",
+      "text": "Conseillère très professionnelle et à l'écoute des besoins de ses clients.\nElle sait dénicher les perles rares !",
+      "ownerResponse": "La chance est parfois de notre côté pour dénicher le bon bien au bon moment... mais surtout de trouver de très belles personnes. Ravie d'avoir croisé votre chemin et de vous avoir accompagnée."
+    },
+    {
+      "id": "Ci9DQUlRQUNvZENodHljRjlvT2tWd2VsRm1TV0ZwTVU5NGMxRmxhV3BXVUVSMlVYYxAB",
       "author": "Sophie Machet",
       "rating": 5,
-      "date": "il y a 1 an",
-      "visitDate": "septembre 2025",
-      "text": "Je mets 5 étoiles 🌟🌟🌟🌟🌟 à Elise BUIL une vraie professionnelle de l’immobilier qui sait détecter et répondre aux attentes de ses clients avec beaucoup d’humanité et de gentillesse\nRéactivité et compétence sont les qualités qui la caractérise\nJe recommande vivement",
+      "createTime": "2025-09-06T22:45:36Z",
+      "text": "Je mets 5 étoiles 🌟🌟🌟🌟🌟 à Elise BUIL une vraie professionnelle de l’immobilier qui sait détecter et répondre aux attentes de ses clients avec beaucoup d’humanité et de gentillesse\nRéactivité et  compétence sont les qualités qui la caractérise\nJe recommande vivement",
       "ownerResponse": "Merci Sophie pour ces mots qui résonnent bien au delà d'un simple avis. L'immobilier nous offre parfois le plus beau des cadeaux : de vraies rencontres humaines. Merci d'en faire partie."
     }
   ]
