@@ -17,6 +17,9 @@
     }
   ],
   "hosting": {
+    "predeploy": [
+      "node scripts/predeploy.mjs"
+    ],
     "public": "dist",
     "ignore": [
       "firebase.json",

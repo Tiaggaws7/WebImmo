@@ -78,7 +78,9 @@ Ensuite, supprimer le fichier `.json` de la clé de l'ordinateur.
 
 ## À savoir au quotidien
 
-- **Faire `git pull` avant de travailler sur le site** : GitHub enregistre lui-même les nouveaux avis dans le dépôt.
+- **Déploiement manuel : `firebase deploy` suffit.** Avant de publier, il fait automatiquement un `git pull` (pour récupérer les avis ajoutés par GitHub) puis `npm run build` ([scripts/predeploy.mjs](scripts/predeploy.mjs), déclaré dans `firebase.json`). Plus besoin de lancer `npm run build` avant.
+  - Sur une autre branche que `master`, il ne touche pas à l'historique : si la branche n'a pas les derniers avis, le déploiement est bloqué avec la commande à lancer (`git merge origin/master`).
+  - Sans connexion à GitHub, il prévient et déploie quand même.
 - **Toujours pousser (`git push`) ce qu'on déploie à la main.** Le déploiement automatique publie la version présente sur GitHub. Une modification déployée depuis l'ordinateur mais jamais poussée serait effacée au prochain nouvel avis.
 - Si le fichier `.env` change, mettre à jour le secret `VITE_ENV_FILE`.
 - En cas d'échec, GitHub envoie un e-mail. Le détail est dans l'onglet **Actions**.
